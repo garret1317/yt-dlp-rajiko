@@ -1,4 +1,5 @@
 import base64
+import random
 import secrets
 
 from yt_dlp.extractor.common import InfoExtractor
@@ -330,7 +331,7 @@ class RadikoBaseIE(InfoExtractor):
 
 	# build number :https://www.androidpolice.com/android-build-number-date-calculator/
 	# https://source.android.com/setup/build-numbers
-	_VERSION_MAP = {
+	_ANDROID_VERSIONS = {
 	# According to https://radiko.jp/#!/info/2558, apparently - link doesnt seem to exist any more
 	"7.0.0": {
 		"sdk": "24",
@@ -372,4 +373,88 @@ class RadikoBaseIE(InfoExtractor):
 		"sdk": "31" ,
 		"builds": ["SD1A.210817.015.A4", "SD1A.210817.019.B1", "SD1A.210817.037", "SQ1D.220105.007"]
 	}}
+	
+	_APP_VERSIONS = ["7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.9", "7.4.8", "7.4.7", "7.4.6","7.4.5","7.4.4","7.4.3","7.4.2","7.4.1","7.4.0","7.3.8","7.3.7","7.3.6","7.3.1","7.3.0","7.2.11","7.2.10"]
+	
+	_region = None
+	_userinfo = None
+	
+	def _index_regions(self):
+		region_data = {}
+
+		tree = self._download_xml('https://radiko.jp/v3/station/region/full.xml', None, note='Indexing regions')
+		for stations in tree:
+			for station in stations:
+				area = station.find('area_id').text
+				station_id = station.find('id').text
+				region_data[station_id] = area
+
+		self.cache.store('rajiko', 'region_index', region_data)
+		return region_data
+	
+	def _get_coords(self, area_id):
+		latlong = self._COORDINATES[area_id]
+		lat = latlong[0]
+		long = latlong[1]
+		# +/- 0 ~ 0.025 --> 0 ~ 1.5' ->  +/-  0 ~ 2.77/2.13km
+		lat = lat + random.random() / 40.0 * (random.choice([1, -1]))
+		long = long + random.random() / 40.0 * (random.choice([1, -1]))
+		return f"{round(lat, 6)},{round(long, 6)},gps"
+	
+	def _generate_random_info(self):
+		version_key = random.choice(list(self._ANDROID_VERSIONS.keys()))
+		version = self._ANDROID_VERSIONS[version_key] # hack because random.choice didnt work how i expected it to
+		sdk = version["sdk"]
+		build = random.choice(version["builds"])
+		model = random.choice(self._MODELS)
+		
+		info = {
+			'X-Radiko-App': 'aSmartPhone7a',
+			"X-Radiko-App-Version": random.choice(self._APP_VERSIONS),
+			"X-Radiko-Device": f"{sdk}.{model}",
+			"X-Radiko-User": secrets.token_hex(16),
+			"User-Agent": f"Dalvik/2.1.0 (Linux; U; Android {version};{model}/{build})",
+		}
+		return info
+	
+	def _get_station_region(self, station):
+		regions = self.cache.load('rajiko', 'region_index') or self._index_regions()
+		return regions[station]
+	
+	def _auth(self, station_region):
+		info = self._generate_random_info()
+		_, auth1_handle = self._download_webpage_handle('https://radiko.jp/v2/api/auth1', None,
+			'Authenticating: step 1', headers = self._generate_random_info())
+		
+		auth1_header = auth1_handle.info()
+		auth_token = auth1_header['X-Radiko-AuthToken']
+		key_length = int(auth1_header['X-Radiko-KeyLength'])
+		key_offset = int(auth1_header['X-Radiko-KeyOffset'])
+		
+		raw_partial_key = self._FULL_KEY[key_offset:key_offset + key_length]
+		partial_key = base64.b64encode(raw_partial_key)
+		
+		self._userinfo = {
+			**info,
+			'X-Radiko-AuthToken': auth_token,
+			'X-Radiko-Location': self._get_coords(station_region),
+			'X-Radiko-Connection': "wifi",
+			'X-Radiko-Partialkey': partial_key,
+		}
+		
+		auth2 = self._download_webpage('https://radiko.jp/v2/api/auth2', station_region,
+			"Authenticating: step 2", headers = self._userinfo)
+		
+		self.write_debug(auth2.strip())
+		actual_region, region_kanji, region_english = auth2.split(',')
+		
+		if actual_region != station_region:
+			self.report_warning(f"Didn't get the right region: expected {station_region}, got {actual_region}")
+		
+		self._region = actual_region
+		
+		return {
+			'X-Radiko-AreaId': actual_region,
+			'X-Radiko-AuthToken': auth_token,
+		}
 
