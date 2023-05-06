@@ -1,8 +1,13 @@
 import base64
 import random
 import secrets
+import urllib.parse
 
 from yt_dlp.extractor.common import InfoExtractor
+from yt_dlp.utils import (
+	url_or_none,
+	update_url_query,
+)
 
 
 class RadikoBaseIE(InfoExtractor):
@@ -458,3 +463,103 @@ class RadikoBaseIE(InfoExtractor):
 			'X-Radiko-AuthToken': auth_token,
 		}
 
+class RadikoLiveIE(RadikoBaseIE):
+	_VALID_URL = r'https?://(?:www\.)?radiko\.jp/#!/live/(?P<id>[A-Z0-9-]+)'
+	_TESTS = [{
+		# JP13 (Tokyo)
+		'url': 'https://radiko.jp/#!/live/FMT',
+		'info_dict': {
+			'id': 'FMT',
+			'ext': 'm4a',
+			'live_status': 'is_live',
+			'filename': 'test_RadikoLive_FMT.m4a',
+			'alt_title': 'TOKYO FM',
+			'title': 're:^TOKYO FM.+$',
+			'thumbnail': 'https://radiko.jp/res/banner/FMT/20220512162447.jpg',
+			'uploader_url': 'https://www.tfm.co.jp/',
+#			'filename': True,
+		},
+	}, {
+		# JP1 (Hokkaido)
+		'url': 'https://radiko.jp/#!/live/NORTHWAVE',
+		'info_dict': {
+			'id': 'NORTHWAVE',
+			'ext': 'm4a',
+			'uploader_url': 'https://www.fmnorth.co.jp/',
+			'alt_title': 'FM NORTH WAVE',
+			'title': 're:^FM NORTH WAVE.+$',
+			'live_status': 'is_live',
+			'thumbnail': 'https://radiko.jp/res/banner/NORTHWAVE/20150731161543.png',
+			'filename': True,
+		},
+	}, {
+		# ALL (all prefectures)
+		# api still specifies a prefecture though, in this case JP12 (Chiba), so that's what it auths as
+		'url': 'https://radiko.jp/#!/live/HOUSOU-DAIGAKU',
+		'info_dict': {
+			'id': 'HOUSOU-DAIGAKU',
+			'ext': 'm4a',
+			'title': 're:^放送大学.+$',
+			'live_status': 'is_live',
+			'uploader_url': 'https://www.ouj.ac.jp/',
+			'alt_title': 'HOUSOU-DAIGAKU',
+			'thumbnail': 'https://radiko.jp/res/banner/HOUSOU-DAIGAKU/20150805145127.png',
+			'filename': True,
+		},
+	}]
+
+	def _get_station_meta(self, region, station_id):
+		region = self._download_xml(f'https://radiko.jp/v3/station/list/{region}.xml', region, note="Downloading station listings")
+		for station in region.findall('station'):
+			if station.find("id").text == station_id:
+				return {
+					'title': station.find('name').text,
+					'thumbnail': url_or_none(station.find('banner').text),
+					'alt_title': station.find('ascii_name').text,
+					'uploader_url': url_or_none(station.find('href').text),
+				}
+	
+	def _int2bool(self,i):
+		i = int(i)
+		return True if i == 1 else False
+	
+	def _get_station_formats(self, station, timefree, auth_data):
+		url_data = self._download_xml(f'https://radiko.jp/v3/station/stream/aSmartPhone7a/{station}.xml',
+			station, note='Downloading stream information')
+		
+		urls = []
+		formats = []
+		
+		for i in url_data:
+			url = i.find("playlist_create_url").text
+			if url in urls:
+				continue
+			
+			if self._int2bool(i.get('timefree')) == timefree:
+				urls.append(url)
+				playlist_url = update_url_query(url, {
+						'station_id': station,
+						'l': '15',
+						'lsid': self._userinfo['X-Radiko-User'],
+						'type': 'b',
+					})
+				domain = urllib.parse.urlparse(playlist_url).netloc
+				formats += self._extract_m3u8_formats(
+					playlist_url, station, live=True, m3u8_id=domain, fatal=False, headers=auth_data,
+					note=f'Downloading m3u8 information from {domain}',
+				)
+		return formats
+
+	def _real_extract(self, url):
+		station = self._match_id(url)
+		region = self._get_station_region(station)
+		station_meta = self._get_station_meta(region, station)
+		auth_data = self._auth(region)
+		formats = self._get_station_formats(station, False, auth_data)
+
+		return {
+			'is_live': True,
+			'id': station,
+			**station_meta,
+			'formats': formats,
+		}
