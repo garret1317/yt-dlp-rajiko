@@ -472,7 +472,7 @@ class RadikoBaseIE(InfoExtractor):
 
 	def _auth(self, station_region):
 		cachedata = self.cache.load('rajiko-tokens', station_region)
-		print(cachedata)
+		self.write_debug(cachedata)
 		if cachedata is not None:
 			token = cachedata.get("token")
 			self._user = cachedata.get("user")
@@ -627,7 +627,9 @@ class RadikoTimeFreeIE(RadikoBaseIE):
 			'channel': 'interfm',
 			'channel_url': 'https://www.interfm.co.jp/',
 			'upload_date': '20230505',
-			'timestamp': 1683295200,
+			'timestamp': 1683298800,
+			'release_timestamp': 1683295200,
+			'release_date': '20230505',
 		},
 	},{
 		'url': 'https://radiko.jp/#!/ts/NORTHWAVE/20230430173000',
@@ -638,7 +640,7 @@ class RadikoTimeFreeIE(RadikoBaseIE):
 			'channel_id': 'NORTHWAVE',
 			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/NORTHWAVE/cwqcdppldk.jpg',
 			'upload_date': '20230430',
-			'timestamp': 1682843400,
+			'timestamp': 1682845200,
 			'uploader_url': 'https://www.fmnorth.co.jp/',
 			'duration': 1800,
 			'channel': 'FM NORTH WAVE',
@@ -648,6 +650,8 @@ class RadikoTimeFreeIE(RadikoBaseIE):
 			'cast': ['角松\u3000敏生'],
 			'series': '角松敏生 My BLUES LIFE',
 			'description': 'md5:027860a5731c04779b6720047c7b8b59',
+			'release_timestamp': 1682843400,
+			'release_date': '20230430',
 		},
 	},{
 		# late-night show, see comment in _unfuck_day
@@ -659,7 +663,6 @@ class RadikoTimeFreeIE(RadikoBaseIE):
 			'cast': ['イハラカンタロウ'],
 			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/TBS/xxeimdxszs.jpg',
 			'description': 'md5:f60b1012f0606b336660416598d82043',
-			'timestamp': 1683309600,
 			'tags': ['CCC905', '音楽との出会いが楽しめる', '人気アーティストトーク', '音楽プロデューサー出演', 'ドライブ中におすすめ', '寝る前におすすめ', '学生におすすめ'],
 			'channel': 'TBSラジオ',
 			'uploader_url': 'https://www.tbsradio.jp/',
@@ -667,9 +670,11 @@ class RadikoTimeFreeIE(RadikoBaseIE):
 			'channel_url': 'https://www.tbsradio.jp/',
 			'duration': 7200,
 			'series': 'CITY CHILL CLUB',
-			'upload_date': '20230505',
 			'live_status': 'was_live',
-
+			'release_timestamp': 1683309600,
+			'timestamp': 1683316800,
+			'release_date': '20230505',
+			'upload_date': '20230505',
 		},
 	},{
 		# early-morning show, same reason
@@ -679,7 +684,6 @@ class RadikoTimeFreeIE(RadikoBaseIE):
 			'title': '生島ヒロシのおはよう定食・一直線',
 			'id': 'TBS-20230504050000',
 			'ext': 'm4a',
-			'upload_date': '20230503',
 			'cast': ['生島\u3000ヒロシ', '齋藤\u3000孝'],
 			'channel': 'TBSラジオ',
 			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/TBS/ch3vcvtc5e.jpg',
@@ -689,9 +693,12 @@ class RadikoTimeFreeIE(RadikoBaseIE):
 			'channel_url': 'https://www.tbsradio.jp/',
 			'uploader_url': 'https://www.tbsradio.jp/',
 			'channel_id': 'TBS',
-			'timestamp': 1683144000,
 			'duration': 5400,
 			'live_status': 'was_live',
+			'release_timestamp': 1683144000,
+			'release_date': '20230503',
+			'upload_date': '20230503',
+			'timestamp': 1683149400,
 		},
 	}]
 	
