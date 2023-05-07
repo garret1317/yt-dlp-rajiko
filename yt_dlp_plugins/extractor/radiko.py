@@ -5,6 +5,10 @@ import urllib.parse
 
 from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.utils import (
+	clean_html,
+	join_nonempty,
+	traverse_obj,
+	unified_timestamp,
 	url_or_none,
 	update_url_query,
 )
@@ -463,6 +467,63 @@ class RadikoBaseIE(InfoExtractor):
 			'X-Radiko-AuthToken': auth_token,
 		}
 
+	def _get_station_meta(self, region, station_id):
+		region = self._download_xml(f'https://radiko.jp/v3/station/list/{region}.xml', region, note="Downloading station listings")
+		for station in region.findall('station'):
+			if station.find("id").text == station_id:
+				station_name = station.find('name').text
+				station_url = url_or_none(station.find('href').text)
+				return {
+					'title': station_name,
+					'channel': station_name,
+					'channel_id': station_id,
+					'channel_url': station_url,
+					'thumbnail': url_or_none(station.find('banner').text),
+					'alt_title': station.find('ascii_name').text,
+					'uploader_url': station_url,
+					'id': station_id,
+				}
+
+	def _int2bool(self,i):
+		i = int(i)
+		return True if i == 1 else False
+	
+	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None):
+		# smartphone formats api = always happy path
+		url_data = self._download_xml(f'https://radiko.jp/v3/station/stream/aSmartPhone7a/{station}.xml',
+			station, note='Downloading stream information')
+		
+		urls = []
+		formats = []
+		
+		for i in url_data:
+			url = i.find("playlist_create_url").text
+			if url in urls:
+				continue
+			
+			if self._int2bool(i.get('timefree')) == timefree:
+#			if True:
+				urls.append(url)
+				playlist_url = update_url_query(url, {
+						'station_id': station,
+						'l': '15',
+						'lsid': self._userinfo['X-Radiko-User'],
+						'type': 'b',
+					})
+				if timefree:
+					playlist_url = update_url_query(playlist_url, {
+						"start_at": start_at,
+						"ft": start_at,
+						"end_at": end_at,
+						"to": end_at,
+					})
+				domain = urllib.parse.urlparse(playlist_url).netloc
+				formats += self._extract_m3u8_formats(
+					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data,
+					note=f'Downloading m3u8 information from {domain}',
+				)
+		return formats
+
 class RadikoLiveIE(RadikoBaseIE):
 	_VALID_URL = r'https?://(?:www\.)?radiko\.jp/#!/live/(?P<id>[A-Z0-9-]+)'
 	_TESTS = [{
@@ -477,7 +538,6 @@ class RadikoLiveIE(RadikoBaseIE):
 			'title': 're:^TOKYO FM.+$',
 			'thumbnail': 'https://radiko.jp/res/banner/FMT/20220512162447.jpg',
 			'uploader_url': 'https://www.tfm.co.jp/',
-#			'filename': True,
 		},
 	}, {
 		# JP1 (Hokkaido)
@@ -490,7 +550,6 @@ class RadikoLiveIE(RadikoBaseIE):
 			'title': 're:^FM NORTH WAVE.+$',
 			'live_status': 'is_live',
 			'thumbnail': 'https://radiko.jp/res/banner/NORTHWAVE/20150731161543.png',
-			'filename': True,
 		},
 	}, {
 		# ALL (all prefectures)
@@ -504,51 +563,8 @@ class RadikoLiveIE(RadikoBaseIE):
 			'uploader_url': 'https://www.ouj.ac.jp/',
 			'alt_title': 'HOUSOU-DAIGAKU',
 			'thumbnail': 'https://radiko.jp/res/banner/HOUSOU-DAIGAKU/20150805145127.png',
-			'filename': True,
 		},
 	}]
-
-	def _get_station_meta(self, region, station_id):
-		region = self._download_xml(f'https://radiko.jp/v3/station/list/{region}.xml', region, note="Downloading station listings")
-		for station in region.findall('station'):
-			if station.find("id").text == station_id:
-				return {
-					'title': station.find('name').text,
-					'thumbnail': url_or_none(station.find('banner').text),
-					'alt_title': station.find('ascii_name').text,
-					'uploader_url': url_or_none(station.find('href').text),
-				}
-	
-	def _int2bool(self,i):
-		i = int(i)
-		return True if i == 1 else False
-	
-	def _get_station_formats(self, station, timefree, auth_data):
-		url_data = self._download_xml(f'https://radiko.jp/v3/station/stream/aSmartPhone7a/{station}.xml',
-			station, note='Downloading stream information')
-		
-		urls = []
-		formats = []
-		
-		for i in url_data:
-			url = i.find("playlist_create_url").text
-			if url in urls:
-				continue
-			
-			if self._int2bool(i.get('timefree')) == timefree:
-				urls.append(url)
-				playlist_url = update_url_query(url, {
-						'station_id': station,
-						'l': '15',
-						'lsid': self._userinfo['X-Radiko-User'],
-						'type': 'b',
-					})
-				domain = urllib.parse.urlparse(playlist_url).netloc
-				formats += self._extract_m3u8_formats(
-					playlist_url, station, live=True, m3u8_id=domain, fatal=False, headers=auth_data,
-					note=f'Downloading m3u8 information from {domain}',
-				)
-		return formats
 
 	def _real_extract(self, url):
 		station = self._match_id(url)
@@ -563,3 +579,88 @@ class RadikoLiveIE(RadikoBaseIE):
 			**station_meta,
 			'formats': formats,
 		}
+
+
+class RadikoTimeFreeIE(RadikoBaseIE):
+	_VALID_URL = r'https?://(?:www\.)?radiko\.jp/#!/ts/(?P<station>[A-Z0-9-]+)/(?P<id>\d+)'
+	_TESTS = [{
+		'url': 'https://radiko.jp/#!/ts/INT/20230505230000',
+		'info_dict': {
+			'title': 'TOKYO MOON',
+			'ext': 'm4a',
+			'id': 'INT-20230505230000',
+			'live_status': 'was_live',
+			'tags': ['松浦俊夫'],
+			'description': 'md5:804d83142a1ef1dfde48c44fb531482a',
+			'duration': 3600,
+			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/INT/72b3a65f-c3ee-4892-a327-adec52076d51.jpeg',
+			'cast': ['松浦\u3000俊夫'],
+			'series': 'Tokyo Moon',
+			'channel_id': 'INT',
+			'uploader_url': 'https://www.interfm.co.jp/',
+			'channel': 'interfm',
+			'channel_url': 'https://www.interfm.co.jp/',
+			'upload_date': '20230505',
+			'timestamp': 1683295200,
+		},
+	},{
+		'url': 'https://radiko.jp/#!/ts/NORTHWAVE/20230430173000',
+		'info_dict': {
+			'title': '角松敏生 My BLUES LIFE',
+			'id': 'NORTHWAVE-20230430173000',
+			'ext': 'm4a',
+			'channel_id': 'NORTHWAVE',
+			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/NORTHWAVE/cwqcdppldk.jpg',
+			'upload_date': '20230430',
+			'timestamp': 1682843400,
+			'uploader_url': 'https://www.fmnorth.co.jp/',
+			'duration': 1800,
+			'channel': 'FM NORTH WAVE',
+			'channel_url': 'https://www.fmnorth.co.jp/',
+			'live_status': 'was_live',
+			'tags': ['ノースウェーブ', '角松敏生', '人気アーティストトーク'],
+			'cast': ['角松\u3000敏生'],
+			'series': '角松敏生 My BLUES LIFE',
+			'description': 'md5:bed1be17dd7d188a37d3fa998533b1ff',
+		},
+	}]
+	
+	def _get_programme_meta(self, station_id, start_time):
+		date = start_time[:8]
+		meta = self._download_json(f'https://radiko.jp/v4/program/station/date/{date}/{station_id}.json', station_id,
+			note="Downloading programme data")
+		programmes = traverse_obj(meta, ('stations', lambda _, v: v['station_id'] == station_id,
+			'programs', 'program'), get_all=False)
+		for prog in programmes:
+			if prog['ft'] == start_time:
+				return {
+					'id':  join_nonempty(station_id, start_time),
+					'timestamp': unified_timestamp(f'{start_time}+0900'), # hack to account for timezone
+					'live_status': 'was_live',
+					'cast': [person.get("name") for person in prog.get('person')],
+					'description': clean_html(f"{prog.get('summary')}\n{prog.get('description')}"),
+					**traverse_obj(prog, {
+						'title': 'title',
+						'duration': 'dur',
+						'thumbnail': 'img',
+						'series': 'season_name',
+						'tags': 'tag',
+					}
+				)}, [prog.get('ft'),prog.get("to")]
+	
+	def _real_extract(self, url):
+		station, start_time = self._match_valid_url(url).group('station', 'id')
+		meta, times = self._get_programme_meta(station, start_time)
+		
+		region = self._get_station_region(station)
+		station_meta = self._get_station_meta(region, station)
+		
+		auth_data = self._auth(region)
+		formats = self._get_station_formats(station, True, auth_data, start_at=times[0], end_at=times[1])
+
+		return {**station_meta,
+			'alt_title': None,
+			**meta,
+			'formats': formats,
+#			'is_live': True, # -blatant lie
+			}
