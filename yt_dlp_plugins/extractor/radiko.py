@@ -1,4 +1,5 @@
 import base64
+import datetime
 import random
 import secrets
 import urllib.parse
@@ -533,11 +534,14 @@ class RadikoLiveIE(RadikoBaseIE):
 			'id': 'FMT',
 			'ext': 'm4a',
 			'live_status': 'is_live',
-			'filename': 'test_RadikoLive_FMT.m4a',
 			'alt_title': 'TOKYO FM',
 			'title': 're:^TOKYO FM.+$',
 			'thumbnail': 'https://radiko.jp/res/banner/FMT/20220512162447.jpg',
 			'uploader_url': 'https://www.tfm.co.jp/',
+			'channel_url': 'https://www.tfm.co.jp/',
+			'channel': 'TOKYO FM',
+			'channel_id': 'FMT',
+
 		},
 	}, {
 		# JP1 (Hokkaido)
@@ -550,6 +554,9 @@ class RadikoLiveIE(RadikoBaseIE):
 			'title': 're:^FM NORTH WAVE.+$',
 			'live_status': 'is_live',
 			'thumbnail': 'https://radiko.jp/res/banner/NORTHWAVE/20150731161543.png',
+			'channel': 'FM NORTH WAVE',
+			'channel_url': 'https://www.fmnorth.co.jp/',
+			'channel_id': 'NORTHWAVE',
 		},
 	}, {
 		# ALL (all prefectures)
@@ -563,6 +570,9 @@ class RadikoLiveIE(RadikoBaseIE):
 			'uploader_url': 'https://www.ouj.ac.jp/',
 			'alt_title': 'HOUSOU-DAIGAKU',
 			'thumbnail': 'https://radiko.jp/res/banner/HOUSOU-DAIGAKU/20150805145127.png',
+			'channel': '放送大学',
+			'channel_url': 'https://www.ouj.ac.jp/',
+			'channel_id': 'HOUSOU-DAIGAKU',
 		},
 	}]
 
@@ -621,24 +631,92 @@ class RadikoTimeFreeIE(RadikoBaseIE):
 			'tags': ['ノースウェーブ', '角松敏生', '人気アーティストトーク'],
 			'cast': ['角松\u3000敏生'],
 			'series': '角松敏生 My BLUES LIFE',
-			'description': 'md5:bed1be17dd7d188a37d3fa998533b1ff',
+			'description': 'md5:027860a5731c04779b6720047c7b8b59',
+		},
+	},{
+		# late-night show, see comment in _unfuck_day
+		'url': 'https://radiko.jp/#!/ts/TBS/20230506030000',
+		'info_dict': {
+			'id': 'TBS-20230506030000',
+			'ext': 'm4a',
+			'title': 'CITY CHILL CLUB',
+			'cast': ['イハラカンタロウ'],
+			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/TBS/xxeimdxszs.jpg',
+			'description': 'md5:f60b1012f0606b336660416598d82043',
+			'timestamp': 1683309600,
+			'tags': ['CCC905', '音楽との出会いが楽しめる', '人気アーティストトーク', '音楽プロデューサー出演', 'ドライブ中におすすめ', '寝る前におすすめ', '学生におすすめ'],
+			'channel': 'TBSラジオ',
+			'uploader_url': 'https://www.tbsradio.jp/',
+			'channel_id': 'TBS',
+			'channel_url': 'https://www.tbsradio.jp/',
+			'duration': 7200,
+			'series': 'CITY CHILL CLUB',
+			'upload_date': '20230505',
+			'live_status': 'was_live',
+
+		},
+	},{
+		# early-morning show, same reason
+		'url': 'https://radiko.jp/#!/ts/TBS/20230504050000',
+		'info_dict':
+			{
+			'title': '生島ヒロシのおはよう定食・一直線',
+			'id': 'TBS-20230504050000',
+			'ext': 'm4a',
+			'upload_date': '20230503',
+			'cast': ['生島\u3000ヒロシ', '齋藤\u3000孝'],
+			'channel': 'TBSラジオ',
+			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/TBS/ch3vcvtc5e.jpg',
+			'description': 'md5:26dba9e22df6883c072067cdc5ac0511',
+			'series': '生島ヒロシのおはよう定食・一直線',
+			'tags': ['生島ヒロシ', '健康', '檀れい', '朝のニュースを効率良く'],
+			'channel_url': 'https://www.tbsradio.jp/',
+			'uploader_url': 'https://www.tbsradio.jp/',
+			'channel_id': 'TBS',
+			'timestamp': 1683144000,
+			'duration': 5400,
+			'live_status': 'was_live',
 		},
 	}]
 	
+	def _unfuck_day(self, time):
+		# api counts 05:00 -> 28:59 (04:59 next day) as all the same day
+		# like the 30-hour day, 06:00 -> 29:59 (05:59)
+		# https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan#Time
+		# but ends earlier, presumably so the early morning programmes dont look like late night ones
+		# this means we have to shift back by a day so we can use the right api
+
+		hour_mins = int(time[8:])
+		if hour_mins < 50000:  # 050000 - 5AM
+			date = datetime.datetime(int(time[:4]), int(time[4:6]), int(time[6:8]),
+				hour=int(time[8:10]), minute=int(time[10:12]), second=int(time[12:14]))
+
+			date -= datetime.timedelta(days=1)
+			time = date.strftime("%Y%m%d")
+
+			return time
+		return time[:8]
+	
 	def _get_programme_meta(self, station_id, start_time):
-		date = start_time[:8]
-		meta = self._download_json(f'https://radiko.jp/v4/program/station/date/{date}/{station_id}.json', station_id,
+		day = self._unfuck_day(start_time)
+		meta = self._download_json(f'https://radiko.jp/v4/program/station/date/{day}/{station_id}.json', station_id,
 			note="Downloading programme data")
 		programmes = traverse_obj(meta, ('stations', lambda _, v: v['station_id'] == station_id,
 			'programs', 'program'), get_all=False)
+
 		for prog in programmes:
 			if prog['ft'] == start_time:
+				if len(prog.get('person')) > 0:
+					cast = [person.get("name") for person in prog.get('person')]
+				else:
+					cast = [prog.get('performer')]
+
 				return {
 					'id':  join_nonempty(station_id, start_time),
-					'timestamp': unified_timestamp(f'{start_time}+0900'), # hack to account for timezone
-					'live_status': 'was_live',
-					'cast': [person.get("name") for person in prog.get('person')],
-					'description': clean_html(f"{prog.get('summary')}\n{prog.get('description')}"),
+					'release_timestamp': unified_timestamp(f'{start_time}+0900'), # hack to account for timezone
+					'timestamp': unified_timestamp(f'{prog["to"]}+0900'),
+					'cast': cast,
+					'description': clean_html(join_nonempty('summary', 'description', from_dict=prog, delim='\n')),
 					**traverse_obj(prog, {
 						'title': 'title',
 						'duration': 'dur',
@@ -662,5 +740,6 @@ class RadikoTimeFreeIE(RadikoBaseIE):
 			'alt_title': None,
 			**meta,
 			'formats': formats,
-#			'is_live': True, # -blatant lie
+			'live_status': 'was_live',
+			'container': 'm4a_dash',  # force fixup, AAC-only HLS
 			}
