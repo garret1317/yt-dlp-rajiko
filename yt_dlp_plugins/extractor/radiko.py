@@ -387,7 +387,7 @@ class RadikoBaseIE(InfoExtractor):
 	_APP_VERSIONS = ["7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.9", "7.4.8", "7.4.7", "7.4.6","7.4.5","7.4.4","7.4.3","7.4.2","7.4.1","7.4.0","7.3.8","7.3.7","7.3.6","7.3.1","7.3.0","7.2.11","7.2.10"]
 	
 	_region = None
-	_userinfo = None
+	_user = None
 	
 	def _index_regions(self):
 		region_data = {}
@@ -431,7 +431,7 @@ class RadikoBaseIE(InfoExtractor):
 		regions = self.cache.load('rajiko', 'region_index') or self._index_regions()
 		return regions[station]
 	
-	def _auth(self, station_region):
+	def _negotiate_token(self, station_region):
 		info = self._generate_random_info()
 		_, auth1_handle = self._download_webpage_handle('https://radiko.jp/v2/api/auth1', None,
 			'Authenticating: step 1', headers = self._generate_random_info())
@@ -444,7 +444,7 @@ class RadikoBaseIE(InfoExtractor):
 		raw_partial_key = self._FULL_KEY[key_offset:key_offset + key_length]
 		partial_key = base64.b64encode(raw_partial_key)
 		
-		self._userinfo = {
+		headers = {
 			**info,
 			'X-Radiko-AuthToken': auth_token,
 			'X-Radiko-Location': self._get_coords(station_region),
@@ -453,7 +453,7 @@ class RadikoBaseIE(InfoExtractor):
 		}
 		
 		auth2 = self._download_webpage('https://radiko.jp/v2/api/auth2', station_region,
-			"Authenticating: step 2", headers = self._userinfo)
+			"Authenticating: step 2", headers = headers)
 		
 		self.write_debug(auth2.strip())
 		actual_region, region_kanji, region_english = auth2.split(',')
@@ -461,12 +461,28 @@ class RadikoBaseIE(InfoExtractor):
 		if actual_region != station_region:
 			self.report_warning(f"Didn't get the right region: expected {station_region}, got {actual_region}")
 		
-		self._region = actual_region
-		
-		return {
+		token = {
 			'X-Radiko-AreaId': actual_region,
 			'X-Radiko-AuthToken': auth_token,
 		}
+		
+		self._user = headers["X-Radiko-User"]
+		self.cache.store('rajiko-tokens', station_region, {"token": token, "user": self._user})
+		return token
+
+	def _auth(self, station_region):
+		cachedata = self.cache.load('rajiko-tokens', station_region)
+		print(cachedata)
+		if cachedata is not None:
+			token = cachedata.get("token")
+			self._user = cachedata.get("user")
+			response = self._download_webpage('https://radiko.jp/v2/api/auth_check', station_region, 'Checking cached token',
+				headers = token, expected_status = 401)
+			if response != "OK":
+				token = self._negotiate_token(station_region)
+		else:
+			token = self._negotiate_token(station_region)
+		return token
 
 	def _get_station_meta(self, region, station_id):
 		region = self._download_xml(f'https://radiko.jp/v3/station/list/{region}.xml', region, note="Downloading station listings")
@@ -508,7 +524,7 @@ class RadikoBaseIE(InfoExtractor):
 				playlist_url = update_url_query(url, {
 						'station_id': station,
 						'l': '15',
-						'lsid': self._userinfo['X-Radiko-User'],
+						'lsid': self._user,
 						'type': 'b',
 					})
 				if timefree:
