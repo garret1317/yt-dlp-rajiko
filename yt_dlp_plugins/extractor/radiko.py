@@ -15,7 +15,7 @@ from yt_dlp.utils import (
 )
 
 
-class RadikoBaseIE(InfoExtractor):
+class _RadikoBaseIE(InfoExtractor):
 	_FULL_KEY = base64.b64decode('''
 	fAu/s1ySbQBAyfugPCOniGTrMcOu5XqKcup3tmrZUAvx3MGtIIZl7wHokm07yxzL/oR9jdgWhi+e
 	WYVoBIiAG4hDOP5H0Og3Qtd9KFnW8s0N4vNN2DzQ1Y4PqDq3HsQszf4ZaDTkyt4FFW9fPqKUtnVR
@@ -541,7 +541,7 @@ class RadikoBaseIE(InfoExtractor):
 				)
 		return formats
 
-class RadikoLiveIE(RadikoBaseIE):
+class RadikoLiveIE(_RadikoBaseIE):
 	_VALID_URL = r'https?://(?:www\.)?radiko\.jp/#!/live/(?P<id>[A-Z0-9-]+)'
 	_TESTS = [{
 		# JP13 (Tokyo)
@@ -607,7 +607,7 @@ class RadikoLiveIE(RadikoBaseIE):
 		}
 
 
-class RadikoTimeFreeIE(RadikoBaseIE):
+class RadikoTimeFreeIE(_RadikoBaseIE):
 	_VALID_URL = r'https?://(?:www\.)?radiko\.jp/#!/ts/(?P<station>[A-Z0-9-]+)/(?P<id>\d+)'
 	_TESTS = [{
 		'url': 'https://radiko.jp/#!/ts/INT/20230505230000',
