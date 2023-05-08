@@ -433,8 +433,10 @@ class _RadikoBaseIE(InfoExtractor):
 	
 	def _negotiate_token(self, station_region):
 		info = self._generate_random_info()
-		_, auth1_handle = self._download_webpage_handle('https://radiko.jp/v2/api/auth1', None,
+		response, auth1_handle = self._download_webpage_handle('https://radiko.jp/v2/api/auth1', None,
 			'Authenticating: step 1', headers = self._generate_random_info())
+		
+		self.write_debug(response)
 		
 		auth1_header = auth1_handle.info()
 		auth_token = auth1_header['X-Radiko-AuthToken']
@@ -478,6 +480,7 @@ class _RadikoBaseIE(InfoExtractor):
 			self._user = cachedata.get("user")
 			response = self._download_webpage('https://radiko.jp/v2/api/auth_check', station_region, 'Checking cached token',
 				headers = token, expected_status = 401)
+			self.write_debug(response)
 			if response != "OK":
 				token = self._negotiate_token(station_region)
 		else:
