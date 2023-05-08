@@ -428,7 +428,10 @@ class _RadikoBaseIE(InfoExtractor):
 		return info
 	
 	def _get_station_region(self, station):
-		regions = self.cache.load('rajiko', 'region_index') or self._index_regions()
+		regions = self.cache.load('rajiko', 'region_index')
+		if regions is None or station not in regions:
+			regions = self._index_regions()
+
 		return regions[station]
 	
 	def _negotiate_token(self, station_region):
