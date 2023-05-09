@@ -708,18 +708,22 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		},
 	}]
 	
+	_JST = datetime.timezone(datetime.timedelta(hours=9))
+	
+	def _timestring_to_datetime(self, time):
+		jst = datetime.timezone(datetime.timedelta(hours=9))
+		return datetime.datetime(int(time[:4]), int(time[4:6]), int(time[6:8]),
+				hour=int(time[8:10]), minute=int(time[10:12]), second=int(time[12:14]), tzinfo=self._JST)
+	
 	def _unfuck_day(self, time):
 		# api counts 05:00 -> 28:59 (04:59 next day) as all the same day
 		# like the 30-hour day, 06:00 -> 29:59 (05:59)
 		# https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan#Time
 		# but ends earlier, presumably so the early morning programmes dont look like late night ones
 		# this means we have to shift back by a day so we can use the right api
-
 		hour_mins = int(time[8:])
 		if hour_mins < 50000:  # 050000 - 5AM
-			date = datetime.datetime(int(time[:4]), int(time[4:6]), int(time[6:8]),
-				hour=int(time[8:10]), minute=int(time[10:12]), second=int(time[12:14]))
-
+			date = self._timestring_to_datetime(time)
 			date -= datetime.timedelta(days=1)
 			time = date.strftime("%Y%m%d")
 
@@ -759,16 +763,40 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		station, start_time = self._match_valid_url(url).group('station', 'id')
 		meta, times = self._get_programme_meta(station, start_time)
 		
+		noformats_expected = False
+		noformats_msg = "No video formats found!"
+		live_status = "was_live"
+		
+		start_datetime = self._timestring_to_datetime(times[0])
+		end_datetime = self._timestring_to_datetime(times[1])
+
+		now = datetime.datetime.now(tz=self._JST)
+		
+		if end_datetime < now - datetime.timedelta(days=7):
+			noformats_expected = True
+			noformats_msg = "Programme is no longer available."
+		elif start_datetime > now:
+			noformats_expected = True
+			noformats_msg = "Programme has not aired yet."
+			live_status = 'is_upcoming'
+		elif start_datetime < now and end_datetime > now:
+			live_status = 'is_live'
+			noformats_expected = True
+			noformats_msg = "Programme is airing now!"
+			self.report_warning(f"Programme is currently live, extraction will likely not work properly")
+			# but it did once, so i'm not hard disabling it
+		
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
-		
 		auth_data = self._auth(region)
 		formats = self._get_station_formats(station, True, auth_data, start_at=times[0], end_at=times[1])
+		if len(formats) == 0:
+			self.raise_no_formats(noformats_msg, video_id=meta['id'], expected=noformats_expected)
 
 		return {**station_meta,
 			'alt_title': None,
 			**meta,
 			'formats': formats,
-			'live_status': 'was_live',
+			'live_status': live_status,
 			'container': 'm4a_dash',  # force fixup, AAC-only HLS
 			}
