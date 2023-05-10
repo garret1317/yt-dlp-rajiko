@@ -711,7 +711,6 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 	_JST = datetime.timezone(datetime.timedelta(hours=9))
 	
 	def _timestring_to_datetime(self, time):
-		jst = datetime.timezone(datetime.timedelta(hours=9))
 		return datetime.datetime(int(time[:4]), int(time[4:6]), int(time[6:8]),
 				hour=int(time[8:10]), minute=int(time[10:12]), second=int(time[12:14]), tzinfo=self._JST)
 	
@@ -765,6 +764,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		
 		noformats_expected = False
 		noformats_msg = "No video formats found!"
+		noformats_force = False
 		live_status = "was_live"
 		
 		start_datetime = self._timestring_to_datetime(times[0])
@@ -779,19 +779,20 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			noformats_expected = True
 			noformats_msg = "Programme has not aired yet."
 			live_status = 'is_upcoming'
-		elif start_datetime < now and end_datetime > now:
-			live_status = 'is_live'
+		elif start_datetime <= now < end_datetime:
+			live_status = 'is_upcoming'
 			noformats_expected = True
-			noformats_msg = "Programme is airing now!"
-			self.report_warning(f"Programme is currently live, extraction will likely not work properly")
-			# but it did once, so i'm not hard disabling it
-		
+			noformats_msg = "Programme has not finished airing yet."
+			noformats_force = True
+
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
 		auth_data = self._auth(region)
 		formats = self._get_station_formats(station, True, auth_data, start_at=times[0], end_at=times[1])
-		if len(formats) == 0:
+
+		if len(formats) == 0 or noformats_force:
 			self.raise_no_formats(noformats_msg, video_id=meta['id'], expected=noformats_expected)
+			formats = []
 
 		return {**station_meta,
 			'alt_title': None,
