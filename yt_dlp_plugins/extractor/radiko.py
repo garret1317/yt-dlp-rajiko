@@ -632,21 +632,20 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			'uploader_url': 'https://www.interfm.co.jp/',
 			'channel': 'interfm',
 			'channel_url': 'https://www.interfm.co.jp/',
+			'timestamp': 1683295200,
 			'upload_date': '20230505',
-			'timestamp': 1683298800,
-			'release_timestamp': 1683295200,
 			'release_date': '20230505',
+			'release_timestamp': 1683298800,
+
 		},
 	},{
-		'url': 'https://radiko.jp/#!/ts/NORTHWAVE/20230430173000',
+		'url': 'https://radiko.jp/#!/ts/NORTHWAVE/20230507173000',
 		'info_dict': {
 			'title': '角松敏生 My BLUES LIFE',
-			'id': 'NORTHWAVE-20230430173000',
+			'id': 'NORTHWAVE-20230507173000',
 			'ext': 'm4a',
 			'channel_id': 'NORTHWAVE',
 			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/NORTHWAVE/cwqcdppldk.jpg',
-			'upload_date': '20230430',
-			'timestamp': 1682845200,
 			'uploader_url': 'https://www.fmnorth.co.jp/',
 			'duration': 1800,
 			'channel': 'FM NORTH WAVE',
@@ -656,8 +655,10 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			'cast': ['角松\u3000敏生'],
 			'series': '角松敏生 My BLUES LIFE',
 			'description': 'md5:027860a5731c04779b6720047c7b8b59',
-			'release_timestamp': 1682843400,
-			'release_date': '20230430',
+			'upload_date': '20230507',
+			'release_timestamp': 1683450000,
+			'timestamp': 1683448200,
+			'release_date': '20230507',
 		},
 	},{
 		# late-night show, see comment in _unfuck_day
@@ -677,10 +678,10 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			'duration': 7200,
 			'series': 'CITY CHILL CLUB',
 			'live_status': 'was_live',
-			'release_timestamp': 1683309600,
-			'timestamp': 1683316800,
-			'release_date': '20230505',
+			'timestamp': 1683309600,
 			'upload_date': '20230505',
+			'release_timestamp': 1683316800,
+			'release_date': '20230505',
 		},
 	},{
 		# early-morning show, same reason
@@ -701,10 +702,10 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			'channel_id': 'TBS',
 			'duration': 5400,
 			'live_status': 'was_live',
-			'release_timestamp': 1683144000,
+			'release_timestamp': 1683149400,
 			'release_date': '20230503',
 			'upload_date': '20230503',
-			'timestamp': 1683149400,
+			'timestamp': 1683144000,
 		},
 	}]
 	
@@ -745,8 +746,8 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 				return {
 					'id':  join_nonempty(station_id, start_time),
-					'release_timestamp': unified_timestamp(f'{start_time}+0900'), # hack to account for timezone
-					'timestamp': unified_timestamp(f'{prog["to"]}+0900'),
+					'timestamp': unified_timestamp(f'{start_time}+0900'), # hack to account for timezone
+					'release_timestamp': unified_timestamp(f'{prog["to"]}+0900'),
 					'cast': cast,
 					'description': clean_html(join_nonempty('summary', 'description', from_dict=prog, delim='\n')),
 					**traverse_obj(prog, {
