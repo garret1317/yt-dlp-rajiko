@@ -738,15 +738,16 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			'programs', 'program'), get_all=False)
 
 		for prog in programmes:
-			if prog['ft'] == start_time:
+			if prog['ft'] <= start_time < prog['to']:
+				actual_start = prog['ft']
 				if len(prog.get('person')) > 0:
 					cast = [person.get("name") for person in prog.get('person')]
 				else:
 					cast = [prog.get('performer')]
 
 				return {
-					'id':  join_nonempty(station_id, start_time),
-					'timestamp': unified_timestamp(f'{start_time}+0900'), # hack to account for timezone
+					'id':  join_nonempty(station_id, actual_start),
+					'timestamp': unified_timestamp(f'{actual_start}+0900'), # hack to account for timezone
 					'release_timestamp': unified_timestamp(f'{prog["to"]}+0900'),
 					'cast': cast,
 					'description': clean_html(join_nonempty('summary', 'description', from_dict=prog, delim='\n')),
