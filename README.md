@@ -1,4 +1,4 @@
-This repository contains a plugin package for [yt-dlp](https://github.com/yt-dlp/yt-dlp#readme). 
+This repository contains a plugin package for [yt-dlp](https://github.com/yt-dlp/yt-dlp#readme).
 See [yt-dlp plugins](https://github.com/yt-dlp/yt-dlp#plugins) for more details.
 
 # ytdlp-rajiko
@@ -10,7 +10,7 @@ It provides more metadata for timefree programmes, and less for live station str
 
 The authentication code is based heavily on [the work of jackyzy823](https://github.com/jackyzy823/rajiko/).
 
-I've been advised that it would be risky to merge it into yt-dlp proper, as it uses a key reverse-engineered from the mobile app, so it's a plugin instead.
+I've been advised that it would be risky to merge it into yt-dlp proper as it uses a key reverse-engineered from the mobile app, so it's a plugin instead.
 
 ## Installation
 
@@ -20,6 +20,6 @@ You can install this package with pip:
 ```
 python3 -m pip install -U https://github.com/garret1317/yt-dlp-rajiko/archive/master.zip
 ```
+but you probably shouldn't, i'm not nearly religious enough about updating the version number
 
 See [installing yt-dlp plugins](https://github.com/yt-dlp/yt-dlp#installing-plugins) for the other methods this plugin package can be installed.
-
