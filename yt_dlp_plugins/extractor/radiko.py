@@ -8,6 +8,7 @@ from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.utils import (
 	clean_html,
 	join_nonempty,
+	parse_qs,
 	traverse_obj,
 	unified_timestamp,
 	url_or_none,
@@ -803,3 +804,34 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			'live_status': live_status,
 			'container': 'm4a_dash',  # force fixup, AAC-only HLS
 			}
+
+class RadikoSearchIE(_RadikoBaseIE):
+	_VALID_URL = r'https?://(?:www\.)?radiko\.jp/#!/search/(?:timeshift|live)\?'
+	
+	def _strip_date(self, date):
+		return date.replace(" ", "").replace("-", "").replace(":", "")
+	
+	def _real_extract(self, url):
+		url = url.replace("/#!/", "/!/", 1)
+		# urllib.parse interprets the path as just one giant fragment because of the #, so we hack it away
+		queries = parse_qs(url)
+		
+		search_url = update_url_query("https://radiko.jp/v3/api/program/search", {
+			**queries,
+			'uid': secrets.token_hex(16),
+			'app_id': 'pc',
+		})
+		data = self._download_json(search_url, None)
+		
+		results = traverse_obj(data, ('data',..., {
+			"station": "station_id",
+			"time": ("start_time", {self._strip_date})
+		}))
+
+		return {
+			"_type": "playlist",
+			"title": traverse_obj(queries, ("key", 0)),
+			"entries": [self.url_result(f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE)
+				for station, time in [ep.values() for ep in results]]
+				# TODO: have traverse_obj return a tuple, not a dict
+		}
