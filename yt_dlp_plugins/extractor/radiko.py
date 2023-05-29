@@ -17,7 +17,7 @@ from yt_dlp.utils import (
 
 
 class _RadikoBaseIE(InfoExtractor):
-	_FULL_KEY = base64.b64decode('''
+	_FULL_KEY = base64.b64decode("""
 	fAu/s1ySbQBAyfugPCOniGTrMcOu5XqKcup3tmrZUAvx3MGtIIZl7wHokm07yxzL/oR9jdgWhi+e
 	WYVoBIiAG4hDOP5H0Og3Qtd9KFnW8s0N4vNN2DzQ1Y4PqDq3HsQszf4ZaDTkyt4FFW9fPqKUtnVR
 	LfXd/TGk0XeAvuKtj/qFcvzZQWcr+WrFGndFQK1TIT7/i8l2lw+OKIY9Bp42yw3eJj2+dqOkSQVm
@@ -299,7 +299,7 @@ class _RadikoBaseIE(InfoExtractor):
 	AIGJsNowPXOhASDGPsPJUzfmOao60x8+IaWolOjzRnrLKkrJJf5kJwMiULlK8JXGHYXyJUxz3RYP
 	SqsZiZLVEQdbbUoeUeqTq/wp8W8sKg34mrq2nRWoqYrRgq/T8/kyVmbOoc8w58IDQw2mcHMBI/2e
 	O7qEwbphJYjPyKR0D817R5ee7saTLNS7mOBCyoU0zU1bN7CbtrKmrg==
-	''')
+	""")
 
 	_COORDINATES = {
 		# source: https://github.com/jackyzy823/rajiko/blob/master/background.js
@@ -374,35 +374,35 @@ class _RadikoBaseIE(InfoExtractor):
 	},
 	"10.0.0": {
 		"sdk": "29",
-		"builds": ["5933585", "6969601", "7023426" , "7070703"]
+		"builds": ["5933585", "6969601", "7023426", "7070703"]
 	},
 	"11.0.0": {
-		"sdk":"30" ,
+		"sdk": "30",
 		"builds": ["RP1A.201005.006", "RQ1A.201205.011", "RQ1A.210105.002"]
 	},
 	"12.0.0": {
-		"sdk": "31" ,
+		"sdk": "31",
 		"builds": ["SD1A.210817.015.A4", "SD1A.210817.019.B1", "SD1A.210817.037", "SQ1D.220105.007"]
 	}}
-	
-	_APP_VERSIONS = ["7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.9", "7.4.8", "7.4.7", "7.4.6","7.4.5","7.4.4","7.4.3","7.4.2","7.4.1","7.4.0","7.3.8","7.3.7","7.3.6","7.3.1","7.3.0","7.2.11","7.2.10"]
-	
+
+	_APP_VERSIONS = ["7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.9", "7.4.8", "7.4.7", "7.4.6", "7.4.5", "7.4.4", "7.4.3", "7.4.2", "7.4.1", "7.4.0", "7.3.8", "7.3.7", "7.3.6", "7.3.1", "7.3.0", "7.2.11", "7.2.10"]
+
 	_region = None
 	_user = None
-	
+
 	def _index_regions(self):
 		region_data = {}
 
-		tree = self._download_xml('https://radiko.jp/v3/station/region/full.xml', None, note='Indexing regions')
+		tree = self._download_xml("https://radiko.jp/v3/station/region/full.xml", None, note="Indexing regions")
 		for stations in tree:
 			for station in stations:
-				area = station.find('area_id').text
-				station_id = station.find('id').text
+				area = station.find("area_id").text
+				station_id = station.find("id").text
 				region_data[station_id] = area
 
-		self.cache.store('rajiko', 'region_index', region_data)
+		self.cache.store("rajiko", "region_index", region_data)
 		return region_data
-	
+
 	def _get_coords(self, area_id):
 		latlong = self._COORDINATES[area_id]
 		lat = latlong[0]
@@ -411,79 +411,80 @@ class _RadikoBaseIE(InfoExtractor):
 		lat = lat + random.random() / 40.0 * (random.choice([1, -1]))
 		long = long + random.random() / 40.0 * (random.choice([1, -1]))
 		return f"{round(lat, 6)},{round(long, 6)},gps"
-	
+
 	def _generate_random_info(self):
 		version_key = random.choice(list(self._ANDROID_VERSIONS.keys()))
-		version = self._ANDROID_VERSIONS[version_key] # hack because random.choice didnt work how i expected it to
+		version = self._ANDROID_VERSIONS[version_key]  # hack because random.choice didnt work how i expected it to
 		sdk = version["sdk"]
 		build = random.choice(version["builds"])
 		model = random.choice(self._MODELS)
-		
+
 		info = {
-			'X-Radiko-App': 'aSmartPhone7a',
+			"X-Radiko-App": "aSmartPhone7a",
 			"X-Radiko-App-Version": random.choice(self._APP_VERSIONS),
 			"X-Radiko-Device": f"{sdk}.{model}",
 			"X-Radiko-User": secrets.token_hex(16),
 			"User-Agent": f"Dalvik/2.1.0 (Linux; U; Android {version};{model}/{build})",
 		}
 		return info
-	
+
 	def _get_station_region(self, station):
-		regions = self.cache.load('rajiko', 'region_index')
+		regions = self.cache.load("rajiko", "region_index")
 		if regions is None or station not in regions:
 			regions = self._index_regions()
 
 		return regions[station]
-	
+
 	def _negotiate_token(self, station_region):
 		info = self._generate_random_info()
-		response, auth1_handle = self._download_webpage_handle('https://radiko.jp/v2/api/auth1', None,
-			'Authenticating: step 1', headers = self._generate_random_info())
-		
+		response, auth1_handle = self._download_webpage_handle("https://radiko.jp/v2/api/auth1", None,
+			"Authenticating: step 1", headers=self._generate_random_info())
+
 		self.write_debug(response)
-		
+
 		auth1_header = auth1_handle.info()
-		auth_token = auth1_header['X-Radiko-AuthToken']
-		key_length = int(auth1_header['X-Radiko-KeyLength'])
-		key_offset = int(auth1_header['X-Radiko-KeyOffset'])
-		
+		auth_token = auth1_header["X-Radiko-AuthToken"]
+		key_length = int(auth1_header["X-Radiko-KeyLength"])
+		key_offset = int(auth1_header["X-Radiko-KeyOffset"])
+
 		raw_partial_key = self._FULL_KEY[key_offset:key_offset + key_length]
 		partial_key = base64.b64encode(raw_partial_key)
-		
+
 		headers = {
 			**info,
-			'X-Radiko-AuthToken': auth_token,
-			'X-Radiko-Location': self._get_coords(station_region),
-			'X-Radiko-Connection': "wifi",
-			'X-Radiko-Partialkey': partial_key,
+			"X-Radiko-AuthToken": auth_token,
+			"X-Radiko-Location": self._get_coords(station_region),
+			"X-Radiko-Connection": "wifi",
+			"X-Radiko-Partialkey": partial_key,
 		}
-		
-		auth2 = self._download_webpage('https://radiko.jp/v2/api/auth2', station_region,
-			"Authenticating: step 2", headers = headers)
-		
+
+		auth2 = self._download_webpage("https://radiko.jp/v2/api/auth2", station_region,
+			"Authenticating: step 2", headers=headers)
+
 		self.write_debug(auth2.strip())
-		actual_region, region_kanji, region_english = auth2.split(',')
-		
+		actual_region, region_kanji, region_english = auth2.split(",")
+
 		if actual_region != station_region:
 			self.report_warning(f"Didn't get the right region: expected {station_region}, got {actual_region}")
-		
+			# this should never happen
+
 		token = {
-			'X-Radiko-AreaId': actual_region,
-			'X-Radiko-AuthToken': auth_token,
+			"X-Radiko-AreaId": actual_region,
+			"X-Radiko-AuthToken": auth_token,
 		}
-		
+
 		self._user = headers["X-Radiko-User"]
-		self.cache.store('rajiko-tokens', station_region, {"token": token, "user": self._user})
+		self.cache.store("rajiko-tokens", station_region, {"token": token, "user": self._user})
 		return token
 
 	def _auth(self, station_region):
-		cachedata = self.cache.load('rajiko-tokens', station_region)
+		cachedata = self.cache.load("rajiko-tokens", station_region)
 		self.write_debug(cachedata)
 		if cachedata is not None:
 			token = cachedata.get("token")
 			self._user = cachedata.get("user")
-			response = self._download_webpage('https://radiko.jp/v2/api/auth_check', station_region, 'Checking cached token',
-				headers = token, expected_status = 401)
+			response = self._download_webpage("https://radiko.jp/v2/api/auth_check", station_region, "Checking cached token",
+				headers=token, expected_status=401)
 			self.write_debug(response)
 			if response != "OK":
 				token = self._negotiate_token(station_region)
@@ -492,47 +493,46 @@ class _RadikoBaseIE(InfoExtractor):
 		return token
 
 	def _get_station_meta(self, region, station_id):
-		region = self._download_xml(f'https://radiko.jp/v3/station/list/{region}.xml', region, note="Downloading station listings")
-		for station in region.findall('station'):
+		region = self._download_xml(f"https://radiko.jp/v3/station/list/{region}.xml", region, note="Downloading station listings")
+		for station in region.findall("station"):
 			if station.find("id").text == station_id:
-				station_name = station.find('name').text
-				station_url = url_or_none(station.find('href').text)
+				station_name = station.find("name").text
+				station_url = url_or_none(station.find("href").text)
 				return {
-					'title': station_name,
-					'channel': station_name,
-					'channel_id': station_id,
-					'channel_url': station_url,
-					'thumbnail': url_or_none(station.find('banner').text),
-					'alt_title': station.find('ascii_name').text,
-					'uploader_url': station_url,
-					'id': station_id,
+					"title": station_name,
+					"channel": station_name,
+					"channel_id": station_id,
+					"channel_url": station_url,
+					"thumbnail": url_or_none(station.find("banner").text),
+					"alt_title": station.find("ascii_name").text,
+					"uploader_url": station_url,
+					"id": station_id,
 				}
 
-	def _int2bool(self,i):
+	def _int2bool(self, i):
 		i = int(i)
 		return True if i == 1 else False
-	
+
 	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None):
 		# smartphone formats api = always happy path
-		url_data = self._download_xml(f'https://radiko.jp/v3/station/stream/aSmartPhone7a/{station}.xml',
-			station, note='Downloading stream information')
-		
+		url_data = self._download_xml(f"https://radiko.jp/v3/station/stream/aSmartPhone7a/{station}.xml",
+			station, note="Downloading stream information")
+
 		urls = []
 		formats = []
-		
+
 		for i in url_data:
 			url = i.find("playlist_create_url").text
 			if url in urls:
 				continue
-			
-			if self._int2bool(i.get('timefree')) == timefree:
-#			if True:
+
+			if self._int2bool(i.get("timefree")) == timefree:
 				urls.append(url)
 				playlist_url = update_url_query(url, {
-						'station_id': station,
-						'l': '15',
-						'lsid': self._user,
-						'type': 'b',
+						"station_id": station,
+						"l": "15",
+						"lsid": self._user,
+						"type": "b",
 					})
 				if timefree:
 					playlist_url = update_url_query(playlist_url, {
@@ -544,58 +544,59 @@ class _RadikoBaseIE(InfoExtractor):
 				domain = urllib.parse.urlparse(playlist_url).netloc
 				formats += self._extract_m3u8_formats(
 					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data,
-					note=f'Downloading m3u8 information from {domain}',
+					note=f"Downloading m3u8 information from {domain}",
 				)
 		return formats
 
+
 class RadikoLiveIE(_RadikoBaseIE):
-	_VALID_URL = r'https?://(?:www\.)?radiko\.jp/#!/live/(?P<id>[A-Z0-9-]+)'
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/live/(?P<id>[A-Z0-9-]+)"
 	_TESTS = [{
 		# JP13 (Tokyo)
-		'url': 'https://radiko.jp/#!/live/FMT',
-		'info_dict': {
-			'id': 'FMT',
-			'ext': 'm4a',
-			'live_status': 'is_live',
-			'alt_title': 'TOKYO FM',
-			'title': 're:^TOKYO FM.+$',
-			'thumbnail': 'https://radiko.jp/res/banner/FMT/20220512162447.jpg',
-			'uploader_url': 'https://www.tfm.co.jp/',
-			'channel_url': 'https://www.tfm.co.jp/',
-			'channel': 'TOKYO FM',
-			'channel_id': 'FMT',
+		"url": "https://radiko.jp/#!/live/FMT",
+		"info_dict": {
+			"id": "FMT",
+			"ext": "m4a",
+			"live_status": "is_live",
+			"alt_title": "TOKYO FM",
+			"title": "re:^TOKYO FM.+$",
+			"thumbnail": "https://radiko.jp/res/banner/FMT/20220512162447.jpg",
+			"uploader_url": "https://www.tfm.co.jp/",
+			"channel_url": "https://www.tfm.co.jp/",
+			"channel": "TOKYO FM",
+			"channel_id": "FMT",
 
 		},
 	}, {
 		# JP1 (Hokkaido)
-		'url': 'https://radiko.jp/#!/live/NORTHWAVE',
-		'info_dict': {
-			'id': 'NORTHWAVE',
-			'ext': 'm4a',
-			'uploader_url': 'https://www.fmnorth.co.jp/',
-			'alt_title': 'FM NORTH WAVE',
-			'title': 're:^FM NORTH WAVE.+$',
-			'live_status': 'is_live',
-			'thumbnail': 'https://radiko.jp/res/banner/NORTHWAVE/20150731161543.png',
-			'channel': 'FM NORTH WAVE',
-			'channel_url': 'https://www.fmnorth.co.jp/',
-			'channel_id': 'NORTHWAVE',
+		"url": "https://radiko.jp/#!/live/NORTHWAVE",
+		"info_dict": {
+			"id": "NORTHWAVE",
+			"ext": "m4a",
+			"uploader_url": "https://www.fmnorth.co.jp/",
+			"alt_title": "FM NORTH WAVE",
+			"title": "re:^FM NORTH WAVE.+$",
+			"live_status": "is_live",
+			"thumbnail": "https://radiko.jp/res/banner/NORTHWAVE/20150731161543.png",
+			"channel": "FM NORTH WAVE",
+			"channel_url": "https://www.fmnorth.co.jp/",
+			"channel_id": "NORTHWAVE",
 		},
 	}, {
 		# ALL (all prefectures)
-		# api still specifies a prefecture though, in this case JP12 (Chiba), so that's what it auths as
-		'url': 'https://radiko.jp/#!/live/HOUSOU-DAIGAKU',
-		'info_dict': {
-			'id': 'HOUSOU-DAIGAKU',
-			'ext': 'm4a',
-			'title': 're:^放送大学.+$',
-			'live_status': 'is_live',
-			'uploader_url': 'https://www.ouj.ac.jp/',
-			'alt_title': 'HOUSOU-DAIGAKU',
-			'thumbnail': 'https://radiko.jp/res/banner/HOUSOU-DAIGAKU/20150805145127.png',
-			'channel': '放送大学',
-			'channel_url': 'https://www.ouj.ac.jp/',
-			'channel_id': 'HOUSOU-DAIGAKU',
+		# api still specifies a prefecture though, in this case JP12 (Chiba), so that"s what it auths as
+		"url": "https://radiko.jp/#!/live/HOUSOU-DAIGAKU",
+		"info_dict": {
+			"id": "HOUSOU-DAIGAKU",
+			"ext": "m4a",
+			"title": "re:^放送大学.+$",
+			"live_status": "is_live",
+			"uploader_url": "https://www.ouj.ac.jp/",
+			"alt_title": "HOUSOU-DAIGAKU",
+			"thumbnail": "https://radiko.jp/res/banner/HOUSOU-DAIGAKU/20150805145127.png",
+			"channel": "放送大学",
+			"channel_url": "https://www.ouj.ac.jp/",
+			"channel_id": "HOUSOU-DAIGAKU",
 		},
 	}]
 
@@ -607,115 +608,114 @@ class RadikoLiveIE(_RadikoBaseIE):
 		formats = self._get_station_formats(station, False, auth_data)
 
 		return {
-			'is_live': True,
-			'id': station,
+			"is_live": True,
+			"id": station,
 			**station_meta,
-			'formats': formats,
+			"formats": formats,
 		}
 
 
 class RadikoTimeFreeIE(_RadikoBaseIE):
-	_VALID_URL = r'https?://(?:www\.)?radiko\.jp/#!/ts/(?P<station>[A-Z0-9-]+)/(?P<id>\d+)'
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/ts/(?P<station>[A-Z0-9-]+)/(?P<id>\d+)"
 	_TESTS = [{
-		'url': 'https://radiko.jp/#!/ts/INT/20230505230000',
-		'info_dict': {
-			'title': 'TOKYO MOON',
-			'ext': 'm4a',
-			'id': 'INT-20230505230000',
-			'live_status': 'was_live',
-			'tags': ['松浦俊夫'],
-			'description': 'md5:804d83142a1ef1dfde48c44fb531482a',
-			'duration': 3600,
-			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/INT/72b3a65f-c3ee-4892-a327-adec52076d51.jpeg',
-			'cast': ['松浦\u3000俊夫'],
-			'series': 'Tokyo Moon',
-			'channel_id': 'INT',
-			'uploader_url': 'https://www.interfm.co.jp/',
-			'channel': 'interfm',
-			'channel_url': 'https://www.interfm.co.jp/',
-			'timestamp': 1683295200,
-			'upload_date': '20230505',
-			'release_date': '20230505',
-			'release_timestamp': 1683298800,
+		"url": "https://radiko.jp/#!/ts/INT/20230505230000",
+		"info_dict": {
+			"title": "TOKYO MOON",
+			"ext": "m4a",
+			"id": "INT-20230505230000",
+			"live_status": "was_live",
+			"tags": ["松浦俊夫"],
+			"description": "md5:804d83142a1ef1dfde48c44fb531482a",
+			"duration": 3600,
+			"thumbnail": "https://radiko.jp/res/program/DEFAULT_IMAGE/INT/72b3a65f-c3ee-4892-a327-adec52076d51.jpeg",
+			"cast": ["松浦\u3000俊夫"],
+			"series": "Tokyo Moon",
+			"channel_id": "INT",
+			"uploader_url": "https://www.interfm.co.jp/",
+			"channel": "interfm",
+			"channel_url": "https://www.interfm.co.jp/",
+			"timestamp": 1683295200,
+			"upload_date": "20230505",
+			"release_date": "20230505",
+			"release_timestamp": 1683298800,
 
 		},
-	},{
-		'url': 'https://radiko.jp/#!/ts/NORTHWAVE/20230507173000',
-		'info_dict': {
-			'title': '角松敏生 My BLUES LIFE',
-			'id': 'NORTHWAVE-20230507173000',
-			'ext': 'm4a',
-			'channel_id': 'NORTHWAVE',
-			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/NORTHWAVE/cwqcdppldk.jpg',
-			'uploader_url': 'https://www.fmnorth.co.jp/',
-			'duration': 1800,
-			'channel': 'FM NORTH WAVE',
-			'channel_url': 'https://www.fmnorth.co.jp/',
-			'live_status': 'was_live',
-			'tags': ['ノースウェーブ', '角松敏生', '人気アーティストトーク'],
-			'cast': ['角松\u3000敏生'],
-			'series': '角松敏生 My BLUES LIFE',
-			'description': 'md5:027860a5731c04779b6720047c7b8b59',
-			'upload_date': '20230507',
-			'release_timestamp': 1683450000,
-			'timestamp': 1683448200,
-			'release_date': '20230507',
+	}, {
+		"url": "https://radiko.jp/#!/ts/NORTHWAVE/20230507173000",
+		"info_dict": {
+			"title": "角松敏生 My BLUES LIFE",
+			"id": "NORTHWAVE-20230507173000",
+			"ext": "m4a",
+			"channel_id": "NORTHWAVE",
+			"thumbnail": "https://radiko.jp/res/program/DEFAULT_IMAGE/NORTHWAVE/cwqcdppldk.jpg",
+			"uploader_url": "https://www.fmnorth.co.jp/",
+			"duration": 1800,
+			"channel": "FM NORTH WAVE",
+			"channel_url": "https://www.fmnorth.co.jp/",
+			"live_status": "was_live",
+			"tags": ["ノースウェーブ", "角松敏生", "人気アーティストトーク"],
+			"cast": ["角松\u3000敏生"],
+			"series": "角松敏生 My BLUES LIFE",
+			"description": "md5:027860a5731c04779b6720047c7b8b59",
+			"upload_date": "20230507",
+			"release_timestamp": 1683450000,
+			"timestamp": 1683448200,
+			"release_date": "20230507",
 		},
-	},{
+	}, {
 		# late-night show, see comment in _unfuck_day
-		'url': 'https://radiko.jp/#!/ts/TBS/20230506030000',
-		'info_dict': {
-			'id': 'TBS-20230506030000',
-			'ext': 'm4a',
-			'title': 'CITY CHILL CLUB',
-			'cast': ['イハラカンタロウ'],
-			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/TBS/xxeimdxszs.jpg',
-			'description': 'md5:f60b1012f0606b336660416598d82043',
-			'tags': ['CCC905', '音楽との出会いが楽しめる', '人気アーティストトーク', '音楽プロデューサー出演', 'ドライブ中におすすめ', '寝る前におすすめ', '学生におすすめ'],
-			'channel': 'TBSラジオ',
-			'uploader_url': 'https://www.tbsradio.jp/',
-			'channel_id': 'TBS',
-			'channel_url': 'https://www.tbsradio.jp/',
-			'duration': 7200,
-			'series': 'CITY CHILL CLUB',
-			'live_status': 'was_live',
-			'timestamp': 1683309600,
-			'upload_date': '20230505',
-			'release_timestamp': 1683316800,
-			'release_date': '20230505',
+		"url": "https://radiko.jp/#!/ts/TBS/20230506030000",
+		"info_dict": {
+			"id": "TBS-20230506030000",
+			"ext": "m4a",
+			"title": "CITY CHILL CLUB",
+			"cast": ["イハラカンタロウ"],
+			"thumbnail": "https://radiko.jp/res/program/DEFAULT_IMAGE/TBS/xxeimdxszs.jpg",
+			"description": "md5:f60b1012f0606b336660416598d82043",
+			"tags": ["CCC905", "音楽との出会いが楽しめる", "人気アーティストトーク", "音楽プロデューサー出演", "ドライブ中におすすめ", "寝る前におすすめ", "学生におすすめ"],
+			"channel": "TBSラジオ",
+			"uploader_url": "https://www.tbsradio.jp/",
+			"channel_id": "TBS",
+			"channel_url": "https://www.tbsradio.jp/",
+			"duration": 7200,
+			"series": "CITY CHILL CLUB",
+			"live_status": "was_live",
+			"timestamp": 1683309600,
+			"upload_date": "20230505",
+			"release_timestamp": 1683316800,
+			"release_date": "20230505",
 		},
-	},{
+	}, {
 		# early-morning show, same reason
-		'url': 'https://radiko.jp/#!/ts/TBS/20230504050000',
-		'info_dict':
-			{
-			'title': '生島ヒロシのおはよう定食・一直線',
-			'id': 'TBS-20230504050000',
-			'ext': 'm4a',
-			'cast': ['生島\u3000ヒロシ', '齋藤\u3000孝'],
-			'channel': 'TBSラジオ',
-			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/TBS/ch3vcvtc5e.jpg',
-			'description': 'md5:26dba9e22df6883c072067cdc5ac0511',
-			'series': '生島ヒロシのおはよう定食・一直線',
-			'tags': ['生島ヒロシ', '健康', '檀れい', '朝のニュースを効率良く'],
-			'channel_url': 'https://www.tbsradio.jp/',
-			'uploader_url': 'https://www.tbsradio.jp/',
-			'channel_id': 'TBS',
-			'duration': 5400,
-			'live_status': 'was_live',
-			'release_timestamp': 1683149400,
-			'release_date': '20230503',
-			'upload_date': '20230503',
-			'timestamp': 1683144000,
+		"url": "https://radiko.jp/#!/ts/TBS/20230504050000",
+		"info_dict": {
+			"title": "生島ヒロシのおはよう定食・一直線",
+			"id": "TBS-20230504050000",
+			"ext": "m4a",
+			"cast": ["生島\u3000ヒロシ", "齋藤\u3000孝"],
+			"channel": "TBSラジオ",
+			"thumbnail": "https://radiko.jp/res/program/DEFAULT_IMAGE/TBS/ch3vcvtc5e.jpg",
+			"description": "md5:26dba9e22df6883c072067cdc5ac0511",
+			"series": "生島ヒロシのおはよう定食・一直線",
+			"tags": ["生島ヒロシ", "健康", "檀れい", "朝のニュースを効率良く"],
+			"channel_url": "https://www.tbsradio.jp/",
+			"uploader_url": "https://www.tbsradio.jp/",
+			"channel_id": "TBS",
+			"duration": 5400,
+			"live_status": "was_live",
+			"release_timestamp": 1683149400,
+			"release_date": "20230503",
+			"upload_date": "20230503",
+			"timestamp": 1683144000,
 		},
 	}]
-	
+
 	_JST = datetime.timezone(datetime.timedelta(hours=9))
-	
+
 	def _timestring_to_datetime(self, time):
 		return datetime.datetime(int(time[:4]), int(time[4:6]), int(time[6:8]),
 				hour=int(time[8:10]), minute=int(time[10:12]), second=int(time[12:14]), tzinfo=self._JST)
-	
+
 	def _unfuck_day(self, time):
 		# api counts 05:00 -> 28:59 (04:59 next day) as all the same day
 		# like the 30-hour day, 06:00 -> 29:59 (05:59)
@@ -730,60 +730,60 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 			return time
 		return time[:8]
-	
+
 	def _get_programme_meta(self, station_id, start_time):
 		day = self._unfuck_day(start_time)
-		meta = self._download_json(f'https://radiko.jp/v4/program/station/date/{day}/{station_id}.json', station_id,
+		meta = self._download_json(f"https://radiko.jp/v4/program/station/date/{day}/{station_id}.json", station_id,
 			note="Downloading programme data")
-		programmes = traverse_obj(meta, ('stations', lambda _, v: v['station_id'] == station_id,
-			'programs', 'program'), get_all=False)
+		programmes = traverse_obj(meta, ("stations", lambda _, v: v["station_id"] == station_id,
+			"programs", "program"), get_all=False)
 
 		for prog in programmes:
-			if prog['ft'] <= start_time < prog['to']:
-				actual_start = prog['ft']
-				if len(prog.get('person')) > 0:
-					cast = [person.get("name") for person in prog.get('person')]
+			if prog["ft"] <= start_time < prog["to"]:
+				actual_start = prog["ft"]
+				if len(prog.get("person")) > 0:
+					cast = [person.get("name") for person in prog.get("person")]
 				else:
-					cast = [prog.get('performer')]
+					cast = [prog.get("performer")]
 
 				return {
-					'id':  join_nonempty(station_id, actual_start),
-					'timestamp': unified_timestamp(f'{actual_start}+0900'), # hack to account for timezone
-					'release_timestamp': unified_timestamp(f'{prog["to"]}+0900'),
-					'cast': cast,
-					'description': clean_html(join_nonempty('summary', 'description', from_dict=prog, delim='\n')),
+					"id": join_nonempty(station_id, actual_start),
+					"timestamp": unified_timestamp(f"{actual_start}+0900"),  # hack to account for timezone
+					"release_timestamp": unified_timestamp(f"{prog['to']}+0900"),
+					"cast": cast,
+					"description": clean_html(join_nonempty("summary", "description", from_dict=prog, delim="\n")),
 					**traverse_obj(prog, {
-						'title': 'title',
-						'duration': 'dur',
-						'thumbnail': 'img',
-						'series': 'season_name',
-						'tags': 'tag',
-					}
-				)}, [prog.get('ft'),prog.get("to")]
-	
+							"title": "title",
+							"duration": "dur",
+							"thumbnail": "img",
+							"series": "season_name",
+							"tags": "tag",
+						}
+					)}, (prog.get("ft"), prog.get("to"))
+
 	def _real_extract(self, url):
-		station, start_time = self._match_valid_url(url).group('station', 'id')
+		station, start_time = self._match_valid_url(url).group("station", "id")
 		meta, times = self._get_programme_meta(station, start_time)
-		
+
 		noformats_expected = False
 		noformats_msg = "No video formats found!"
 		noformats_force = False
 		live_status = "was_live"
-		
+
 		start_datetime = self._timestring_to_datetime(times[0])
 		end_datetime = self._timestring_to_datetime(times[1])
 
 		now = datetime.datetime.now(tz=self._JST)
-		
+
 		if end_datetime < now - datetime.timedelta(days=7):
 			noformats_expected = True
 			noformats_msg = "Programme is no longer available."
 		elif start_datetime > now:
 			noformats_expected = True
 			noformats_msg = "Programme has not aired yet."
-			live_status = 'is_upcoming'
+			live_status = "is_upcoming"
 		elif start_datetime <= now < end_datetime:
-			live_status = 'is_upcoming'
+			live_status = "is_upcoming"
 			noformats_expected = True
 			noformats_msg = "Programme has not finished airing yet."
 			noformats_force = True
@@ -794,36 +794,38 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		formats = self._get_station_formats(station, True, auth_data, start_at=times[0], end_at=times[1])
 
 		if len(formats) == 0 or noformats_force:
-			self.raise_no_formats(noformats_msg, video_id=meta['id'], expected=noformats_expected)
+			self.raise_no_formats(noformats_msg, video_id=meta["id"], expected=noformats_expected)
 			formats = []
 
-		return {**station_meta,
-			'alt_title': None,
+		return {
+			**station_meta,
+			"alt_title": None,
 			**meta,
-			'formats': formats,
-			'live_status': live_status,
-			'container': 'm4a_dash',  # force fixup, AAC-only HLS
-			}
+			"formats": formats,
+			"live_status": live_status,
+			"container": "m4a_dash",  # force fixup, AAC-only HLS
+		}
+
 
 class RadikoSearchIE(_RadikoBaseIE):
-	_VALID_URL = r'https?://(?:www\.)?radiko\.jp/#!/search/(?:timeshift|live)\?'
-	
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/(?:timeshift|live)\?"
+
 	def _strip_date(self, date):
 		return date.replace(" ", "").replace("-", "").replace(":", "")
-	
+
 	def _real_extract(self, url):
 		url = url.replace("/#!/", "/!/", 1)
 		# urllib.parse interprets the path as just one giant fragment because of the #, so we hack it away
 		queries = parse_qs(url)
-		
+
 		search_url = update_url_query("https://radiko.jp/v3/api/program/search", {
 			**queries,
-			'uid': secrets.token_hex(16),
-			'app_id': 'pc',
+			"uid": secrets.token_hex(16),
+			"app_id": "pc",
 		})
 		data = self._download_json(search_url, None)
-		
-		results = traverse_obj(data, ('data',..., {
+
+		results = traverse_obj(data, ("data", ..., {
 			"station": "station_id",
 			"time": ("start_time", {self._strip_date})
 		}))
