@@ -21,7 +21,7 @@ import yt_dlp_plugins.extractor.radiko_time as rtime
 
 
 class _RadikoBaseIE(InfoExtractor):
-	_FULL_KEY =  pkgutil.get_data(__name__, "radiko_aSmartPhone7a.bin")
+	_FULL_KEY =  pkgutil.get_data(__name__, "radiko_aSmartPhone8.jpg")
 	# https://stackoverflow.com/a/58941536
 
 	_COORDINATES = {
@@ -45,41 +45,9 @@ class _RadikoBaseIE(InfoExtractor):
 		"JP43": [32.789827, 130.741667], "JP44": [33.238172, 131.612619], "JP45": [31.911096, 131.423893],
 		"JP46": [31.560146, 130.557978], "JP47": [26.2124, 127.680932],
 	}
-
-	_MODELS = [
-	# Samsung galaxy s7+
-	"SC-02H", "SCV33", "SM-G935F", "SM-G935X", "SM-G935W8", "SM-G935K", "SM-G935L", "SM-G935S", "SAMSUNG-SM-G935A", "SM-G935VC", "SM-G9350", "SM-G935P", "SM-G935T", "SM-G935U", "SM-G935R4", "SM-G935V", "SC-02J", "SCV36", "SM-G950F", "SM-G950N", "SM-G950W", "SM-G9500", "SM-G9508", "SM-G950U", "SM-G950U1", "SM-G892A", "SM-G892U", "SC-03J", "SCV35", "SM-G955F", "SM-G955N", "SM-G955W", "SM-G9550", "SM-G955U", "SM-G955U1", "SM-G960F", "SM-G960N", "SM-G9600", "SM-G9608", "SM-G960W", "SM-G960U", "SM-G960U1", "SM-G965F", "SM-G965N", "SM-G9650", "SM-G965W", "SM-G965U", "SM-G965U1",
-	# samsung galaxy note
-	"SC-01J", "SCV34", "SM-N930F", "SM-N930X", "SM-N930K", "SM-N930L", "SM-N930S", "SM-N930R7", "SAMSUNG-SM-N930A", "SM-N930W8", "SM-N9300", "SGH-N037", "SM-N930R6", "SM-N930P", "SM-N930VL", "SM-N930T", "SM-N930U", "SM-N930R4", "SM-N930V", "SC-01K", "SCV37", "SM-N950F", "SM-N950N", "SM-N950XN", "SM-N950U", "SM-N9500", "SM-N9508", "SM-N950W", "SM-N950U1",
-	# KYOCERA
-	"WX06K", "404KC", "503KC", "602KC", "KYV32", "E6782", "KYL22", "WX04K", "KYV36", "KYL21", "302KC", "KYV36", "KYV42", "KYV37", "C5155", "SKT01", "KYY24", "KYV35", "KYV41", "E6715", "KYY21", "KYY22", "KYY23", "KYV31", "KYV34", "KYV38", "WX10K", "KYL23", "KYV39", "KYV40",
-	# sony xperia z series
-	"C6902", "C6903", "C6906", "C6916", "C6943", "L39h", "L39t", "L39u", "SO-01F", "SOL23", "D5503", "M51w", "SO-02F", "D6502", "D6503", "D6543", "SO-03F", "SGP511", "SGP512", "SGP521", "SGP551", "SGP561", "SO-05F", "SOT21", "D6563", "401SO", "D6603", "D6616", "D6643", "D6646", "D6653", "SO-01G", "SOL26", "D6603", "D5803", "D5833", "SO-02G", "D5803", "D6633", "D6683", "SGP611", "SGP612", "SGP621", "SGP641", "E6553", "E6533", "D6708", "402SO", "SO-03G", "SOV31", "SGP712", "SGP771", "SO-05G", "SOT31", "E6508", "501SO", "E6603", "E6653", "SO-01H", "SOV32", "E5803", "E5823", "SO-02H", "E6853", "E6883", "SO-03H", "E6833", "E6633", "E6683", "C6502", "C6503", "C6506", "L35h", "SOL25", "C5306", "C5502", "C5503", "601SO", "F8331", "F8332", "SO-01J", "SOV34", "G8141", "G8142", "G8188", "SO-04J", "701SO", "G8341", "G8342", "G8343", "SO-01K", "SOV36", "G8441", "SO-02K", "602SO", "G8231", "G8232", "SO-03J", "SOV35",
-	# sharp
-	"605SH", "SH-03J", "SHV39", "701SH", "SH-M06",
-	# fujitsu arrows
-	"101F", "201F", "202F", "301F", "IS12F", "F-03D", "F-03E", "M01", "M305", "M357", "M555", "M555", "F-11D", "F-06E", "EM01F", "F-05E", "FJT21", "F-01D", "FAR70B", "FAR7", "F-04E", "F-02E", "F-10D", "F-05D", "FJL22", "ISW11F", "ISW13F", "FJL21", "F-074", "F-07D",
-]
-
 	# range detail :http://www.gsi.go.jp/KOKUJYOHO/CENTER/zenken.htm
 
-	# build number :https://www.androidpolice.com/android-build-number-date-calculator/
-	# https://source.android.com/setup/build-numbers
-	_ANDROID_VERSIONS = [
-		# https://radiko.jp/#!/info/2558 - minimum after 2022-08-24 is android 7
-		{"version": "7.0.0", "sdk": "24", "builds": ["NBD92Q", "NBD92N", "NBD92G", "NBD92F", "NBD92E", "NBD92D", "NBD91Z", "NBD91Y", "NBD91X", "NBD91U", "N5D91L", "NBD91P", "NRD91K", "NRD91N", "NBD90Z", "NBD90X", "NBD90W", "NRD91D", "NRD90U", "NRD90T", "NRD90S", "NRD90R", "NRD90M"]},
-		{"version": "7.1.0", "sdk": "25", "builds": ["NDE63X", "NDE63V", "NDE63U", "NDE63P", "NDE63L", "NDE63H"]},
-		{"version": "7.1.1", "sdk": "25", "builds": ["N9F27M", "NGI77B", "N6F27M", "N4F27P", "N9F27L", "NGI55D", "N4F27O", "N8I11B", "N9F27H", "N6F27I", "N4F27K", "N9F27F", "N6F27H", "N4F27I", "N9F27C", "N6F27E", "N4F27E", "N6F27C", "N4F27B", "N6F26Y", "NOF27D", "N4F26X", "N4F26U", "N6F26U", "NUF26N", "NOF27C", "NOF27B", "N4F26T", "NMF27D", "NMF26X", "NOF26W", "NOF26V", "N6F26R", "NUF26K", "N4F26Q", "N4F26O", "N6F26Q", "N4F26M", "N4F26J", "N4F26I", "NMF26V", "NMF26U", "NMF26R", "NMF26Q", "NMF26O", "NMF26J", "NMF26H", "NMF26F"]},
-		{"version": "7.1.2", "sdk": "25", "builds": ["N2G48H", "NZH54D", "NKG47S", "NHG47Q", "NJH47F", "N2G48C", "NZH54B", "NKG47M", "NJH47D", "NHG47O", "N2G48B", "N2G47Z", "NJH47B", "NJH34C", "NKG47L", "NHG47N", "N2G47X", "N2G47W", "NHG47L", "N2G47T", "N2G47R", "N2G47O", "NHG47K", "N2G47J", "N2G47H", "N2G47F", "N2G47E", "N2G47D"]},
-		{"version": "8.0.0", "sdk": "26", "builds": ["5650811", "5796467", "5948681", "6107732", "6127070"]},
-		{"version": "8.1.0", "sdk": "27", "builds": ["5794017", "6107733", "6037697"]},
-		{"version": "9.0.0", "sdk": "28", "builds": ["5948683", "5794013", "6127072"]},
-		{"version": "10.0.0", "sdk": "29", "builds": ["5933585", "6969601", "7023426", "7070703"]},
-		{"version": "11.0.0", "sdk": "30", "builds": ["RP1A.201005.006", "RQ1A.201205.011", "RQ1A.210105.002"]},
-		{"version": "12.0.0", "sdk": "31", "builds": ["SD1A.210817.015.A4", "SD1A.210817.019.B1", "SD1A.210817.037", "SQ1D.220105.007"]},
-	]
-
-	_APP_VERSIONS = ["7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.9", "7.4.8", "7.4.7", "7.4.6", "7.4.5", "7.4.4", "7.4.3", "7.4.2", "7.4.1", "7.4.0", "7.3.8", "7.3.7", "7.3.6", "7.3.1", "7.3.0", "7.2.11", "7.2.10"]
+	_APP_VERSIONS = [f"8.0.{i}" for i in range(6+1)]
 
 	_DELIVERED_ONDEMAND = ('radiko.jp',)
 	_DOESNT_WORK_WITH_FFMPEG = ('tf-f-rpaa-radiko.smartstream.ne.jp', 'si-f-radiko.smartstream.ne.jp')
@@ -112,20 +80,13 @@ class _RadikoBaseIE(InfoExtractor):
 		return coords
 
 	def _generate_random_info(self):
-		version_info = random.choice(self._ANDROID_VERSIONS)
-		android_version = version_info["version"]
-		sdk = version_info["sdk"]
-		build = random.choice(version_info["builds"])
-		model = random.choice(self._MODELS)
-
-		info = {
-			"X-Radiko-App": "aSmartPhone7a",
+		return {
+			"X-Radiko-App": "aSmartPhone8",
 			"X-Radiko-App-Version": random.choice(self._APP_VERSIONS),
-			"X-Radiko-Device": f"{sdk}.{model}",
+			"X-Radiko-Device": "android",
 			"X-Radiko-User": ''.join(random.choices('0123456789abcdef', k=32)),
-			"User-Agent": f"Dalvik/2.1.0 (Linux; U; Android {android_version};{model}/{build})",
+			"User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 4 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Mobile Safari/537.36"  # hardcoded
 		}
-		return info
 
 	def _get_station_region(self, station):
 		regions = self.cache.load("rajiko", "region_index")
