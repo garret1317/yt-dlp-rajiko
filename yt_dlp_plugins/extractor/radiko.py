@@ -474,11 +474,11 @@ class _RadikoBaseIE(InfoExtractor):
 		}
 
 		self._user = headers["X-Radiko-User"]
-		self.cache.store("rajiko-tokens", station_region, {"token": token, "user": self._user})
+		self.cache.store("rajiko", station_region, {"token": token, "user": self._user})
 		return token
 
 	def _auth(self, station_region):
-		cachedata = self.cache.load("rajiko-tokens", station_region)
+		cachedata = self.cache.load("rajiko", station_region)
 		self.write_debug(cachedata)
 		if cachedata is not None:
 			token = cachedata.get("token")
