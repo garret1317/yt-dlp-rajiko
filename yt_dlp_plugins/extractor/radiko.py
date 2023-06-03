@@ -837,3 +837,13 @@ class RadikoSearchIE(_RadikoBaseIE):
 				for station, time in [ep.values() for ep in results]]
 				# TODO: have traverse_obj return a tuple, not a dict
 		}
+
+class RadikoShareIE(_RadikoBaseIE):
+	_VALID_URL = "https?://(?:www\.)?radiko\.jp/share/"
+
+	def _real_extract(self, url):
+		queries = parse_qs(url)
+		station = traverse_obj(queries, ("sid", 0))
+		time = traverse_obj(queries, ("t", 0))
+
+		return self.url_result(f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE)
