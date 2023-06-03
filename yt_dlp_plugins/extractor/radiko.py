@@ -465,7 +465,7 @@ class _RadikoBaseIE(InfoExtractor):
 		actual_region, region_kanji, region_english = auth2.split(",")
 
 		if actual_region != station_region:
-			self.report_warning(f"Didn't get the right region: expected {station_region}, got {actual_region}")
+			self.report_warning(f"Didn't get the right region: expected {station_region}, got {actual_region}. This should never happen, please report it by opening an issue on the plugin repo.")
 			# this should never happen
 
 		token = {
