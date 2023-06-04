@@ -839,7 +839,7 @@ class RadikoSearchIE(_RadikoBaseIE):
 		}
 
 class RadikoShareIE(_RadikoBaseIE):
-	_VALID_URL = "https?://(?:www\.)?radiko\.jp/share/"
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/share/"
 
 	def _real_extract(self, url):
 		queries = parse_qs(url)
