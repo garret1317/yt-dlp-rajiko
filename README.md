@@ -28,3 +28,8 @@ python3 -m pip install -U https://github.com/garret1317/yt-dlp-rajiko/archive/ma
 but you probably shouldn't, i'm not nearly religious enough about updating the version number
 
 See [installing yt-dlp plugins](https://github.com/yt-dlp/yt-dlp#installing-plugins) for the other methods this plugin package can be installed.
+
+----
+
+ごめんなさい、僕の日本語はまだあんまりうまくない。だから、このREADMEは英語を書いた。
+
