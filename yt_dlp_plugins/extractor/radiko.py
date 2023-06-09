@@ -550,7 +550,7 @@ class _RadikoBaseIE(InfoExtractor):
 
 
 class RadikoLiveIE(_RadikoBaseIE):
-	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/live/(?P<id>[A-Z0-9-]+)"
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/live/(?P<id>[A-Z0-9-_]+)"
 	_TESTS = [{
 		# JP13 (Tokyo)
 		"url": "https://radiko.jp/#!/live/FMT",
@@ -616,7 +616,7 @@ class RadikoLiveIE(_RadikoBaseIE):
 
 
 class RadikoTimeFreeIE(_RadikoBaseIE):
-	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/ts/(?P<station>[A-Z0-9-]+)/(?P<id>\d+)"
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/ts/(?P<station>[A-Z0-9-_]+)/(?P<id>\d+)"
 	_TESTS = [{
 		"url": "https://radiko.jp/#!/ts/INT/20230505230000",
 		"info_dict": {
