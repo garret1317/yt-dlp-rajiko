@@ -830,9 +830,17 @@ class RadikoSearchIE(_RadikoBaseIE):
 			"time": ("start_time", {self._strip_date})
 		}))
 
+		key = traverse_obj(queries, ("key", 0))
+		day = traverse_obj(queries, ('start_day', 0)) or "all"
+		region = traverse_obj(queries, ("region_id", 0)) or traverse_obj(queries, ("area_id", 0))
+		status_filter = traverse_obj(queries, ("filter", 0)) or "all"
+
+		playlist_id = join_nonempty(key, status_filter, day, region)
+
 		return {
 			"_type": "playlist",
 			"title": traverse_obj(queries, ("key", 0)),
+			"id": playlist_id,
 			"entries": [self.url_result(f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE)
 				for station, time in [ep.values() for ep in results]]
 				# TODO: have traverse_obj return a tuple, not a dict
