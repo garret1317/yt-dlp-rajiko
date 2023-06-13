@@ -808,7 +808,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 
 class RadikoSearchIE(_RadikoBaseIE):
-	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/(?:timeshift|live)\?"
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/(?:timeshift|live|history)\?"
 
 	def _strip_date(self, date):
 		return date.replace(" ", "").replace("-", "").replace(":", "")
