@@ -85,7 +85,8 @@ class _RadikoBaseIE(InfoExtractor):
 			"X-Radiko-App-Version": random.choice(self._APP_VERSIONS),
 			"X-Radiko-Device": "android",
 			"X-Radiko-User": ''.join(random.choices('0123456789abcdef', k=32)),
-			"User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 4 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Mobile Safari/537.36"  # hardcoded
+			"User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 4 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Mobile Safari/537.36"
+			# ^this appears to be hardcoded - i have a sony xa2 on android 9, i still get this. grepping for it in libapp.so shows it is there in some capacity
 		}
 
 	def _get_station_region(self, station):
