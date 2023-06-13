@@ -846,4 +846,14 @@ class RadikoShareIE(_RadikoBaseIE):
 		station = traverse_obj(queries, ("sid", 0))
 		time = traverse_obj(queries, ("t", 0))
 
+		hour = int(time[8:10])
+		if hour <= 24: # 29-hour time is valid here, see _unfuck_day in RadikoTimeFreeIE
+			hour = hour - 24 # move back by a day
+
+			date = datetime.datetime(int(time[:4]), int(time[4:6]), int(time[6:8]),
+				hour=hour, minute=int(time[10:12]), second=int(time[12:14]))
+
+			date += datetime.timedelta(days=1) # move forward a day in datetime to compensate
+			time = date.strftime("%Y%m%d%H%M%S")
+
 		return self.url_result(f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE)
