@@ -840,6 +840,30 @@ class RadikoSearchIE(_RadikoBaseIE):
 
 class RadikoShareIE(_RadikoBaseIE):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/share/"
+	_TESTS = [{
+		# 29-hour time -> 24-hour time
+		"url": "http://radiko.jp/share/?sid=FMT&t=20230612240000",
+		"info_dict": {
+			"ext": "m4a",
+			"id": "FMT-20230613000000",
+			"title": "JET STREAM",
+			'channel_url': 'https://www.tfm.co.jp/',
+			'duration': 3300,
+			'timestamp': 1686582000,
+			'channel_id': 'FMT',
+			'cast': ['福山\u3000雅治'],
+			'channel': 'TOKYO FM',
+			'thumbnail': 'md5:e7b291ff01e2ffdf634851ec9a04cd3e',
+			'series': 'JET STREAM',
+			'uploader_url': 'https://www.tfm.co.jp/',
+			'release_date': '20230612',
+			'release_timestamp': 1686585300,
+			'description': 'md5:bae47b6fb24d96a75b20db8a986b9cfc',
+			'upload_date': '20230612',
+			'tags': ['福山雅治', '夜間飛行', '音楽との出会いが楽しめる', '朗読を楽しめる', '寝る前に聴きたい'],
+			'live_status': 'was_live',
+		}
+	}]
 
 	def _real_extract(self, url):
 		queries = parse_qs(url)
