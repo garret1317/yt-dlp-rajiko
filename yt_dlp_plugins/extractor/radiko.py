@@ -849,11 +849,7 @@ class RadikoSearchIE(_RadikoBaseIE):
 			"app_id": "pc",
 		})
 		data = self._download_json(search_url, None)
-
-		results = traverse_obj(data, ("data", ..., {
-			"station": "station_id",
-			"time": ("start_time", {self._strip_date})
-		}))
+		results = [(i.get("station_id"), self._strip_date(i.get("start_time"))) for i in data.get("data")]
 
 		key = traverse_obj(queries, ("key", 0))
 		day = traverse_obj(queries, ('start_day', 0)) or "all"
@@ -867,8 +863,7 @@ class RadikoSearchIE(_RadikoBaseIE):
 			"title": traverse_obj(queries, ("key", 0)),
 			"id": playlist_id,
 			"entries": [self.url_result(f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE)
-				for station, time in [ep.values() for ep in results]]
-				# TODO: have traverse_obj return a tuple, not a dict
+				for station, time in results]
 		}
 
 class RadikoShareIE(_RadikoBaseIE):
