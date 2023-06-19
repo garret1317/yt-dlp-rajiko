@@ -494,20 +494,19 @@ class _RadikoBaseIE(InfoExtractor):
 
 	def _get_station_meta(self, region, station_id):
 		region = self._download_xml(f"https://radiko.jp/v3/station/list/{region}.xml", region, note="Downloading station listings")
-		for station in region.findall("station"):
-			if station.find("id").text == station_id:
-				station_name = station.find("name").text
-				station_url = url_or_none(station.find("href").text)
-				return {
-					"title": station_name,
-					"channel": station_name,
-					"channel_id": station_id,
-					"channel_url": station_url,
-					"thumbnail": url_or_none(station.find("banner").text),
-					"alt_title": station.find("ascii_name").text,
-					"uploader_url": station_url,
-					"id": station_id,
-				}
+		station = region.find(f'.//station/id[.="{station_id}"]/..')  # a <station> with an <id> of our station_id
+		station_name = station.find("name").text
+		station_url = url_or_none(station.find("href").text)
+		return {
+			"title": station_name,
+			"channel": station_name,
+			"channel_id": station_id,
+			"channel_url": station_url,
+			"thumbnail": url_or_none(station.find("banner").text),
+			"alt_title": station.find("ascii_name").text,
+			"uploader_url": station_url,
+			"id": station_id,
+		}
 
 	def _int2bool(self, i):
 		i = int(i)
@@ -518,34 +517,35 @@ class _RadikoBaseIE(InfoExtractor):
 		url_data = self._download_xml(f"https://radiko.jp/v3/station/stream/aSmartPhone7a/{station}.xml",
 			station, note="Downloading stream information")
 
-		urls = []
+		seen_urls = []
 		formats = []
 
-		for i in url_data:
-			url = i.find("playlist_create_url").text
-			if url in urls:
+		timefree_int = 1 if timefree else 0
+		for element in url_data.findall(f".//url[@timefree='{timefree_int}'][@areafree='0']/playlist_create_url"):
+		# find <url>s with matching timefree and no areafree, then get their <playlist_create_url>
+			url = element.text
+			if url in seen_urls:  # there are always dupes, even with ^ specific filtering
 				continue
 
-			if self._int2bool(i.get("timefree")) == timefree:
-				urls.append(url)
-				playlist_url = update_url_query(url, {
-						"station_id": station,
-						"l": "15",
-						"lsid": self._user,
-						"type": "b",
-					})
-				if timefree:
-					playlist_url = update_url_query(playlist_url, {
-						"start_at": start_at,
-						"ft": start_at,
-						"end_at": end_at,
-						"to": end_at,
-					})
-				domain = urllib.parse.urlparse(playlist_url).netloc
-				formats += self._extract_m3u8_formats(
-					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data,
-					note=f"Downloading m3u8 information from {domain}",
-				)
+			seen_urls.append(url)
+			playlist_url = update_url_query(url, {
+					"station_id": station,
+					"l": "15",
+					"lsid": self._user,
+					"type": "b",
+				})
+			if timefree:
+				playlist_url = update_url_query(playlist_url, {
+					"start_at": start_at,
+					"ft": start_at,
+					"end_at": end_at,
+					"to": end_at,
+				})
+			domain = urllib.parse.urlparse(playlist_url).netloc
+			formats += self._extract_m3u8_formats(
+				playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data,
+				note=f"Downloading m3u8 information from {domain}",
+			)
 		return formats
 
 
