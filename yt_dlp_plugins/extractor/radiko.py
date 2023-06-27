@@ -909,3 +909,74 @@ class RadikoShareIE(_RadikoBaseIE):
 			time = date.strftime("%Y%m%d%H%M%S")
 
 		return self.url_result(f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE)
+
+
+class RadikoStationButtonIE(_RadikoBaseIE):
+	_VALID_URL = r"https://radiko\.jp/button-embed/live/"
+	_EMBED_REGEX = [fr"<iframe[^>]+src=[\"'](?P<url>{_VALID_URL}[^\"']+)"]
+
+	_TESTS = [{
+		"url": "https://radiko.jp/button-embed/live/?layout=1&station_id=QRR&theme=0",
+		"info_dict": {
+			"id": "QRR",
+			"title": "re:^文化放送.+$",
+			"ext": "m4a",
+			'live_status': 'is_live',
+			'channel_id': 'QRR',
+			'alt_title': 'JOQR BUNKA HOSO',
+			'channel': '文化放送',
+			'uploader_url': 'http://www.joqr.co.jp/',
+			'channel_url': 'http://www.joqr.co.jp/',
+			'thumbnail': 'https://radiko.jp/res/banner/QRR/20201007125706.png',
+		}
+	}]
+
+	_WEBPAGE_TESTS = [{
+		"url": "https://www.tbsradio.jp/",
+		"info_dict": {
+			"id": "TBS",
+			"title": "re:^TBSラジオ.+$",
+			"ext": "m4a",
+			'uploader_url': 'https://www.tbsradio.jp/',
+			'thumbnail': 'https://radiko.jp/res/banner/TBS/20200331114320.jpg',
+			'alt_title': 'TBS RADIO',
+			'channel_url': 'https://www.tbsradio.jp/',
+			'channel': 'TBSラジオ',
+			'channel_id': 'TBS',
+			'live_status': 'is_live',
+		}
+	}, {
+		"url": "https://cocolo.jp/",
+		"info_dict": {
+			"id": "CCL",
+			"title": "re:^FM COCOLO.+$",
+			"ext": "m4a",
+			'thumbnail': 'https://radiko.jp/res/banner/CCL/20161014144826.png',
+			'channel': 'FM COCOLO',
+			'uploader_url': 'https://cocolo.jp',
+			'channel_id': 'CCL',
+			'live_status': 'is_live',
+			'channel_url': 'https://cocolo.jp',
+			'alt_title': 'FM COCOLO',
+		}
+	}, {
+		"url": "https://www.joqr.co.jp/qr/dailyprogram/",
+		"info_dict": {
+			"id": "QRR",
+			"title": "re:^文化放送.+$",
+			"ext": "m4a",
+			'live_status': 'is_live',
+			'channel_id': 'QRR',
+			'alt_title': 'JOQR BUNKA HOSO',
+			'channel': '文化放送',
+			'uploader_url': 'http://www.joqr.co.jp/',
+			'channel_url': 'http://www.joqr.co.jp/',
+			'thumbnail': 'https://radiko.jp/res/banner/QRR/20201007125706.png',
+		}
+	}]
+
+	def _real_extract(self, url):
+		queries = parse_qs(url)
+		station = traverse_obj(queries, ("station_id", 0))
+
+		return self.url_result(f"https://radiko.jp/#!/live/{station}", RadikoLiveIE)
