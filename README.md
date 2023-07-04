@@ -1,7 +1,7 @@
 This repository contains a plugin package for [yt-dlp](https://github.com/yt-dlp/yt-dlp#readme).
 See [yt-dlp plugins](https://github.com/yt-dlp/yt-dlp#plugins) for more details.
 
-# ytdlp-rajiko
+# yt-dlp-rajiko
 
 This plugin adds an improved [radiko](https://radiko.jp) extractor to yt-dlp.
 
