@@ -761,6 +761,18 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 						}
 					)}, (prog.get("ft"), prog.get("to"))
 
+	def _extract_chapters(self, station, start, end, video_id=None):
+		start_str = urllib.parse.quote(start.isoformat())
+		end_str = urllib.parse.quote(end.isoformat())
+		data = self._download_json(f"https://api.radiko.jp/music/api/v1/noas/{station}?start_time_gte={start_str}&end_time_lt={end_str}",
+			video_id, note="Downloading tracklist").get("data")
+
+		return self._extract_chapters_helper(data,
+			title_function=lambda track: join_nonempty("artist_name", "title", delim=" - ", from_dict=track),
+			start_function=lambda track: (datetime.datetime.fromisoformat(track.get("displayed_start_time")) - start).total_seconds(),
+			duration=(end - start).total_seconds()
+		)
+
 	def _real_extract(self, url):
 		station, start_time = self._match_valid_url(url).group("station", "id")
 		meta, times = self._get_programme_meta(station, start_time)
@@ -790,6 +802,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
+		chapters = self._extract_chapters(station, start_datetime, end_datetime, video_id=meta["id"])
 		auth_data = self._auth(region)
 		formats = self._get_station_formats(station, True, auth_data, start_at=times[0], end_at=times[1])
 
@@ -801,6 +814,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			**station_meta,
 			"alt_title": None,
 			**meta,
+			"chapters": chapters,
 			"formats": formats,
 			"live_status": live_status,
 			"container": "m4a_dash",  # force fixup, AAC-only HLS
