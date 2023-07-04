@@ -12,6 +12,8 @@ It provides more metadata for timefree programmes, and less for live station str
 You can also download from search pages. If, for example, you want to download all available episodes of JET STREAM on Tokyo FM, [search for jet stream and set 地域 to
 東京](https://radiko.jp/#!/search/live?key=jet%20stream&filter=&start_day=&end_day=&region_id=&area_id=JP13&cul_area_id=JP13&page_idx=0). yt-dlp the url, and it'll download every result.
 
+Tracklists can be embedded as chapters for timefree programmes. The accuracy of the timestamps varies - it depends on what the stations provide. The duration/end time of the song is not provided at all, so you may get very long chapters if there's a big gap between songs.
+
 The authentication code is based heavily on [the work of jackyzy823](https://github.com/jackyzy823/rajiko/), which is where the name of the plugin comes from.
 It also borrows bits from [Lesmiscore's extractor](https://github.com/yt-dlp/yt-dlp/blob/d1795f4a6af99c976c9d3ea2dabe5cf4f8965d3c/yt_dlp/extractor/radiko.py) from yt-dlp proper.
 
