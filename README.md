@@ -18,6 +18,7 @@ The authentication code is based heavily on [the work of jackyzy823](https://git
 It also borrows bits from [Lesmiscore's extractor](https://github.com/yt-dlp/yt-dlp/blob/d1795f4a6af99c976c9d3ea2dabe5cf4f8965d3c/yt_dlp/extractor/radiko.py) from yt-dlp proper.
 
 I've been advised that it would be risky to merge this extractor into yt-dlp proper as it uses a key reverse-engineered from the mobile app, so it's a plugin instead.
+If you prefer not to take the risk, the `pc_html5` "law abiding citizen mode" branch uses the website's key, the same as in yt-dlp. (in fact, the key-grabbing code is copied directly from lesmiscore's extractor)
 
 ## Installation
 
