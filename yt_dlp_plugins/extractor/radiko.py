@@ -767,11 +767,15 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		data = self._download_json(f"https://api.radiko.jp/music/api/v1/noas/{station}?start_time_gte={start_str}&end_time_lt={end_str}",
 			video_id, note="Downloading tracklist").get("data")
 
-		return self._extract_chapters_helper(data,
-			title_function=lambda track: join_nonempty("artist_name", "title", delim=" - ", from_dict=track),
-			start_function=lambda track: (datetime.datetime.fromisoformat(track.get("displayed_start_time")) - start).total_seconds(),
-			duration=(end - start).total_seconds()
-		)
+		chapters = []
+		for track in data:
+			artist = traverse_obj(track, ("artist", "name")) or track.get("artist_name")
+			chapters.append({
+				"title": join_nonempty(artist, track.get("title"), delim=" - "),
+				"start_time": (datetime.datetime.fromisoformat(track.get("displayed_start_time")) - start).total_seconds(),
+			})
+
+		return chapters
 
 	def _real_extract(self, url):
 		station, start_time = self._match_valid_url(url).group("station", "id")
