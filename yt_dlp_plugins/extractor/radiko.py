@@ -500,6 +500,7 @@ class _RadikoBaseIE(InfoExtractor):
 		return {
 			"title": station_name,
 			"channel": station_name,
+			"uploader": station_name,
 			"channel_id": station_id,
 			"channel_url": station_url,
 			"thumbnail": url_or_none(station.find("banner").text),
