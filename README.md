@@ -39,4 +39,4 @@ See [installing yt-dlp plugins](https://github.com/yt-dlp/yt-dlp#installing-plug
 
 ----
 
-ごめんなさい、僕の日本語はまだあんまりうまくない。だから、このREADMEは英語を書いた。
+すみません、日本語はまだあまり上手ではありません。だから、このREADMEは英語で書きました。
