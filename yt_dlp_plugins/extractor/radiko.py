@@ -918,7 +918,7 @@ class RadikoShareIE(_RadikoBaseIE):
 		time = traverse_obj(queries, ("t", 0))
 
 		hour = int(time[8:10])
-		if hour <= 24: # 29-hour time is valid here, see _unfuck_day in RadikoTimeFreeIE
+		if hour >= 24: # 29-hour time is valid here, see _unfuck_day in RadikoTimeFreeIE
 			hour = hour - 24 # move back by a day
 
 			date = datetime.datetime(int(time[:4]), int(time[4:6]), int(time[6:8]),
