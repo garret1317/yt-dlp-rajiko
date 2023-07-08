@@ -3,7 +3,7 @@ import datetime
 import random
 import secrets
 import urllib.parse
-import pathlib
+from . import radiko_key
 
 from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.utils import (
@@ -18,9 +18,7 @@ from yt_dlp.utils import (
 
 
 class _RadikoBaseIE(InfoExtractor):
-	cdir = pathlib.Path(__file__).parent.absolute()
-	with open(cdir / "android.jpg", "rb") as f:
-		_FULL_KEY = f.read()
+	_FULL_KEY = radiko_key.FULLKEY
 
 	_COORDINATES = {
 		# source: https://github.com/jackyzy823/rajiko/blob/master/background.js
