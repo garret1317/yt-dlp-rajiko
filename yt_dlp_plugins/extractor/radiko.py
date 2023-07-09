@@ -3,7 +3,7 @@ import datetime
 import random
 import secrets
 import urllib.parse
-from . import radiko_key
+import yt_dlp_plugins.extractor.radiko_key as key
 
 from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.utils import (
@@ -18,7 +18,7 @@ from yt_dlp.utils import (
 
 
 class _RadikoBaseIE(InfoExtractor):
-	_FULL_KEY = radiko_key.FULLKEY
+	_FULL_KEY = key.FULLKEY
 
 	_COORDINATES = {
 		# source: https://github.com/jackyzy823/rajiko/blob/master/background.js
