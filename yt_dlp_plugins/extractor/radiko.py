@@ -826,7 +826,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 class RadikoSearchIE(_RadikoBaseIE):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/(?:timeshift|live|history)\?"
 	_TESTS = [{
-		# past, specific area
+		# timefree, specific area
 		'url': 'https://radiko.jp/#!/search/live?key=city%20chill%20club&filter=past&start_day=&end_day=&region_id=&area_id=JP13&cul_area_id=JP13&page_idx=0',
 		'playlist_mincount': 4,
 		'info_dict': {
@@ -834,20 +834,20 @@ class RadikoSearchIE(_RadikoBaseIE):
 			'title': "city chill club",
 		}
 	}, {
-		# all, specific day
-		"url": "https://radiko.jp/#!/search/live?key=CIAO%20765(7%E6%99%82%E5%8F%B0)&filter=&start_day=2023-06-12&end_day=2023-06-12&region_id=all&area_id=JP13&cul_area_id=JP13&page_idx=0",
-		"playlist_mincount": 1,
-		"info_dict": {
-			"id": "CIAO 765(7時台)-all-2023-06-12-all",
-			"title": "CIAO 765(7時台)",
-		}
-	}, {
-		# all, live/future
+		# live/future, whole country
 		"url": "https://radiko.jp/#!/search/live?key=%EF%BC%AE%EF%BC%A8%EF%BC%AB%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9&filter=future&start_day=&end_day=&region_id=all&area_id=JP13&cul_area_id=JP13&page_idx=0",
 		"playlist_mincount": 8,
 		"info_dict": {
 			"id": "ＮＨＫニュース-future-all-all",
 			"title": "ＮＨＫニュース",
+		},
+	}, {
+		# ludicrous amount of results (multi-page)
+		"url": "https://radiko.jp/#!/search/live?key=%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9",
+		"playlist_mincount": 100,
+		"info_dict": {
+			"id": "ニュース-all-all",
+			"title": "ニュース"
 		},
 	}]
 
