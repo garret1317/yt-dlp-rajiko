@@ -6,6 +6,7 @@ import urllib.parse
 
 from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.utils import (
+	OnDemandPagedList,
 	clean_html,
 	join_nonempty,
 	parse_qs,
@@ -853,6 +854,14 @@ class RadikoSearchIE(_RadikoBaseIE):
 	def _strip_date(self, date):
 		return date.replace(" ", "").replace("-", "").replace(":", "")
 
+	def _pagefunc(self, url, idx):
+		url = update_url_query(url, {"page_idx": idx})
+		data = self._download_json(url, None, note=f"Downloading page {idx+1}")
+
+		return [self.url_result("https://radiko.jp/#!/ts/{station}/{time}".format(
+				station = i.get("station_id"), time = self._strip_date(i.get("start_time"))))
+			for i in data.get("data")]
+
 	def _real_extract(self, url):
 		url = url.replace("/#!/", "/!/", 1)
 		# urllib.parse interprets the path as just one giant fragment because of the #, so we hack it away
@@ -862,9 +871,10 @@ class RadikoSearchIE(_RadikoBaseIE):
 			**queries,
 			"uid": secrets.token_hex(16),
 			"app_id": "pc",
+			"row_limit": 50,  # higher row_limit = more results = less requests = more good
 		})
-		data = self._download_json(search_url, None)
-		results = [(i.get("station_id"), self._strip_date(i.get("start_time"))) for i in data.get("data")]
+
+		results = OnDemandPagedList(lambda idx: self._pagefunc(search_url, idx), 50)
 
 		key = traverse_obj(queries, ("key", 0))
 		day = traverse_obj(queries, ('start_day', 0)) or "all"
@@ -877,8 +887,7 @@ class RadikoSearchIE(_RadikoBaseIE):
 			"_type": "playlist",
 			"title": traverse_obj(queries, ("key", 0)),
 			"id": playlist_id,
-			"entries": [self.url_result(f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE)
-				for station, time in results]
+			"entries": results,
 		}
 
 class RadikoShareIE(_RadikoBaseIE):
