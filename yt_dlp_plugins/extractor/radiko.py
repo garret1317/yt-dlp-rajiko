@@ -452,7 +452,7 @@ class _RadikoBaseIE(InfoExtractor):
 		self.write_debug(f"KeyOffset: {key_offset}")
 
 		raw_partial_key = self._FULL_KEY[key_offset:key_offset + key_length]
-		partial_key = base64.b64encode(raw_partial_key)
+		partial_key = base64.b64encode(raw_partial_key).decode("ascii")
 
 		self.write_debug(partial_key)
 
