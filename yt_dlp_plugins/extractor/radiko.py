@@ -443,7 +443,7 @@ class _RadikoBaseIE(InfoExtractor):
 
 		self.write_debug(response)
 
-		auth1_header = auth1_handle.info()
+		auth1_header = auth1_handle.headers
 		auth_token = auth1_header["X-Radiko-AuthToken"]
 		key_length = int(auth1_header["X-Radiko-KeyLength"])
 		key_offset = int(auth1_header["X-Radiko-KeyOffset"])
