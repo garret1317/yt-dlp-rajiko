@@ -448,8 +448,13 @@ class _RadikoBaseIE(InfoExtractor):
 		key_length = int(auth1_header["X-Radiko-KeyLength"])
 		key_offset = int(auth1_header["X-Radiko-KeyOffset"])
 
+		self.write_debug(f"KeyLength: {key_length}")
+		self.write_debug(f"KeyOffset: {key_offset}")
+
 		raw_partial_key = self._FULL_KEY[key_offset:key_offset + key_length]
 		partial_key = base64.b64encode(raw_partial_key)
+
+		self.write_debug(partial_key)
 
 		headers = {
 			**info,
