@@ -8,6 +8,7 @@ from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.utils import (
 	OnDemandPagedList,
 	clean_html,
+	int_or_none,
 	join_nonempty,
 	parse_qs,
 	traverse_obj,
@@ -762,7 +763,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 							"series": "season_name",
 							"tags": "tag",
 						}
-					)}, (prog.get("ft"), prog.get("to"))
+					)}, (prog.get("ft"), prog.get("to")), int_or_none(prog.get("ts_in_ng")) != 2
 
 	def _extract_chapters(self, station, start, end, video_id=None):
 		start_str = urllib.parse.quote(start.isoformat())
@@ -782,12 +783,17 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 	def _real_extract(self, url):
 		station, start_time = self._match_valid_url(url).group("station", "id")
-		meta, times = self._get_programme_meta(station, start_time)
+		meta, times, available = self._get_programme_meta(station, start_time)
 
 		noformats_expected = False
 		noformats_msg = "No video formats found!"
 		noformats_force = False
 		live_status = "was_live"
+
+		if not available:
+			noformats_force = True
+			noformats_expected = True
+			noformats_msg = "This programme is not available. If this is an NHK station, you may wish to try NHK Radiru."
 
 		start_datetime = self._timestring_to_datetime(times[0])
 		end_datetime = self._timestring_to_datetime(times[1])
