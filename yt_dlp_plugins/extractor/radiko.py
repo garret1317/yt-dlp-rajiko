@@ -784,16 +784,11 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 	def _real_extract(self, url):
 		station, start_time = self._match_valid_url(url).group("station", "id")
 		meta, times, available = self._get_programme_meta(station, start_time)
-
-		noformats_expected = False
-		noformats_msg = "No video formats found!"
-		noformats_force = False
 		live_status = "was_live"
 
 		if not available:
-			noformats_force = True
-			noformats_expected = True
-			noformats_msg = "This programme is not available. If this is an NHK station, you may wish to try NHK Radiru."
+			self.raise_no_formats("This programme is not available. If this is an NHK station, you may wish to try NHK Radiru.",
+				video_id=meta["id"], expected=True)
 
 		start_datetime = self._timestring_to_datetime(times[0])
 		end_datetime = self._timestring_to_datetime(times[1])
@@ -801,27 +796,19 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		now = datetime.datetime.now(tz=self._JST)
 
 		if end_datetime < now - datetime.timedelta(days=7):
-			noformats_expected = True
-			noformats_msg = "Programme is no longer available."
+			self.raise_no_formats("Programme is no longer available.", video_id=meta["id"], expected=True)
 		elif start_datetime > now:
-			noformats_expected = True
-			noformats_msg = "Programme has not aired yet."
+			self.raise_no_formats("Programme has not aired yet.", video_id=meta["id"], expected=True)
 			live_status = "is_upcoming"
 		elif start_datetime <= now < end_datetime:
 			live_status = "is_upcoming"
-			noformats_expected = True
-			noformats_msg = "Programme has not finished airing yet."
-			noformats_force = True
+			self.raise_no_formats("Programme has not finished airing yet.", video_id=meta["id"], expected=True)
 
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
 		chapters = self._extract_chapters(station, start_datetime, end_datetime, video_id=meta["id"])
 		auth_data = self._auth(region)
 		formats = self._get_station_formats(station, True, auth_data, start_at=times[0], end_at=times[1])
-
-		if len(formats) == 0 or noformats_force:
-			self.raise_no_formats(noformats_msg, video_id=meta["id"], expected=noformats_expected)
-			formats = []
 
 		return {
 			**station_meta,
