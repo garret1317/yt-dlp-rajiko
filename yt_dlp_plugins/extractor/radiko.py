@@ -12,10 +12,11 @@ from yt_dlp.utils import (
 	join_nonempty,
 	parse_qs,
 	traverse_obj,
-	unified_timestamp,
 	url_or_none,
 	update_url_query,
 )
+
+import yt_dlp_plugins.extractor.radiko_time as rtime
 
 
 class _RadikoBaseIE(InfoExtractor):
@@ -540,10 +541,10 @@ class _RadikoBaseIE(InfoExtractor):
 				})
 			if timefree:
 				playlist_url = update_url_query(playlist_url, {
-					"start_at": start_at,
-					"ft": start_at,
-					"end_at": end_at,
-					"to": end_at,
+					"start_at": start_at.timestring(),
+					"ft": start_at.timestring(),
+					"end_at": end_at.timestring(),
+					"to": end_at.timestring(),
 				})
 			domain = urllib.parse.urlparse(playlist_url).netloc
 			formats += self._extract_m3u8_formats(
@@ -722,46 +723,26 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		},
 	}]
 
-	_JST = datetime.timezone(datetime.timedelta(hours=9))
-
-	def _timestring_to_datetime(self, time):
-		return datetime.datetime(int(time[:4]), int(time[4:6]), int(time[6:8]),
-				hour=int(time[8:10]), minute=int(time[10:12]), second=int(time[12:14]), tzinfo=self._JST)
-
-	def _unfuck_day(self, time):
-		# api counts 05:00 -> 28:59 (04:59 next day) as all the same day
-		# like the 30-hour day, 06:00 -> 29:59 (05:59)
-		# https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan#Time
-		# but ends earlier, presumably so the early morning programmes dont look like late night ones
-		# this means we have to shift back by a day so we can use the right api
-		hour_mins = int(time[8:])
-		if hour_mins < 50000:  # 050000 - 5AM
-			date = self._timestring_to_datetime(time)
-			date -= datetime.timedelta(days=1)
-			time = date.strftime("%Y%m%d")
-
-			return time
-		return time[:8]
-
-	def _get_programme_meta(self, station_id, start_time):
-		day = self._unfuck_day(start_time)
+	def _get_programme_meta(self, station_id, url_time):
+		day = url_time.broadcast_day()
 		meta = self._download_json(f"https://radiko.jp/v4/program/station/date/{day}/{station_id}.json", station_id,
 			note="Downloading programme data")
 		programmes = traverse_obj(meta, ("stations", lambda _, v: v["station_id"] == station_id,
 			"programs", "program"), get_all=False)
 
 		for prog in programmes:
-			if prog["ft"] <= start_time < prog["to"]:
-				actual_start = prog["ft"]
+			if prog["ft"] <= url_time.timestring() < prog["to"]:
+				actual_start = rtime.RadikoSiteTime(prog["ft"])
+				actual_end = rtime.RadikoSiteTime(prog["to"])
 				if len(prog.get("person")) > 0:
 					cast = [person.get("name") for person in prog.get("person")]
 				else:
 					cast = [prog.get("performer")]
 
 				return {
-					"id": join_nonempty(station_id, actual_start),
-					"timestamp": unified_timestamp(f"{actual_start}+0900"),  # hack to account for timezone
-					"release_timestamp": unified_timestamp(f"{prog['to']}+0900"),
+					"id": join_nonempty(station_id, actual_start.timestring()),
+					"timestamp": actual_start.timestamp(),
+					"release_timestamp": actual_end.timestamp(),
 					"cast": cast,
 					"description": clean_html(join_nonempty("summary", "description", from_dict=prog, delim="\n")),
 					**traverse_obj(prog, {
@@ -771,7 +752,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 							"series": "season_name",
 							"tags": "tag",
 						}
-					)}, (prog.get("ft"), prog.get("to")), int_or_none(prog.get("ts_in_ng")) != 2
+					)}, (actual_start, actual_end), int_or_none(prog.get("ts_in_ng")) != 2
 
 	def _extract_chapters(self, station, start, end, video_id=None):
 		start_str = urllib.parse.quote(start.isoformat())
@@ -784,39 +765,40 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			artist = traverse_obj(track, ("artist", "name")) or track.get("artist_name")
 			chapters.append({
 				"title": join_nonempty(artist, track.get("title"), delim=" - "),
-				"start_time": (datetime.datetime.fromisoformat(track.get("displayed_start_time")) - start).total_seconds(),
+				"start_time": (datetime.datetime.fromisoformat(track.get("displayed_start_time")) - start.datetime).total_seconds(),
 			})
 
 		return chapters
 
 	def _real_extract(self, url):
-		station, start_time = self._match_valid_url(url).group("station", "id")
-		meta, times, available = self._get_programme_meta(station, start_time)
+		station, timestring = self._match_valid_url(url).group("station", "id")
+		url_time = rtime.RadikoSiteTime(timestring)
+		meta, times, available = self._get_programme_meta(station, url_time)
 		live_status = "was_live"
 
 		if not available:
 			self.raise_no_formats("This programme is not available. If this is an NHK station, you may wish to try NHK Radiru.",
 				video_id=meta["id"], expected=True)
 
-		start_datetime = self._timestring_to_datetime(times[0])
-		end_datetime = self._timestring_to_datetime(times[1])
+		start = times[0]
+		end = times[1]
 
-		now = datetime.datetime.now(tz=self._JST)
+		now = datetime.datetime.now(tz=rtime.JST)
 
-		if end_datetime < now - datetime.timedelta(days=7):
+		if end < now - datetime.timedelta(days=7):
 			self.raise_no_formats("Programme is no longer available.", video_id=meta["id"], expected=True)
-		elif start_datetime > now:
+		elif start > now:
 			self.raise_no_formats("Programme has not aired yet.", video_id=meta["id"], expected=True)
 			live_status = "is_upcoming"
-		elif start_datetime <= now < end_datetime:
+		elif start <= now < end:
 			live_status = "is_upcoming"
 			self.raise_no_formats("Programme has not finished airing yet.", video_id=meta["id"], expected=True)
 
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
-		chapters = self._extract_chapters(station, start_datetime, end_datetime, video_id=meta["id"])
+		chapters = self._extract_chapters(station, start, end, video_id=meta["id"])
 		auth_data = self._auth(region)
-		formats = self._get_station_formats(station, True, auth_data, start_at=times[0], end_at=times[1])
+		formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end)
 
 		return {
 			**station_meta,
@@ -929,17 +911,7 @@ class RadikoShareIE(_RadikoBaseIE):
 		queries = parse_qs(url)
 		station = traverse_obj(queries, ("sid", 0))
 		time = traverse_obj(queries, ("t", 0))
-
-		hour = int(time[8:10])
-		if hour >= 24: # 29-hour time is valid here, see _unfuck_day in RadikoTimeFreeIE
-			hour = hour - 24 # move back by a day
-
-			date = datetime.datetime(int(time[:4]), int(time[4:6]), int(time[6:8]),
-				hour=hour, minute=int(time[10:12]), second=int(time[12:14]))
-
-			date += datetime.timedelta(days=1) # move forward a day in datetime to compensate
-			time = date.strftime("%Y%m%d%H%M%S")
-
+		time = rtime.RadikoShareTime(time).timestring()
 		return self.url_result(f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE)
 
 
