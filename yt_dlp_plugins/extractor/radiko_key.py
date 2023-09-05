@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 import base64
 
+# this is the api key for version 8 of the radiko mobile app. it is essential for yt-dlp-rajiko to work.
+	# (being the mobile app is what lets us pretend to be in the right region - mobile app gets
+	# region locked by telling the api its location, we can tell it whatever we want)
+# it's just a JPG really - what the key is isn't important, it's that you have it at all
+# you can obtain it yourself by opening the radiko apk as a zip file and going to /assets/flutter_assets/assets/key/
+# you can also obtain it by pretending to be the API: set X-Radiko-KeyOffset to 0,
+# X-Radiko-KeyLength to 125779 (the filesize), then grab X-Radiko-Partialkey
+
 FULLKEY = base64.b64decode("""
 /9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAGRFS1hLP2RYUVhxamR3lvqjloqKlv/b57X6////////
 ////////////////////////////////////////////2wBDAWpxcZaDlv+jo///////////////
