@@ -441,7 +441,7 @@ class _RadikoBaseIE(InfoExtractor):
 	def _negotiate_token(self, station_region):
 		info = self._generate_random_info()
 		response, auth1_handle = self._download_webpage_handle("https://radiko.jp/v2/api/auth1", None,
-			"Authenticating: step 1", headers=self._generate_random_info())
+			"Authenticating: step 1", headers=info)
 
 		self.write_debug(response)
 
