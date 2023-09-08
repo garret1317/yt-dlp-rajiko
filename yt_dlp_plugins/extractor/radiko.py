@@ -434,6 +434,7 @@ class _RadikoBaseIE(InfoExtractor):
 	def _get_station_region(self, station):
 		regions = self.cache.load("rajiko", "region_index")
 		if regions is None or station not in regions:
+			self.write_debug(f"station {station} not found, re-indexing in case it's new")
 			regions = self._index_regions()
 
 		return regions[station]
