@@ -783,10 +783,11 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 		start = times[0]
 		end = times[1]
+		end_day = end.broadcast_day_end()
 
 		now = datetime.datetime.now(tz=rtime.JST)
 
-		if end < now - datetime.timedelta(days=7):
+		if end_day < now - datetime.timedelta(days=7):
 			self.raise_no_formats("Programme is no longer available.", video_id=meta["id"], expected=True)
 		elif start > now:
 			self.raise_no_formats("Programme has not aired yet.", video_id=meta["id"], expected=True)

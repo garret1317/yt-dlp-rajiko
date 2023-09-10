@@ -20,6 +20,14 @@ class RadikoTime():
 			dt -= datetime.timedelta(days=1)
 		return dt.strftime("%Y%m%d")
 
+	def broadcast_day_end(self):
+		dt = self.datetime
+		if dt.hour < 5:
+			dt -= datetime.timedelta(days=1)
+		dt += datetime.timedelta(days=1)
+		dt.replace(hour=5, minute=0, second=0)
+		return dt
+
 	def timestamp(self):
 		return self.datetime.timestamp()
 	def isoformat(self):
