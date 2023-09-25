@@ -502,21 +502,31 @@ class _RadikoBaseIE(InfoExtractor):
 		return token
 
 	def _get_station_meta(self, region, station_id):
-		region = self._download_xml(f"https://radiko.jp/v3/station/list/{region}.xml", region, note="Downloading station listings")
-		station = region.find(f'.//station/id[.="{station_id}"]/..')  # a <station> with an <id> of our station_id
-		station_name = station.find("name").text
-		station_url = url_or_none(station.find("href").text)
-		return {
-			"title": station_name,
-			"channel": station_name,
-			"uploader": station_name,
-			"channel_id": station_id,
-			"channel_url": station_url,
-			"thumbnail": url_or_none(station.find("banner").text),
-			"alt_title": station.find("ascii_name").text,
-			"uploader_url": station_url,
-			"id": station_id,
-		}
+		cachedata = self.cache.load("rajiko", station_id)
+		now = datetime.datetime.now()
+		if cachedata is None or cachedata.get("expiry") < now.timestamp():
+			region = self._download_xml(f"https://radiko.jp/v3/station/list/{region}.xml", region,
+				note="Downloading station metadata")
+			station = region.find(f'.//station/id[.="{station_id}"]/..')  # a <station> with an <id> of our station_id
+			station_name = station.find("name").text
+			station_url = url_or_none(station.find("href").text)
+			meta = {
+				"title": station_name,
+				"channel": station_name,
+				"uploader": station_name,
+				"channel_id": station_id,
+				"channel_url": station_url,
+				"thumbnail": url_or_none(station.find("banner").text),
+				"alt_title": station.find("ascii_name").text,
+				"uploader_url": station_url,
+				"id": station_id,
+			}
+			self.cache.store("rajiko", station_id, {
+				"expiry": (now + datetime.timedelta(days=1)).timestamp(), "meta": meta})
+			return meta
+		else:
+			self.to_screen(f"{station_id}: Using cached station metadata")
+			return cachedata.get("meta")
 
 	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None):
 		# smartphone formats api = always happy path
