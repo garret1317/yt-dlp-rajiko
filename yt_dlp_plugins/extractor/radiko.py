@@ -505,7 +505,7 @@ class _RadikoBaseIE(InfoExtractor):
 		cachedata = self.cache.load("rajiko", station_id)
 		now = datetime.datetime.now()
 		if cachedata is None or cachedata.get("expiry") < now.timestamp():
-			region = self._download_xml(f"https://radiko.jp/v3/station/list/{region}.xml", region,
+			region = self._download_xml(f"https://radiko.jp/v3/station/list/{region}.xml", station_id,
 				note="Downloading station metadata")
 			station = region.find(f'.//station/id[.="{station_id}"]/..')  # a <station> with an <id> of our station_id
 			station_name = station.find("name").text
