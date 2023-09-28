@@ -495,11 +495,9 @@ class _RadikoBaseIE(InfoExtractor):
 			response = self._download_webpage("https://radiko.jp/v2/api/auth_check", station_region, "Checking cached token",
 				headers=token, expected_status=401)
 			self.write_debug(response)
-			if response != "OK":
-				token = self._negotiate_token(station_region)
-		else:
-			token = self._negotiate_token(station_region)
-		return token
+			if response == "OK":
+				return token
+		return self._negotiate_token(station_region)
 
 	def _get_station_meta(self, region, station_id):
 		cachedata = self.cache.load("rajiko", station_id)
