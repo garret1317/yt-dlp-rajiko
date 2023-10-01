@@ -21,6 +21,22 @@ An effort is made to support share links and radiko embeds. However, I don't use
 
 This extractor uses an API key obtained by reverse-engineering the radiko mobile app. As such, I've been advised that it would be risky to merge it into yt-dlp proper.
 
+## Extractor args
+
+You can choose which device's streams to extract with the `device` extractor arg.
+For instance, `--extractor-args radikotimefree:device=pc_html5` would extract the website's streams.
+
+Known devices:
+
+- `pc_html5` - the website. has every stream provider.
+- `aSmartPhone5`, `aSmartPhone6`, `aSmartPhone6a`, `aSmartPhone7a`, `aSmartPhone7`, `pc_1` - old mobile apps, + old website. "happy path" streams.
+- `MobileWebTrial` - current mobile site.
+- `aSmartPhone8` - current mobile app.
+- `xExternalWebStations` - embedded players on stations' websites. same streams as `aSmartPhone8`, though the api response isn't exactly the same.
+
+The default is `aSmartPhone7a` as its streams are always the "happy path".
+Ideally you shouldn't need to use this, it's just to make investigating new devices easier.
+
 ## Installation
 
 Requires yt-dlp `2023.01.02` or above.
