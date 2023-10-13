@@ -9,24 +9,29 @@ class RadikoTime():
 	def timestring(self):
 		return self.datetime.strftime("%Y%m%d%H%M%S")
 
-	def broadcast_day(self):
+	def broadcast_day_date(self):
 		# timetable api counts 05:00 -> 28:59 (04:59 next day) as all the same day
 		# like the 30-hour day, 06:00 -> 29:59 (05:59)
 		# https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan#Time
 		# but ends earlier, presumably so the early morning programmes dont look like late night ones
-		# this means we have to shift back by a day so we can get the right programme
+		# this means we have to shift back by a day so we can get the right programme for stuff past midnight
 
 		dt = self.datetime
 		if dt.hour < 5:
 			dt -= datetime.timedelta(days=1)
+		dt = dt.date() # dont care about hours/mins, we're working in days
+		return dt
+
+	def broadcast_day(self):
+
+		dt = self.broadcast_day_date()
 		return dt.strftime("%Y%m%d")
 
 	def broadcast_day_end(self):
-		dt = self.datetime
-		if dt.hour < 5:
-			dt -= datetime.timedelta(days=1)
-		dt += datetime.timedelta(days=1)
-		dt.replace(hour=5, minute=0, second=0)
+		date = self.broadcast_day_date()
+		date += datetime.timedelta(days=1)
+
+		dt = datetime.datetime(date.year, date.month, date.day, 5, 0, 0, tzinfo=JST)
 		return dt
 
 	def timestamp(self):
@@ -92,6 +97,8 @@ if __name__ == "__main__":
 	assert RadikoSiteTime('202308240100').timestring() == "20230824005959"
 	# broadcast day starts at 05:00, ends at 04:59 (29:59)
 	assert RadikoSiteTime('20230824030000').broadcast_day() == '20230823'
+	assert RadikoSiteTime('20230824130000').broadcast_day_end() == datetime.datetime(2023, 8, 25, 5, 0, 0, tzinfo=JST)
+	assert RadikoSiteTime('20230824030000').broadcast_day_end() == datetime.datetime(2023, 8, 24, 5, 0, 0, tzinfo=JST)
 	# checking timezone
 	assert RadikoSiteTime('20230823090000').datetime.timestamp() == 1692748800
 
