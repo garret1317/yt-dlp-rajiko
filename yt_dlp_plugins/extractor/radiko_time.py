@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import datetime
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
