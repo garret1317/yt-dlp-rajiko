@@ -113,11 +113,17 @@ class RadikoShareTime(RadikoTime):
 		days_to_add = hour // 24
 		hour = hour % 24
 
-		# XXX: doesnt handle day invalid for month (the site actually works with this)
+		days_to_add += max(0, day - 28)
+		day = min(day, 28)
+
+		# site won't handle month out of range (eg 2023-13-05), thank fuck
 
 		self.datetime = datetime.datetime(year, month, day, hour, minute, second, tzinfo = JST)
 		self.datetime += datetime.timedelta(days=days_to_add)
 
 if __name__ == "__main__":
-	assert RadikoShareTime('20230630296200').timestring() == '20230701060200'
-	assert RadikoShareTime('20230630235960').timestring() == '20230701000000'
+	assert RadikoShareTime('20230630296200').timestring() == '20230701060200' # 30-hour + >59 minutes
+	assert RadikoShareTime('20230630235960').timestring() == '20230701000000' # month boundary
+	assert RadikoShareTime('20240229010000').timestring() == '20240229010000' # feb 29th in leap year
+	assert RadikoShareTime('20230229010000').timestring() == '20230301010000' # feb 29th in not-leap year
+	assert RadikoShareTime('20230823180000').timestring() == '20230823180000' # normal
