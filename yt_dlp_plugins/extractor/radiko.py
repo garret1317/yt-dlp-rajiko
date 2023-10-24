@@ -413,7 +413,9 @@ class _RadikoBaseIE(InfoExtractor):
 		# +/- 0 ~ 0.025 --> 0 ~ 1.5' ->  +/-  0 ~ 2.77/2.13km
 		lat = lat + random.random() / 40.0 * (random.choice([1, -1]))
 		long = long + random.random() / 40.0 * (random.choice([1, -1]))
-		return f"{round(lat, 6)},{round(long, 6)},gps"
+		coords = f"{round(lat, 6)},{round(long, 6)},gps"
+		self.write_debug(coords)
+		return coords
 
 	def _generate_random_info(self):
 		version_key = random.choice(list(self._ANDROID_VERSIONS.keys()))
