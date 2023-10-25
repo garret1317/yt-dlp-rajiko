@@ -450,34 +450,33 @@ class _RadikoBaseIE(InfoExtractor):
 
 		auth1_header = auth1_handle.headers
 		auth_token = auth1_header["X-Radiko-AuthToken"]
+
 		key_length = int(auth1_header["X-Radiko-KeyLength"])
 		key_offset = int(auth1_header["X-Radiko-KeyOffset"])
-
 		self.write_debug(f"KeyLength: {key_length}")
 		self.write_debug(f"KeyOffset: {key_offset}")
 
 		raw_partial_key = self._FULL_KEY[key_offset:key_offset + key_length]
 		partial_key = base64.b64encode(raw_partial_key).decode("ascii")
-
 		self.write_debug(partial_key)
 
+		coords = self._get_coords(station_region)
 		headers = {
 			**info,
 			"X-Radiko-AuthToken": auth_token,
-			"X-Radiko-Location": self._get_coords(station_region),
+			"X-Radiko-Location": coords,
 			"X-Radiko-Connection": "wifi",
 			"X-Radiko-Partialkey": partial_key,
 		}
 
 		auth2 = self._download_webpage("https://radiko.jp/v2/api/auth2", station_region,
 			"Authenticating: step 2", headers=headers)
-
 		self.write_debug(auth2.strip())
 		actual_region, region_kanji, region_english = auth2.split(",")
 
-		if actual_region != station_region:
-			self.report_warning(f"Didn't get the right region: expected {station_region}, got {actual_region}. This should never happen, please report it by opening an issue on the plugin repo.")
-			# this should never happen
+		region_mismatch = actual_region != station_region
+		if region_mismatch:
+			self.report_warning(f"Region mismatch: Expected {station_region}, got {actual_region}. Coords: {coords}. Please report this by opening an issue on the yt-dlp-rajiko repo.",)
 
 		token = {
 			"X-Radiko-AreaId": actual_region,
@@ -485,7 +484,8 @@ class _RadikoBaseIE(InfoExtractor):
 		}
 
 		self._user = headers["X-Radiko-User"]
-		self.cache.store("rajiko", station_region, {"token": token, "user": self._user})
+		if not region_mismatch:
+			self.cache.store("rajiko", station_region, {"token": token, "user": self._user})
 		return token
 
 	def _auth(self, station_region):
@@ -560,8 +560,7 @@ class _RadikoBaseIE(InfoExtractor):
 			domain = urllib.parse.urlparse(playlist_url).netloc
 			formats += self._extract_m3u8_formats(
 				playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data,
-				note=f"Downloading m3u8 information from {domain}",
-			)
+				note=f"Downloading m3u8 information from {domain}")
 		return formats
 
 
@@ -600,7 +599,7 @@ class RadikoLiveIE(_RadikoBaseIE):
 		},
 	}, {
 		# ALL (all prefectures)
-		# api still specifies a prefecture though, in this case JP12 (Chiba), so that"s what it auths as
+		# api still specifies a prefecture though, in this case JP12 (Chiba), so that's what it auths as
 		"url": "https://radiko.jp/#!/live/HOUSOU-DAIGAKU",
 		"info_dict": {
 			"id": "HOUSOU-DAIGAKU",
@@ -745,6 +744,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			if prog["ft"] <= url_time.timestring() < prog["to"]:
 				actual_start = rtime.RadikoSiteTime(prog["ft"])
 				actual_end = rtime.RadikoSiteTime(prog["to"])
+
 				if len(prog.get("person")) > 0:
 					cast = [person.get("name") for person in prog.get("person")]
 				else:
@@ -793,11 +793,9 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 		start = times[0]
 		end = times[1]
-		end_day = end.broadcast_day_end()
-
 		now = datetime.datetime.now(tz=rtime.JST)
 
-		if end_day < now - datetime.timedelta(days=7):
+		if end.broadcast_day_end() < now - datetime.timedelta(days=7):
 			self.raise_no_formats("Programme is no longer available.", video_id=meta["id"], expected=True)
 		elif start > now:
 			self.raise_no_formats("Programme has not aired yet.", video_id=meta["id"], expected=True)

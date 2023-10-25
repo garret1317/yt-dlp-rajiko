@@ -23,7 +23,6 @@ class RadikoTime():
 		return dt
 
 	def broadcast_day(self):
-
 		dt = self.broadcast_day_date()
 		return dt.strftime("%Y%m%d")
 
