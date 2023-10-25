@@ -580,7 +580,7 @@ class RadikoLiveIE(_RadikoBaseIE):
 			"channel_url": "https://www.tfm.co.jp/",
 			"channel": "TOKYO FM",
 			"channel_id": "FMT",
-
+			"uploader": "TOKYO FM",
 		},
 	}, {
 		# JP1 (Hokkaido)
@@ -596,22 +596,24 @@ class RadikoLiveIE(_RadikoBaseIE):
 			"channel": "FM NORTH WAVE",
 			"channel_url": "https://www.fmnorth.co.jp/",
 			"channel_id": "NORTHWAVE",
+			'uploader': "FM NORTH WAVE",
 		},
 	}, {
 		# ALL (all prefectures)
-		# api still specifies a prefecture though, in this case JP12 (Chiba), so that's what it auths as
-		"url": "https://radiko.jp/#!/live/HOUSOU-DAIGAKU",
+		# api still specifies a prefecture though, in this case JP13 (Tokyo), so that's what it auths as
+		"url": "https://radiko.jp/#!/live/RN1",
 		"info_dict": {
-			"id": "HOUSOU-DAIGAKU",
+			"id": "RN1",
 			"ext": "m4a",
-			"title": "re:^放送大学.+$",
-			"live_status": "is_live",
-			"uploader_url": "https://www.ouj.ac.jp/",
-			"alt_title": "HOUSOU-DAIGAKU",
-			"thumbnail": "https://radiko.jp/res/banner/HOUSOU-DAIGAKU/20150805145127.png",
-			"channel": "放送大学",
-			"channel_url": "https://www.ouj.ac.jp/",
-			"channel_id": "HOUSOU-DAIGAKU",
+			"title": "re:^ラジオNIKKEI第1.+$",
+			'uploader_url': 'http://www.radionikkei.jp/',
+			'thumbnail': 'https://radiko.jp/res/banner/RN1/20120802154152.png',
+			'live_status': 'is_live',
+			'channel_id': 'RN1',
+			'alt_title': 'RADIONIKKEI',
+			'uploader': 'ラジオNIKKEI第1',
+			'channel': 'ラジオNIKKEI第1',
+			'channel_url': 'http://www.radionikkei.jp/',
 		},
 	}]
 
