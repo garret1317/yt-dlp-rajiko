@@ -546,9 +546,9 @@ class _RadikoBaseIE(InfoExtractor):
 			seen_urls.append(url)
 			playlist_url = update_url_query(url, {
 					"station_id": station,
-					"l": "15",
+					"l": "15",  # l = length, ie how many seconds in the live m3u8 (max 300)
 					"lsid": self._user,
-					"type": "b",
+					"type": "b",  # it is a mystery
 				})
 			if timefree:
 				playlist_url = update_url_query(playlist_url, {
