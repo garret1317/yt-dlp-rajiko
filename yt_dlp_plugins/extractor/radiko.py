@@ -778,7 +778,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			artist = traverse_obj(track, ("artist", "name")) or track.get("artist_name")
 			chapters.append({
 				"title": join_nonempty(artist, track.get("title"), delim=" - "),
-				"start_time": (datetime.datetime.fromisoformat(track.get("displayed_start_time")) - start.datetime).total_seconds(),
+				"start_time": (datetime.datetime.fromisoformat(track.get("displayed_start_time")) - start).total_seconds(),
 			})
 
 		return chapters

@@ -3,11 +3,10 @@ import datetime
 
 JST = datetime.timezone(datetime.timedelta(hours=9))
 
-class RadikoTime():
-	datetime = None
+class RadikoTime(datetime.datetime):
 
 	def timestring(self):
-		return self.datetime.strftime("%Y%m%d%H%M%S")
+		return self.strftime("%Y%m%d%H%M%S")
 
 	def broadcast_day_date(self):
 		# timetable api counts 05:00 -> 28:59 (04:59 next day) as all the same day
@@ -16,7 +15,7 @@ class RadikoTime():
 		# but ends earlier, presumably so the early morning programmes dont look like late night ones
 		# this means we have to shift back by a day so we can get the right programme for stuff past midnight
 
-		dt = self.datetime
+		dt = self
 		if dt.hour < 5:
 			dt -= datetime.timedelta(days=1)
 		dt = dt.date() # dont care about hours/mins, we're working in days
@@ -33,30 +32,10 @@ class RadikoTime():
 		dt = datetime.datetime(date.year, date.month, date.day, 5, 0, 0, tzinfo=JST)
 		return dt
 
-	def timestamp(self):
-		return self.datetime.timestamp()
-	def isoformat(self):
-		return self.datetime.isoformat()
-
-	def __str__(self):
-		return str(self.datetime)
-	def __eq__(self, other):
-		return self.datetime == other
-	def __ne__(self, other):
-		return self.datetime != other
-	def __lt__(self, other):
-		return self.datetime < other
-	def __gt__(self, other):
-		return self.datetime > other
-	def __le__(self, other):
-		return self.datetime <= other
-	def __ge__(self, other):
-		return self.datetime >= other
-
 
 class RadikoSiteTime(RadikoTime):
 
-	def __init__(self, timestring):
+	def __new__(self, timestring):
 
 		timestring = str(timestring)
 		year = int(timestring[:4]); month = int(timestring[4:6]); day = int(timestring[6:8])
@@ -76,12 +55,13 @@ class RadikoSiteTime(RadikoTime):
 		else:
 			second = 0
 
-		self.datetime = datetime.datetime(year, month, day, hour, minute, second, tzinfo = JST)
+		rt = super().__new__(RadikoTime, year, month, day, hour, minute, second, tzinfo = JST)
 
 		if next_day:
-			self.datetime += datetime.timedelta(days=1)
+			rt += datetime.timedelta(days=1)
 		if no_second:
-			self.datetime -= datetime.timedelta(seconds=1)
+			rt -= datetime.timedelta(seconds=1)
+		return rt
 
 if __name__ == "__main__":
 	# normal
@@ -99,11 +79,11 @@ if __name__ == "__main__":
 	assert RadikoSiteTime('20230824130000').broadcast_day_end() == datetime.datetime(2023, 8, 25, 5, 0, 0, tzinfo=JST)
 	assert RadikoSiteTime('20230824030000').broadcast_day_end() == datetime.datetime(2023, 8, 24, 5, 0, 0, tzinfo=JST)
 	# checking timezone
-	assert RadikoSiteTime('20230823090000').datetime.timestamp() == 1692748800
+	assert RadikoSiteTime('20230823090000').timestamp() == 1692748800
 
 class RadikoShareTime(RadikoTime):
 
-	def __init__(self, timestring):
+	def __new__(self, timestring):
 
 		timestring = str(timestring)
 		year = int(timestring[:4]); month = int(timestring[4:6]); day = int(timestring[6:8])
@@ -124,8 +104,9 @@ class RadikoShareTime(RadikoTime):
 
 		# site won't handle month out of range (eg 2023-13-05), thank fuck
 
-		self.datetime = datetime.datetime(year, month, day, hour, minute, second, tzinfo = JST)
-		self.datetime += datetime.timedelta(days=days_to_add)
+		rt = super().__new__(RadikoTime, year, month, day, hour, minute, second, tzinfo = JST)
+		rt += datetime.timedelta(days=days_to_add)
+		return rt
 
 if __name__ == "__main__":
 	assert RadikoShareTime('20230630296200').timestring() == '20230701060200' # 30-hour + >59 minutes
