@@ -390,8 +390,8 @@ class _RadikoBaseIE(InfoExtractor):
 
 	_APP_VERSIONS = ["7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.9", "7.4.8", "7.4.7", "7.4.6", "7.4.5", "7.4.4", "7.4.3", "7.4.2", "7.4.1", "7.4.0", "7.3.8", "7.3.7", "7.3.6", "7.3.1", "7.3.0", "7.2.11", "7.2.10"]
 
-	_TF_DELIVERED_ONDEMAND = ('radiko.jp',)
-	_TF_DOESNT_WORK_WITH_FFMPEG = ('tf-f-rpaa-radiko.smartstream.ne.jp',)
+	_DELIVERED_ONDEMAND = ('radiko.jp',)
+	_DOESNT_WORK_WITH_FFMPEG = ('tf-f-rpaa-radiko.smartstream.ne.jp', 'si-f-radiko.smartstream.ne.jp')
 
 	_region = None
 	_user = None
@@ -554,12 +554,6 @@ class _RadikoBaseIE(InfoExtractor):
 					"type": "b",  # it is a mystery
 				})
 
-			# defaults
-			delivered_live = True
-			preference = -1
-			entry_protocol = 'm3u8'
-
-			domain = urllib.parse.urlparse(playlist_url).netloc
 			if timefree:
 				playlist_url = update_url_query(playlist_url, {
 					"start_at": start_at.timestring(),
@@ -567,10 +561,18 @@ class _RadikoBaseIE(InfoExtractor):
 					"end_at": end_at.timestring(),
 					"to": end_at.timestring(),
 				})
-				if domain in self._TF_DOESNT_WORK_WITH_FFMPEG:
+
+			domain = urllib.parse.urlparse(playlist_url).netloc
+
+			# defaults
+			delivered_live = True
+			preference = -1
+			entry_protocol = 'm3u8'
+
+			if domain in self._DOESNT_WORK_WITH_FFMPEG:
 					self.write_debug(f"skipping {domain} (known not working)")
 					continue
-				elif domain in self._TF_DELIVERED_ONDEMAND:
+			elif domain in self._DELIVERED_ONDEMAND:
 					# override the defaults for delivered as on-demand
 					delivered_live = False
 					preference = 1
