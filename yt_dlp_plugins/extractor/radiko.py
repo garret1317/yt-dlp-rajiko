@@ -586,7 +586,10 @@ class _RadikoBaseIE(InfoExtractor):
 
 
 class RadikoLiveIE(_RadikoBaseIE):
-	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/live/(?P<id>[A-Z0-9-_]+)"
+	_VALID_URL = [
+		r"https?://(?:www\.)?radiko\.jp/#!/live/(?P<id>[A-Z0-9-_]+)",
+		r"https?://(?:www\.)?radiko\.jp/#(?P<id>[A-Z0-9-_]+)"
+	]
 	_TESTS = [{
 		# JP13 (Tokyo)
 		"url": "https://radiko.jp/#!/live/FMT",
@@ -604,8 +607,8 @@ class RadikoLiveIE(_RadikoBaseIE):
 			"uploader": "TOKYO FM",
 		},
 	}, {
-		# JP1 (Hokkaido)
-		"url": "https://radiko.jp/#!/live/NORTHWAVE",
+		# JP1 (Hokkaido) - shorthand
+		"url": "https://radiko.jp/#NORTHWAVE",
 		"info_dict": {
 			"id": "NORTHWAVE",
 			"ext": "m4a",
