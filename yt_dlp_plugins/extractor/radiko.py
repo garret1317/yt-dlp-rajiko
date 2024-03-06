@@ -1,7 +1,6 @@
 import base64
 import datetime
 import random
-import secrets
 import urllib.parse
 
 from yt_dlp.extractor.common import InfoExtractor
@@ -402,7 +401,7 @@ class _RadikoBaseIE(InfoExtractor):
 			"X-Radiko-App": "aSmartPhone7a",
 			"X-Radiko-App-Version": random.choice(self._APP_VERSIONS),
 			"X-Radiko-Device": f"{sdk}.{model}",
-			"X-Radiko-User": secrets.token_hex(16),
+			"X-Radiko-User": ''.join(random.choices('0123456789abcdef', k=32)),
 			"User-Agent": f"Dalvik/2.1.0 (Linux; U; Android {android_version};{model}/{build})",
 		}
 		return info
@@ -864,7 +863,7 @@ class RadikoSearchIE(_RadikoBaseIE):
 
 		search_url = update_url_query("https://radiko.jp/v3/api/program/search", {
 			**queries,
-			"uid": secrets.token_hex(16),
+			"uid": ''.join(random.choices('0123456789abcdef', k=32)),
 			"app_id": "pc",
 			"row_limit": 50,  # higher row_limit = more results = less requests = more good
 		})
