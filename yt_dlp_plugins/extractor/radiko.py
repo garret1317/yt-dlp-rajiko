@@ -345,48 +345,19 @@ class _RadikoBaseIE(InfoExtractor):
 
 	# build number :https://www.androidpolice.com/android-build-number-date-calculator/
 	# https://source.android.com/setup/build-numbers
-	_ANDROID_VERSIONS = {
-	# According to https://radiko.jp/#!/info/2558, apparently - link doesnt seem to exist any more
-	"7.0.0": {
-		"sdk": "24",
-		"builds": ["NBD92Q", "NBD92N", "NBD92G", "NBD92F", "NBD92E", "NBD92D", "NBD91Z", "NBD91Y", "NBD91X", "NBD91U", "N5D91L", "NBD91P", "NRD91K", "NRD91N", "NBD90Z", "NBD90X", "NBD90W", "NRD91D", "NRD90U", "NRD90T", "NRD90S", "NRD90R", "NRD90M"]
-	},
-	"7.1.0": {
-		"sdk": "25",
-		"builds": ["NDE63X", "NDE63V", "NDE63U", "NDE63P", "NDE63L", "NDE63H"]
-	},
-	"7.1.1": {
-		"sdk": "25",
-		"builds": ["N9F27M", "NGI77B", "N6F27M", "N4F27P", "N9F27L", "NGI55D", "N4F27O", "N8I11B", "N9F27H", "N6F27I", "N4F27K", "N9F27F", "N6F27H", "N4F27I", "N9F27C", "N6F27E", "N4F27E", "N6F27C", "N4F27B", "N6F26Y", "NOF27D", "N4F26X", "N4F26U", "N6F26U", "NUF26N", "NOF27C", "NOF27B", "N4F26T", "NMF27D", "NMF26X", "NOF26W", "NOF26V", "N6F26R", "NUF26K", "N4F26Q", "N4F26O", "N6F26Q", "N4F26M", "N4F26J", "N4F26I", "NMF26V", "NMF26U", "NMF26R", "NMF26Q", "NMF26O", "NMF26J", "NMF26H", "NMF26F"]
-	},
-	"7.1.2": {
-		"sdk": "25",
-		"builds": ["N2G48H", "NZH54D", "NKG47S", "NHG47Q", "NJH47F", "N2G48C", "NZH54B", "NKG47M", "NJH47D", "NHG47O", "N2G48B", "N2G47Z", "NJH47B", "NJH34C", "NKG47L", "NHG47N", "N2G47X", "N2G47W", "NHG47L", "N2G47T", "N2G47R", "N2G47O", "NHG47K", "N2G47J", "N2G47H", "N2G47F", "N2G47E", "N2G47D"]
-	},
-	"8.0.0": {
-		"sdk": "26",
-		"builds": ["5650811", "5796467", "5948681", "6107732", "6127070"]
-	},
-	"8.1.0": {
-		"sdk": "27",
-		"builds": ["5794017", "6107733", "6037697"]
-	},
-	"9.0.0": {
-		"sdk": "28",
-		"builds": ["5948683", "5794013", "6127072"]
-	},
-	"10.0.0": {
-		"sdk": "29",
-		"builds": ["5933585", "6969601", "7023426", "7070703"]
-	},
-	"11.0.0": {
-		"sdk": "30",
-		"builds": ["RP1A.201005.006", "RQ1A.201205.011", "RQ1A.210105.002"]
-	},
-	"12.0.0": {
-		"sdk": "31",
-		"builds": ["SD1A.210817.015.A4", "SD1A.210817.019.B1", "SD1A.210817.037", "SQ1D.220105.007"]
-	}}
+	_ANDROID_VERSIONS = [
+		# According to https://radiko.jp/#!/info/2558, apparently - link doesnt seem to exist any more
+		{"version": "7.0.0", "sdk": "24", "builds": ["NBD92Q", "NBD92N", "NBD92G", "NBD92F", "NBD92E", "NBD92D", "NBD91Z", "NBD91Y", "NBD91X", "NBD91U", "N5D91L", "NBD91P", "NRD91K", "NRD91N", "NBD90Z", "NBD90X", "NBD90W", "NRD91D", "NRD90U", "NRD90T", "NRD90S", "NRD90R", "NRD90M"]},
+		{"version": "7.1.0", "sdk": "25", "builds": ["NDE63X", "NDE63V", "NDE63U", "NDE63P", "NDE63L", "NDE63H"]},
+		{"version": "7.1.1", "sdk": "25", "builds": ["N9F27M", "NGI77B", "N6F27M", "N4F27P", "N9F27L", "NGI55D", "N4F27O", "N8I11B", "N9F27H", "N6F27I", "N4F27K", "N9F27F", "N6F27H", "N4F27I", "N9F27C", "N6F27E", "N4F27E", "N6F27C", "N4F27B", "N6F26Y", "NOF27D", "N4F26X", "N4F26U", "N6F26U", "NUF26N", "NOF27C", "NOF27B", "N4F26T", "NMF27D", "NMF26X", "NOF26W", "NOF26V", "N6F26R", "NUF26K", "N4F26Q", "N4F26O", "N6F26Q", "N4F26M", "N4F26J", "N4F26I", "NMF26V", "NMF26U", "NMF26R", "NMF26Q", "NMF26O", "NMF26J", "NMF26H", "NMF26F"]},
+		{"version": "7.1.2", "sdk": "25", "builds": ["N2G48H", "NZH54D", "NKG47S", "NHG47Q", "NJH47F", "N2G48C", "NZH54B", "NKG47M", "NJH47D", "NHG47O", "N2G48B", "N2G47Z", "NJH47B", "NJH34C", "NKG47L", "NHG47N", "N2G47X", "N2G47W", "NHG47L", "N2G47T", "N2G47R", "N2G47O", "NHG47K", "N2G47J", "N2G47H", "N2G47F", "N2G47E", "N2G47D"]},
+		{"version": "8.0.0", "sdk": "26", "builds": ["5650811", "5796467", "5948681", "6107732", "6127070"]},
+		{"version": "8.1.0", "sdk": "27", "builds": ["5794017", "6107733", "6037697"]},
+		{"version": "9.0.0", "sdk": "28", "builds": ["5948683", "5794013", "6127072"]},
+		{"version": "10.0.0", "sdk": "29", "builds": ["5933585", "6969601", "7023426", "7070703"]},
+		{"version": "11.0.0", "sdk": "30", "builds": ["RP1A.201005.006", "RQ1A.201205.011", "RQ1A.210105.002"]},
+		{"version": "12.0.0", "sdk": "31", "builds": ["SD1A.210817.015.A4", "SD1A.210817.019.B1", "SD1A.210817.037", "SQ1D.220105.007"]},
+	]
 
 	_APP_VERSIONS = ["7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.9", "7.4.8", "7.4.7", "7.4.6", "7.4.5", "7.4.4", "7.4.3", "7.4.2", "7.4.1", "7.4.0", "7.3.8", "7.3.7", "7.3.6", "7.3.1", "7.3.0", "7.2.11", "7.2.10"]
 
@@ -421,10 +392,10 @@ class _RadikoBaseIE(InfoExtractor):
 		return coords
 
 	def _generate_random_info(self):
-		version_key = random.choice(list(self._ANDROID_VERSIONS.keys()))
-		version = self._ANDROID_VERSIONS[version_key]  # hack because random.choice didnt work how i expected it to
-		sdk = version["sdk"]
-		build = random.choice(version["builds"])
+		version_info = random.choice(self._ANDROID_VERSIONS)
+		android_version = version_info["version"]
+		sdk = version_info["sdk"]
+		build = random.choice(version_info["builds"])
 		model = random.choice(self._MODELS)
 
 		info = {
@@ -432,7 +403,7 @@ class _RadikoBaseIE(InfoExtractor):
 			"X-Radiko-App-Version": random.choice(self._APP_VERSIONS),
 			"X-Radiko-Device": f"{sdk}.{model}",
 			"X-Radiko-User": secrets.token_hex(16),
-			"User-Agent": f"Dalvik/2.1.0 (Linux; U; Android {version};{model}/{build})",
+			"User-Agent": f"Dalvik/2.1.0 (Linux; U; Android {android_version};{model}/{build})",
 		}
 		return info
 
