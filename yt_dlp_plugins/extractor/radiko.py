@@ -449,7 +449,10 @@ class _RadikoBaseIE(InfoExtractor):
 
 		region_mismatch = actual_region != station_region
 		if region_mismatch:
-			self.report_warning(f"Region mismatch: Expected {station_region}, got {actual_region}. Coords: {coords}. Please report this by opening an issue on the yt-dlp-rajiko repo.",)
+			self.report_warning(f"Region mismatch: Expected {station_region}, got {actual_region}. Coords: {coords}.")
+			self.report_warning("Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues")
+			self.report_warning(auth2.strip())
+			self.report_warning(headers)
 
 		token = {
 			"X-Radiko-AreaId": actual_region,
