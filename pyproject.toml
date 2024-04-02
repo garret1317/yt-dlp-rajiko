@@ -1,6 +1,23 @@
+[project]
+name = "yt-dlp-rajiko"
+version = "1.0"
+description = "improved radiko.jp extractor for yt-dlp"
+authors = [
+	{ name="garret1317" },
+]
+requires-python = ">=3.8"
+dependencies = ["yt-dlp>=2023.06.22"]
+classifiers = [
+	"License :: OSI Approved :: Zero-Clause BSD (0BSD)",
+	"Environment :: Plugins",
+]
+
+[project.urls]
+Homepage = "https://427738.xyz/yt-dlp-rajiko/"
+
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.distutils.bdist_wheel]
-universal = true
+[tool.setuptools.packages.find]
+include = ["yt_dlp_plugins"]

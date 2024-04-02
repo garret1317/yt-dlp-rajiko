@@ -19,6 +19,8 @@ import yt_dlp_plugins.extractor.radiko_time as rtime
 
 
 class _RadikoBaseIE(InfoExtractor):
+	# TODO: replace with importlib.resources when yt-dlp minimum python version is new enough
+	# https://setuptools.pypa.io/en/latest/userguide/datafiles.html
 	_FULL_KEY = base64.b64decode("""
 	fAu/s1ySbQBAyfugPCOniGTrMcOu5XqKcup3tmrZUAvx3MGtIIZl7wHokm07yxzL/oR9jdgWhi+e
 	WYVoBIiAG4hDOP5H0Og3Qtd9KFnW8s0N4vNN2DzQ1Y4PqDq3HsQszf4ZaDTkyt4FFW9fPqKUtnVR
