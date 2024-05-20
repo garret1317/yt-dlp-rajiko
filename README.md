@@ -8,6 +8,6 @@ If the website is down, an archived copy may be available on [the Internet Archi
 
 More information about yt-dlp plugins is available from [yt-dlp's documentation](https://github.com/yt-dlp/yt-dlp#plugins).
 
-[詳しくは公式サイトまで](https://427738.xyz/yt-dlp-rajiko/)
+[詳しくは公式サイトをご覧ください](https://427738.xyz/yt-dlp-rajiko/index.ja.html)
 
-サイトが無くなった場合[Internet ArchiveのWayback Machineにアーカイブがある](https://web.archive.org/web/*/https://427738.xyz/yt-dlp-rajiko/)場合があります。
+サイトが無くなった場合、おそらく[Internet ArchiveのWayback Machineにアーカイブされていました](https://web.archive.org/web/*/https://427738.xyz/yt-dlp-rajiko/index.ja.html)。
