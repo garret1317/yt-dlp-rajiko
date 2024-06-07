@@ -498,6 +498,7 @@ class _RadikoBaseIE(InfoExtractor):
 				"channel_url": station_url,
 
 				"uploader": station_name,
+				"uploader_id": station_id,
 				"uploader_url": station_url,
 
 				"thumbnail": url_or_none(station.find("banner").text),
