@@ -489,15 +489,18 @@ class _RadikoBaseIE(InfoExtractor):
 			station_name = station.find("name").text
 			station_url = url_or_none(station.find("href").text)
 			meta = {
+				"id": station_id,
 				"title": station_name,
+				"alt_title": station.find("ascii_name").text,
+
 				"channel": station_name,
-				"uploader": station_name,
 				"channel_id": station_id,
 				"channel_url": station_url,
-				"thumbnail": url_or_none(station.find("banner").text),
-				"alt_title": station.find("ascii_name").text,
+
+				"uploader": station_name,
 				"uploader_url": station_url,
-				"id": station_id,
+
+				"thumbnail": url_or_none(station.find("banner").text),
 			}
 			self.cache.store("rajiko", station_id, {
 				"expiry": (now + datetime.timedelta(days=1)).timestamp(), "meta": meta})
