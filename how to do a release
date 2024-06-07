@@ -1,0 +1,46 @@
+putting this here because i'll forget how to do it otherwise
+
+update the pyproject.toml
+tag it in git, eg v1.0
+
+## build the builds
+python3 -m build
+
+and then put BOTH items from `dist` into the pip index dir - ~/site2/yt-dlp-rajiko/pip/yt-dlp-rajiko/
+because without the .whl pip has to "build" it itself, with all the stuff that needs to be installed for that to work
+update the pip index html
+
+## update the changelog file
+
+~/site2/yt-dlp-rajiko/CHANGELOG
+
+```
+version number
+date (git log v1.0 --pretty --date=rfc2822)
+url: whl download link
+sha256: sha256 of the whl
+brief summary of the release
+can span multiple lines
+
+bullet points of changes, 1 per line
+simple present tense, third person singular - continue "this release...", eg..
+fixes a bug where the computer would explode
+makes downloading 5000x faster
+```
+
+./generate_changelog.py to make the new rss feed
+
+## update the website
+
+move the previous release into the "Previous releases" <details>
+update the sha256 (just sha256 command in the pip dir)
+update the whl link
+repeat for japanese version
+
+now push to the server
+
+## update github
+
+paste the changelog output into a github release, upload the new builds
+
+and thats probably all
