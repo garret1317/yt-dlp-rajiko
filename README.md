@@ -10,4 +10,4 @@ More information about yt-dlp plugins is available from [yt-dlp's documentation]
 
 [詳しくは公式サイトをご覧ください](https://427738.xyz/yt-dlp-rajiko/index.ja.html)
 
-サイトが無くなった場合、おそらく[Internet ArchiveのWayback Machineにアーカイブされていました](https://web.archive.org/web/*/https://427738.xyz/yt-dlp-rajiko/index.ja.html)。
+サイトが無くなった場合は、おそらく[Internet ArchiveのWayback Machineにアーカイブされています](https://web.archive.org/web/*/https://427738.xyz/yt-dlp-rajiko/index.ja.html)。
