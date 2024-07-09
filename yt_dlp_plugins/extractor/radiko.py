@@ -182,7 +182,10 @@ class _RadikoBaseIE(InfoExtractor):
 
 		self._user = headers["X-Radiko-User"]
 		if not region_mismatch:
-			self.cache.store("rajiko", station_region, {"token": token, "user": self._user})
+			self.cache.store("rajiko", station_region, {
+				"token": token,
+				"user": self._user,
+			})
 		return token
 
 	def _auth(self, station_region):
@@ -223,7 +226,9 @@ class _RadikoBaseIE(InfoExtractor):
 				"thumbnail": url_or_none(station.find("banner").text),
 			}
 			self.cache.store("rajiko", station_id, {
-				"expiry": (now + datetime.timedelta(days=1)).timestamp(), "meta": meta})
+				"expiry": (now + datetime.timedelta(days=1)).timestamp(),
+				"meta": meta
+			})
 			return meta
 		else:
 			self.to_screen(f"{station_id}: Using cached station metadata")
@@ -256,6 +261,7 @@ class _RadikoBaseIE(InfoExtractor):
 				playlist_url = update_url_query(playlist_url, {
 					"start_at": start_at.timestring(),
 					"ft": start_at.timestring(),
+
 					"end_at": end_at.timestring(),
 					"to": end_at.timestring(),
 				})
