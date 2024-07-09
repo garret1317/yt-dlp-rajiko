@@ -136,17 +136,17 @@ class _RadikoBaseIE(InfoExtractor):
 		return regions[station]
 
 	def _negotiate_token(self, station_region):
-		info = self._generate_random_info()
+		device_info = self._generate_random_info()
 		response, auth1_handle = self._download_webpage_handle("https://radiko.jp/v2/api/auth1", None,
-			"Authenticating: step 1", headers=info)
+			"Authenticating: step 1", headers=device_info)
 
 		self.write_debug(response)
 
-		auth1_header = auth1_handle.headers
-		auth_token = auth1_header["X-Radiko-AuthToken"]
+		auth1_response_headers = auth1_handle.headers
+		auth_token = auth1_response_headers["X-Radiko-AuthToken"]
 
-		key_length = int(auth1_header["X-Radiko-KeyLength"])
-		key_offset = int(auth1_header["X-Radiko-KeyOffset"])
+		key_length = int(auth1_response_headers["X-Radiko-KeyLength"])
+		key_offset = int(auth1_response_headers["X-Radiko-KeyOffset"])
 		self.write_debug(f"KeyLength: {key_length}")
 		self.write_debug(f"KeyOffset: {key_offset}")
 
@@ -155,8 +155,8 @@ class _RadikoBaseIE(InfoExtractor):
 		self.write_debug(partial_key)
 
 		coords = self._get_coords(station_region)
-		headers = {
-			**info,
+		auth2_headers = {
+			**device_info,
 			"X-Radiko-AuthToken": auth_token,
 			"X-Radiko-Location": coords,
 			"X-Radiko-Connection": "wifi",
@@ -164,7 +164,7 @@ class _RadikoBaseIE(InfoExtractor):
 		}
 
 		auth2 = self._download_webpage("https://radiko.jp/v2/api/auth2", station_region,
-			"Authenticating: step 2", headers=headers)
+			"Authenticating: step 2", headers=auth2_headers)
 		self.write_debug(auth2.strip())
 		actual_region, region_kanji, region_english = auth2.split(",")
 
@@ -173,14 +173,14 @@ class _RadikoBaseIE(InfoExtractor):
 			self.report_warning(f"Region mismatch: Expected {station_region}, got {actual_region}. Coords: {coords}.")
 			self.report_warning("Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues")
 			self.report_warning(auth2.strip())
-			self.report_warning(headers)
+			self.report_warning(auth2_headers)
 
 		token = {
 			"X-Radiko-AreaId": actual_region,
 			"X-Radiko-AuthToken": auth_token,
 		}
 
-		self._user = headers["X-Radiko-User"]
+		self._user = auth2_headers["X-Radiko-User"]
 		if not region_mismatch:
 			self.cache.store("rajiko", station_region, {
 				"token": token,
