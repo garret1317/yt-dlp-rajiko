@@ -159,7 +159,7 @@ class _RadikoBaseIE(InfoExtractor):
 			**device_info,
 			"X-Radiko-AuthToken": auth_token,
 			"X-Radiko-Location": coords,
-			"X-Radiko-Connection": "wifi",
+			"X-Radiko-Connection": random.choice(("wifi", "mobile",)),
 			"X-Radiko-Partialkey": partial_key,
 		}
 
