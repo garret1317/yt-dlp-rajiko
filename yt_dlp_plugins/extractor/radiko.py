@@ -298,50 +298,62 @@ class RadikoLiveIE(_RadikoBaseIE):
 		# JP13 (Tokyo)
 		"url": "https://radiko.jp/#!/live/FMT",
 		"info_dict": {
-			"id": "FMT",
 			"ext": "m4a",
 			"live_status": "is_live",
-			"alt_title": "TOKYO FM",
+
+			"id": "FMT",
 			"title": "re:^TOKYO FM.+$",
+			"alt_title": "TOKYO FM",
 			"thumbnail": "https://radiko.jp/res/banner/FMT/20220512162447.jpg",
-			"uploader_url": "https://www.tfm.co.jp/",
-			"channel_url": "https://www.tfm.co.jp/",
+
 			"channel": "TOKYO FM",
 			"channel_id": "FMT",
+			"channel_url": "https://www.tfm.co.jp/",
+
 			"uploader": "TOKYO FM",
+			"uploader_id": "FMT",
+			"uploader_url": "https://www.tfm.co.jp/",
 		},
 	}, {
 		# JP1 (Hokkaido) - shorthand
 		"url": "https://radiko.jp/#NORTHWAVE",
 		"info_dict": {
-			"id": "NORTHWAVE",
 			"ext": "m4a",
-			"uploader_url": "https://www.fmnorth.co.jp/",
-			"alt_title": "FM NORTH WAVE",
-			"title": "re:^FM NORTH WAVE.+$",
 			"live_status": "is_live",
+
+			"id": "NORTHWAVE",
+			"title": "re:^FM NORTH WAVE.+$",
+			"alt_title": "FM NORTH WAVE",
 			"thumbnail": "https://radiko.jp/res/banner/NORTHWAVE/20150731161543.png",
+
+			"uploader": "FM NORTH WAVE",
+			"uploader_url": "https://www.fmnorth.co.jp/",
+			"uploader_id": "NORTHWAVE",
+
 			"channel": "FM NORTH WAVE",
 			"channel_url": "https://www.fmnorth.co.jp/",
 			"channel_id": "NORTHWAVE",
-			'uploader': "FM NORTH WAVE",
 		},
 	}, {
 		# ALL (all prefectures)
 		# api still specifies a prefecture though, in this case JP13 (Tokyo), so that's what it auths as
 		"url": "https://radiko.jp/#!/live/RN1",
 		"info_dict": {
-			"id": "RN1",
 			"ext": "m4a",
+			"live_status": "is_live",
+
+			"id": "RN1",
 			"title": "re:^ラジオNIKKEI第1.+$",
-			'uploader_url': 'http://www.radionikkei.jp/',
-			'thumbnail': 'https://radiko.jp/res/banner/RN1/20120802154152.png',
-			'live_status': 'is_live',
-			'channel_id': 'RN1',
-			'alt_title': 'RADIONIKKEI',
-			'uploader': 'ラジオNIKKEI第1',
-			'channel': 'ラジオNIKKEI第1',
-			'channel_url': 'http://www.radionikkei.jp/',
+			"alt_title": "RADIONIKKEI",
+			"thumbnail": "https://radiko.jp/res/banner/RN1/20120802154152.png",
+
+			"channel": "ラジオNIKKEI第1",
+			"channel_url": "http://www.radionikkei.jp/",
+			"channel_id": "RN1",
+
+			"uploader": "ラジオNIKKEI第1",
+			"uploader_url": "http://www.radionikkei.jp/",
+			"uploader_id": "RN1",
 		},
 	}]
 
@@ -363,103 +375,63 @@ class RadikoLiveIE(_RadikoBaseIE):
 class RadikoTimeFreeIE(_RadikoBaseIE):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/ts/(?P<station>[A-Z0-9-_]+)/(?P<id>\d+)"
 	_TESTS = [{
-		"url": "https://radiko.jp/#!/ts/INT/20230818230000",
+		"url": "https://radiko.jp/#!/ts/INT/20240802230000",
 		"info_dict": {
-			"id": "INT-20230818230000",
-			"title": "TOKYO MOON",
+			"live_status": "was_live",
 			"ext": "m4a",
-			'tags': ['松浦俊夫'],
-			'cast': ['松浦\u3000俊夫'],
-			'channel_url': 'https://www.interfm.co.jp/',
-			'channel_id': 'INT',
-			'description': 'md5:804d83142a1ef1dfde48c44fb531482a',
-			'upload_date': '20230818',
-			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/INT/72b3a65f-c3ee-4892-a327-adec52076d51.jpeg',
-			'chapters': 'count:16',
-			'release_timestamp': 1692370800,
-			'live_status': 'was_live',
-			'series': 'Tokyo Moon',
-			'timestamp': 1692367200,
-			'uploader_url': 'https://www.interfm.co.jp/',
-			'uploader': 'interfm',
-			'channel': 'interfm',
-			'duration': 3600,
-			'release_date': '20230818',
-		},
-	}, {
-		"url": "https://radiko.jp/#!/ts/NORTHWAVE/20230820173000",
-		"info_dict": {
-			"id": "NORTHWAVE-20230820173000",
-			"title": "角松敏生 My BLUES LIFE",
-			"ext": "m4a",
-			'cast': ['角松\u3000敏生'],
-			'tags': ['ノースウェーブ', '角松敏生', '人気アーティストトーク'],
-			'channel_id': 'NORTHWAVE',
-			'series': '角松敏生 My BLUES LIFE',
-			'uploader_url': 'https://www.fmnorth.co.jp/',
-			'upload_date': '20230820',
-			'channel_url': 'https://www.fmnorth.co.jp/',
-			'release_timestamp': 1692522000,
-			'channel': 'FM NORTH WAVE',
-			'uploader': 'FM NORTH WAVE',
-			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/NORTHWAVE/cwqcdppldk.jpg',
-			'chapters': 'count:5',
-			'duration': 1800,
-			'release_date': '20230820',
-			'live_status': 'was_live',
-			'description': 'md5:027860a5731c04779b6720047c7b8b59',
-			'timestamp': 1692520200,
-		},
-	}, {
-		# late-night show, see comment in _unfuck_day
-		"url": "https://radiko.jp/#!/ts/TBS/20230824030000",
-		"info_dict": {
-			"id": "TBS-20230824030000",
-			"title": "CITY CHILL CLUB",
-			"ext": "m4a",
-			'series': 'CITY CHILL CLUB',
-			'timestamp': 1692813600,
-			'description': 'md5:09327f9bfe9cfd3a4d4d20d86c15031f',
-			'duration': 7200,
-			'channel_url': 'https://www.tbsradio.jp/',
-			'cast': ['tonun'],
-			'upload_date': '20230823',
-			'release_date': '20230823',
-			'live_status': 'was_live',
-			'chapters': 'count:28',
-			'uploader': 'TBSラジオ',
-			'release_timestamp': 1692820800,
-			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/TBS/ev6ru67jz8.jpg',
-			'uploader_url': 'https://www.tbsradio.jp/',
-			'channel_id': 'TBS',
-			'tags': ['CCC905', '音楽との出会いが楽しめる', '人気アーティストトーク', '音楽プロデューサー出演', 'ドライブ中におすすめ', '寝る前におすすめ', '学生におすすめ'],
-			'channel': 'TBSラジオ',
-		},
-	}, {
-		# early-morning show, same reason
-		"url": "https://radiko.jp/#!/ts/TBS/20230824050000",
-		"info_dict": {
-			"id": "TBS-20230824050000",
-			"title": "生島ヒロシのおはよう定食・一直線",
-			"ext": "m4a",
-			'uploader_url': 'https://www.tbsradio.jp/',
-			'channel_id': 'TBS',
-			'channel_url': 'https://www.tbsradio.jp/',
-			'tags': ['生島ヒロシ', '健康', '檀れい', '朝のニュースを効率良く'],
-			'release_timestamp': 1692826200,
-			'release_date': '20230823',
-			'cast': ['生島\u3000ヒロシ'],
-			'description': 'md5:1548ed6495813baebf579d6a4d210665',
-			'upload_date': '20230823',
-			'chapters': 'count:2',
-			'timestamp': 1692820800,
-			'uploader': 'TBSラジオ',
-			'live_status': 'was_live',
-			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/TBS/ch3vcvtc5e.jpg',
-			'channel': 'TBSラジオ',
-			'series': '生島ヒロシのおはよう定食・一直線',
-			'duration': 5400,
+			"id": "INT-20240802230000",
 
+			"title": "TOKYO MOON",
+			"series": "Tokyo Moon",
+			"description": "md5:20e68d2f400a391fa34d4e7c8c702cb8",
+			"chapters": "count:15",
+			"thumbnail": "https://program-static.cf.radiko.jp/ehwtw6mcvy.jpg",
+
+			"upload_date": "20240802",
+			"timestamp": 1722607200.0,
+			"release_date": "20240802",
+			"release_timestamp": 1722610800.0,
+			"duration": 3600,
+
+			"channel": "interfm",
+			"channel_id": "INT",
+			"channel_url": "https://www.interfm.co.jp/",
+			"uploader": "interfm",
+			"uploader_id": "INT",
+			"uploader_url": "https://www.interfm.co.jp/",
+
+			"cast": ["松浦\u3000俊夫"],
+			"tags": ["松浦俊夫"],
+		},
+	}, {
+		# late-night/early-morning show to test broadcast day checking
+		"url": "https://radiko.jp/#!/ts/TBS/20240803033000",
+		"info_dict": {
+			"live_status": "was_live",
+			"ext": "m4a",
+			"id": "TBS-20240803033000",
+
+			"title": "CITY CHILL CLUB",
+			"series": "CITY CHILL CLUB",
+			"description": "md5:3fba2c1125059bed27247c0be90e58fa",
+			"chapters": "count:24",
+			"thumbnail": "https://program-static.cf.radiko.jp/ku7t4ztnaq.jpg",
+
+			"upload_date": "20240802",
+			"timestamp": 1722623400.0,
+			"release_date": "20240802",
+			"release_timestamp": 1722628800.0,
+			"duration": 5400,
+
+			"channel": "TBSラジオ",
+			"channel_url": "https://www.tbsradio.jp/",
+			"channel_id": "TBS",
+			"uploader": "TBSラジオ",
+			"uploader_url": "https://www.tbsradio.jp/",
+			"uploader_id": "TBS",
+
+			"tags": ["CCC905", "音楽との出会いが楽しめる", "人気アーティストトーク", "音楽プロデューサー出演", "ドライブ中におすすめ", "寝る前におすすめ", "学生におすすめ"],
+			"cast": ["PES"],
 		},
 	}]
 
@@ -555,11 +527,11 @@ class RadikoSearchIE(_RadikoBaseIE):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/(?:timeshift|live|history)\?"
 	_TESTS = [{
 		# timefree, specific area
-		'url': 'https://radiko.jp/#!/search/live?key=city%20chill%20club&filter=past&start_day=&end_day=&region_id=&area_id=JP13&cul_area_id=JP13&page_idx=0',
-		'playlist_mincount': 4,
-		'info_dict': {
-			'id': "city chill club-past-all-JP13",
-			'title': "city chill club",
+		"url": "https://radiko.jp/#!/search/live?key=city%20chill%20club&filter=past&start_day=&end_day=&region_id=&area_id=JP13&cul_area_id=JP13&page_idx=0",
+		"playlist_mincount": 4,
+		"info_dict": {
+			"id": "city chill club-past-all-JP13",
+			"title": "city chill club",
 		}
 	}, {
 		# live/future, whole country
@@ -597,7 +569,7 @@ class RadikoSearchIE(_RadikoBaseIE):
 
 		search_url = update_url_query("https://radiko.jp/v3/api/program/search", {
 			**queries,
-			"uid": ''.join(random.choices('0123456789abcdef', k=32)),
+			"uid": "".join(random.choices("0123456789abcdef", k=32)),
 			"app_id": "pc",
 			"row_limit": 50,  # higher row_limit = more results = less requests = more good
 		})
@@ -605,7 +577,7 @@ class RadikoSearchIE(_RadikoBaseIE):
 		results = OnDemandPagedList(lambda idx: self._pagefunc(search_url, idx), 50)
 
 		key = traverse_obj(queries, ("key", 0))
-		day = traverse_obj(queries, ('start_day', 0)) or "all"
+		day = traverse_obj(queries, ("start_day", 0)) or "all"
 		region = traverse_obj(queries, ("region_id", 0)) or traverse_obj(queries, ("area_id", 0))
 		status_filter = traverse_obj(queries, ("filter", 0)) or "all"
 
@@ -622,28 +594,33 @@ class RadikoShareIE(_RadikoBaseIE):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/share/"
 	_TESTS = [{
 		# 29-hour time -> 24-hour time
-		"url": "http://radiko.jp/share/?sid=FMT&t=20230822240000",
+		"url": "http://radiko.jp/share/?sid=FMT&t=20240802240000",
 		"info_dict": {
+			"live_status": "was_live",
 			"ext": "m4a",
-			"id": "FMT-20230823000000",
+			"id": "FMT-20240803000000",  # the time given (24:00) works out to 00:00 the next day
+
 			"title": "JET STREAM",
-			'chapters': list,
-			'uploader': 'TOKYO FM',
-			'release_date': '20230822',
-			'tags': ['福山雅治', '夜間飛行', '音楽との出会いが楽しめる', '朗読を楽しめる', '寝る前に聴きたい'],
-			'release_timestamp': 1692719700.0,
-			'upload_date': '20230822',
-			'thumbnail': 'https://radiko.jp/res/program/DEFAULT_IMAGE/FMT/greinlrspi.jpg',
-			'cast': ['福山\u3000雅治'],
-			'series': 'JET STREAM',
-			'live_status': 'was_live',
-			'uploader_url': 'https://www.tfm.co.jp/',
-			'description': 'md5:d41232c4f216103f4e825ccb2d883c3b',
-			'channel_id': 'FMT',
-			'timestamp': 1692716400.0,
-			'duration': 3300,
-			'channel': 'TOKYO FM',
-			'channel_url': 'https://www.tfm.co.jp/',
+			"series": "JET STREAM",
+			"description": "md5:c1a2172036ebb7a54eeafb47e0a08a50",
+			"chapters": "count:9",
+			"thumbnail": "https://program-static.cf.radiko.jp/greinlrspi.jpg",
+
+			"upload_date": "20240802",
+			"timestamp": 1722610800.0,
+			"release_date": "20240802",
+			"release_timestamp": 1722614100.0,
+			"duration": 3300,
+
+			"channel": "TOKYO FM",
+			"channel_id": "FMT",
+			"channel_url": "https://www.tfm.co.jp/",
+			"uploader": "TOKYO FM",
+			"uploader_id": "FMT",
+			"uploader_url": "https://www.tfm.co.jp/",
+
+			"cast": ["福山雅治"],
+			"tags": ["福山雅治", "夜間飛行", "音楽との出会いが楽しめる", "朗読を楽しめる", "寝る前に聴きたい"],
 		}
 	}]
 
@@ -659,64 +636,44 @@ class RadikoStationButtonIE(_RadikoBaseIE):
 	_VALID_URL = r"https://radiko\.jp/button-embed/live/"
 	_EMBED_REGEX = [fr"<iframe[^>]+src=[\"'](?P<url>{_VALID_URL}[^\"']+)"]
 
+	# supposedly it'll only allow a few stations from a few domains https://radiko.jp/res/app/external/web/playback_permission.json
 	_TESTS = [{
 		"url": "https://radiko.jp/button-embed/live/?layout=1&station_id=QRR&theme=0",
 		"info_dict": {
-			"id": "QRR",
-			"title": "re:^文化放送.+$",
 			"ext": "m4a",
 			'live_status': 'is_live',
-			'channel_id': 'QRR',
+
+			"id": "QRR",
+			"title": "re:^文化放送.+$",
 			'alt_title': 'JOQR BUNKA HOSO',
+			'thumbnail': 'https://radiko.jp/res/banner/QRR/20240423144553.png',
 			'channel': '文化放送',
-			'uploader_url': 'http://www.joqr.co.jp/',
+			'channel_id': 'QRR',
 			'channel_url': 'http://www.joqr.co.jp/',
-			'thumbnail': 'https://radiko.jp/res/banner/QRR/20201007125706.png',
+			'uploader': '文化放送',
+			'uploader_id': 'QRR',
+			'uploader_url': 'http://www.joqr.co.jp/',
+
 		}
 	}]
 
 	_WEBPAGE_TESTS = [{
-		"url": "https://www.tbsradio.jp/",
-		"info_dict": {
-			"id": "TBS",
-			"title": "re:^TBSラジオ.+$",
-			"ext": "m4a",
-			'uploader_url': 'https://www.tbsradio.jp/',
-			'thumbnail': 'https://radiko.jp/res/banner/TBS/20200331114320.jpg',
-			'alt_title': 'TBS RADIO',
-			'channel_url': 'https://www.tbsradio.jp/',
-			'channel': 'TBSラジオ',
-			'channel_id': 'TBS',
-			'live_status': 'is_live',
-		}
-	}, {
 		"url": "https://cocolo.jp/",
 		"info_dict": {
-			"id": "CCL",
+			"ext": "m4a",
+			"live_status": "is_live",
+			'id': 'CCL',
 			"title": "re:^FM COCOLO.+$",
-			"ext": "m4a",
-			'thumbnail': 'https://radiko.jp/res/banner/CCL/20161014144826.png',
-			'channel': 'FM COCOLO',
-			'uploader_url': 'https://cocolo.jp',
-			'channel_id': 'CCL',
-			'live_status': 'is_live',
-			'channel_url': 'https://cocolo.jp',
 			'alt_title': 'FM COCOLO',
-		}
-	}, {
-		"url": "https://www.joqr.co.jp/qr/dailyprogram/",
-		"info_dict": {
-			"id": "QRR",
-			"title": "re:^文化放送.+$",
-			"ext": "m4a",
-			'live_status': 'is_live',
-			'channel_id': 'QRR',
-			'alt_title': 'JOQR BUNKA HOSO',
-			'channel': '文化放送',
-			'uploader_url': 'http://www.joqr.co.jp/',
-			'channel_url': 'http://www.joqr.co.jp/',
-			'thumbnail': 'https://radiko.jp/res/banner/QRR/20201007125706.png',
-		}
+			'thumbnail': 'https://radiko.jp/res/banner/CCL/20161014144826.png',
+
+			'channel': 'FM COCOLO',
+			'channel_id': 'CCL',
+			'channel_url': 'https://cocolo.jp',
+			'uploader': 'FM COCOLO',
+			'uploader_id': 'CCL',
+			'uploader_url': 'https://cocolo.jp',
+		},
 	}]
 
 	def _real_extract(self, url):
