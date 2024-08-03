@@ -633,7 +633,7 @@ class RadikoShareIE(_RadikoBaseIE):
 
 
 class RadikoStationButtonIE(_RadikoBaseIE):
-	_VALID_URL = r"https://radiko\.jp/button-embed/live/"
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/button-embed/live/"
 	_EMBED_REGEX = [fr"<iframe[^>]+src=[\"'](?P<url>{_VALID_URL}[^\"']+)"]
 
 	# supposedly it'll only allow a few stations from a few domains https://radiko.jp/res/app/external/web/playback_permission.json
