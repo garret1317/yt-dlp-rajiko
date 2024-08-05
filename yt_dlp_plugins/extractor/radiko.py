@@ -523,7 +523,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		}
 
 
-class RadikoSearchIE(_RadikoBaseIE):
+class RadikoSearchIE(InfoExtractor):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/(?:timeshift|live|history)\?"
 	_TESTS = [{
 		# timefree, specific area
@@ -590,7 +590,7 @@ class RadikoSearchIE(_RadikoBaseIE):
 			"entries": results,
 		}
 
-class RadikoShareIE(_RadikoBaseIE):
+class RadikoShareIE(InfoExtractor):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/share/"
 	_TESTS = [{
 		# 29-hour time -> 24-hour time
@@ -632,7 +632,7 @@ class RadikoShareIE(_RadikoBaseIE):
 		return self.url_result(f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE)
 
 
-class RadikoStationButtonIE(_RadikoBaseIE):
+class RadikoStationButtonIE(InfoExtractor):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/button-embed/live/"
 	_EMBED_REGEX = [fr"<iframe[^>]+src=[\"'](?P<url>{_VALID_URL}[^\"']+)"]
 
