@@ -235,7 +235,7 @@ class _RadikoBaseIE(InfoExtractor):
 			return cachedata.get("meta")
 
 	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None):
-		device = self._configuration_arg('device', ['aSmartPhone7a'], casesense=True)[0]  # aSmartPhone7a formats = always happy path
+		device = self._configuration_arg('device', ['aSmartPhone7a'], casesense=True, ie_key="rajiko")[0]  # aSmartPhone7a formats = always happy path
 		url_data = self._download_xml(f"https://radiko.jp/v3/station/stream/{device}/{station}.xml",
 			station, note=f"Downloading {device} stream information")
 
