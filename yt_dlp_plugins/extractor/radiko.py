@@ -685,6 +685,20 @@ class RadikoStationButtonIE(InfoExtractor):
 
 class RadikoPersonIE(InfoExtractor):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/persons/(?P<id>\d+)"
+	_TESTS = [{
+		"url": "https://radiko.jp/persons/11421",
+		"playlist_mincount": 10,
+		"info_dict": {
+			"id": "person-11421",
+		},
+	},{
+		"url": "https://radiko.jp/persons/11421",
+		"params": {'extractor_args': {'rajiko': {'key_station_only': ['']}}},
+		"playlist_count": 1,
+		"info_dict": {
+			"id": "person-11421",
+		},
+	}]
 
 	def _real_extract(self, url):
 		person_id = self._match_id(url)
