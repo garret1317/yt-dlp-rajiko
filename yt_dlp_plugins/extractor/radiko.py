@@ -468,10 +468,11 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 					)}, (actual_start, actual_end), int_or_none(prog.get("ts_in_ng")) != 2
 
 	def _extract_chapters(self, station, start, end, video_id=None):
-		start_str = urllib.parse.quote(start.isoformat())
-		end_str = urllib.parse.quote(end.isoformat())
-		data = self._download_json(f"https://api.radiko.jp/music/api/v1/noas/{station}?start_time_gte={start_str}&end_time_lt={end_str}",
-			video_id, note="Downloading tracklist").get("data")
+		api_url = update_url_query(f"https://api.radiko.jp/music/api/v1/noas/{station}", {
+			"start_time_gte": start.isoformat(),
+			"end_time_lt": end.isoformat(),
+		})
+		data = self._download_json(api_url, video_id, note="Downloading tracklist").get("data")
 
 		chapters = []
 		for track in data:
