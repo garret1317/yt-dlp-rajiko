@@ -436,7 +436,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 	}]
 
 	def _get_programme_meta(self, station_id, url_time):
-		day = url_time.broadcast_day()
+		day = url_time.broadcast_day_string()
 		meta = self._download_json(f"https://radiko.jp/v4/program/station/date/{day}/{station_id}.json", station_id,
 			note="Downloading programme data")
 		programmes = traverse_obj(meta, ("stations", lambda _, v: v["station_id"] == station_id,

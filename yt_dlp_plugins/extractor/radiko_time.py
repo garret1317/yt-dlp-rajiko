@@ -8,7 +8,7 @@ class RadikoTime(datetime.datetime):
 	def timestring(self):
 		return self.strftime("%Y%m%d%H%M%S")
 
-	def broadcast_day_date(self):
+	def broadcast_day(self):
 		# timetable api counts 05:00 -> 28:59 (04:59 next day) as all the same day
 		# like the 30-hour day, 06:00 -> 29:59 (05:59)
 		# https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan#Time
@@ -21,14 +21,18 @@ class RadikoTime(datetime.datetime):
 		dt = dt.date() # dont care about hours/mins, we're working in days
 		return dt
 
-	def broadcast_day(self):
-		dt = self.broadcast_day_date()
+	def broadcast_day_string(self):
+		dt = self.broadcast_day()
 		return dt.strftime("%Y%m%d")
 
 	def broadcast_day_end(self):
-		date = self.broadcast_day_date()
+		date = self.broadcast_day()
 		date += datetime.timedelta(days=1)
+		dt = datetime.datetime(date.year, date.month, date.day, 5, 0, 0, tzinfo=JST)
+		return dt
 
+	def broadcast_day_start(self):
+		date = self.broadcast_day()
 		dt = datetime.datetime(date.year, date.month, date.day, 5, 0, 0, tzinfo=JST)
 		return dt
 
