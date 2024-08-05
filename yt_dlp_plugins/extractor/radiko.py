@@ -705,6 +705,9 @@ class RadikoPersonIE(InfoExtractor):
 
 		def entries():
 			for episode in person_api.get("data"):
+				if len(self._configuration_arg("key_station_only", ie_key="rajiko")) > 0:
+					if episode.get("key_station_id") != episode.get("station_id"):
+						continue
 
 				share_url = traverse_obj(episode, ("radiko_url", ("pc", "sp", "android", "ios", "app"),
 					{url_or_none}), get_all=False)
