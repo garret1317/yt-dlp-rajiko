@@ -34,6 +34,7 @@ class RadikoMobileEventIE(_RadikoMobileBaseIE):
 			"live_status": "was_live",
 			"ext": "m4a",
 			"id": "10282949",
+			"_old_archive_ids": ["INT-20240802230000"],
 
 			"title": "TOKYO MOON",
 			"series": "Tokyo Moon",
@@ -69,6 +70,7 @@ class RadikoMobileEventIE(_RadikoMobileBaseIE):
 
 		start = traverse_obj(program, ("startAt", "seconds"))
 		end = traverse_obj(program, ("endAt", "seconds"))
+		old_timestring = rtime.RadikoTime.fromtimestamp(start, tz=rtime.JST).timestring()
 
 		return {
 			**traverse_obj(program, {
@@ -88,6 +90,7 @@ class RadikoMobileEventIE(_RadikoMobileBaseIE):
 			"timestamp": start,
 			"release_timestamp": end,
 			"duration": end - start,
+			"_old_archive_ids": [join_nonempty(program.get("stationId"), old_timestring)],
 		}
 
 	def _real_extract(self, url):
