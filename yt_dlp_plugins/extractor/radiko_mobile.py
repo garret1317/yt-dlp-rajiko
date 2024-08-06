@@ -93,11 +93,8 @@ class RadikoMobileEventIE(_RadikoMobileBaseIE):
 			"_old_archive_ids": [join_nonempty(program.get("stationId"), old_timestring)],
 		}
 
-	def _real_extract(self, url):
-		event_id = self._match_id(url)
-		pageProps, _ = self._get_nextjs_data(url, event_id)
-
-		meta = self._get_programme_meta(pageProps.get("program"), pageProps.get("actors"))
+	def _extract_episode(self, program, actors=None):
+		meta = self._get_programme_meta(program, actors)
 		station = meta.get("channel_id")
 		start = rtime.RadikoTime.fromtimestamp(meta.get("timestamp"), tz=rtime.JST)
 		end = rtime.RadikoTime.fromtimestamp(meta.get("release_timestamp"), tz=rtime.JST)
@@ -114,3 +111,8 @@ class RadikoMobileEventIE(_RadikoMobileBaseIE):
 			"live_status": "was_live",
 			"container": "m4a_dash",  # force fixup, AAC-only HLS
 		}
+
+	def _real_extract(self, url):
+		event_id = self._match_id(url)
+		pageProps, data = self._get_nextjs_data(url, event_id)
+		return self._extract_episode(pageProps.get("program"), pageProps.get("actors"))
