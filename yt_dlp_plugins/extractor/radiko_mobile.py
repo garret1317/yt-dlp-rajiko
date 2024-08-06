@@ -25,40 +25,6 @@ class _RadikoMobileBaseIE(_RadikoBaseIE):
 
 	_extract_chapters = RadikoTimeFreeIE._extract_chapters
 
-
-class RadikoMobileEventIE(_RadikoMobileBaseIE):
-	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/mobile/events/(?P<id>[0-9-]+$)"
-	_TESTS = [{
-		"url": "https://radiko.jp/mobile/events/10282949",
-		"info_dict": {
-			"live_status": "was_live",
-			"ext": "m4a",
-			"id": "10282949",
-			"_old_archive_ids": ["INT-20240802230000"],
-
-			"title": "TOKYO MOON",
-			"series": "Tokyo Moon",
-			"description": "md5:20e68d2f400a391fa34d4e7c8c702cb8",
-			"chapters": "count:15",
-			"thumbnail": "https://program-static.cf.radiko.jp/ehwtw6mcvy.jpg",
-
-			"upload_date": "20240802",
-			"timestamp": 1722607200.0,
-			"release_date": "20240802",
-			"release_timestamp": 1722610800.0,
-			"duration": 3600,
-
-			"channel": "interfm",
-			"channel_id": "INT",
-			"uploader": "interfm",
-			"uploader_id": "INT",
-
-			"cast": ["松浦俊夫"],
-			"tags": ["松浦俊夫"],
-		},
-	}]
-
-
 	def _get_programme_meta(self, program, actors=None):
 		if actors is not None:
 			cast = []
@@ -112,7 +78,54 @@ class RadikoMobileEventIE(_RadikoMobileBaseIE):
 			"container": "m4a_dash",  # force fixup, AAC-only HLS
 		}
 
+
+class RadikoMobileEventIE(_RadikoMobileBaseIE):
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/mobile/events/(?P<id>[0-9-]+$)"
+	_TESTS = [{
+		"url": "https://radiko.jp/mobile/events/10282949",
+		"info_dict": {
+			"live_status": "was_live",
+			"ext": "m4a",
+			"id": "10282949",
+			"_old_archive_ids": ["INT-20240802230000"],
+
+			"title": "TOKYO MOON",
+			"series": "Tokyo Moon",
+			"description": "md5:20e68d2f400a391fa34d4e7c8c702cb8",
+			"chapters": "count:15",
+			"thumbnail": "https://program-static.cf.radiko.jp/ehwtw6mcvy.jpg",
+
+			"upload_date": "20240802",
+			"timestamp": 1722607200.0,
+			"release_date": "20240802",
+			"release_timestamp": 1722610800.0,
+			"duration": 3600,
+
+			"channel": "interfm",
+			"channel_id": "INT",
+			"uploader": "interfm",
+			"uploader_id": "INT",
+
+			"cast": ["松浦俊夫"],
+			"tags": ["松浦俊夫"],
+		},
+	}]
+
 	def _real_extract(self, url):
 		event_id = self._match_id(url)
 		pageProps, data = self._get_nextjs_data(url, event_id)
 		return self._extract_episode(pageProps.get("program"), pageProps.get("actors"))
+
+
+class RadikoMobileSeasonsIE(_RadikoMobileBaseIE):
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/(?:mobile/)?r_seasons/(?P<id>\d+$)"
+
+	def _real_extract(self, url):
+		season_id = self._match_id(url)
+		pageProps, data = self._get_nextjs_data(url, season_id)
+
+		def entries():
+			for episode in pageProps.get("pastPrograms"):
+				yield self._extract_episode(episode, pageProps.get("actors"))
+
+		return self.playlist_result(entries(), playlist_id=season_id, playlist_count=len(pageProps.get("pastPrograms")))
