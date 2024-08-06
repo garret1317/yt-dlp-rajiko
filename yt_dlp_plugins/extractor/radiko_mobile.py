@@ -76,6 +76,8 @@ class _RadikoMobileBaseIE(_RadikoBaseIE):
 			"formats": formats,
 			"live_status": "was_live",
 			"container": "m4a_dash",  # force fixup, AAC-only HLS
+			"extractor": "RadikoMobileEvent",
+			"extractor_key": "RadikoMobileEvent",
 		}
 
 
