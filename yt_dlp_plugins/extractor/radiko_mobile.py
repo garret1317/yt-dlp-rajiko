@@ -28,6 +28,35 @@ class _RadikoMobileBaseIE(_RadikoBaseIE):
 
 class RadikoMobileEventIE(_RadikoMobileBaseIE):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/mobile/events/(?P<id>[0-9-]+$)"
+	_TESTS = [{
+		"url": "https://radiko.jp/mobile/events/10282949",
+		"info_dict": {
+			"live_status": "was_live",
+			"ext": "m4a",
+			"id": "10282949",
+
+			"title": "TOKYO MOON",
+			"series": "Tokyo Moon",
+			"description": "md5:20e68d2f400a391fa34d4e7c8c702cb8",
+			"chapters": "count:15",
+			"thumbnail": "https://program-static.cf.radiko.jp/ehwtw6mcvy.jpg",
+
+			"upload_date": "20240802",
+			"timestamp": 1722607200.0,
+			"release_date": "20240802",
+			"release_timestamp": 1722610800.0,
+			"duration": 3600,
+
+			"channel": "interfm",
+			"channel_id": "INT",
+			"uploader": "interfm",
+			"uploader_id": "INT",
+
+			"cast": ["松浦俊夫"],
+			"tags": ["松浦俊夫"],
+		},
+	}]
+
 
 	def _get_programme_meta(self, program, actors=None):
 		if actors is not None:
