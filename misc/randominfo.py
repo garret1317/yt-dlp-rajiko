@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import unittest
-
 from yt_dlp_plugins.extractor import radiko
 from yt_dlp import YoutubeDL
 
