@@ -230,9 +230,9 @@ class _RadikoBaseIE(InfoExtractor):
 				"meta": meta
 			})
 			return meta
-		else:
-			self.to_screen(f"{station_id}: Using cached station metadata")
-			return cachedata.get("meta")
+
+		self.to_screen(f"{station_id}: Using cached station metadata")
+		return cachedata.get("meta")
 
 	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None):
 		device = self._configuration_arg('device', ['aSmartPhone7a'], casesense=True, ie_key="rajiko")[0]  # aSmartPhone7a formats = always happy path
@@ -274,13 +274,13 @@ class _RadikoBaseIE(InfoExtractor):
 			entry_protocol = 'm3u8'
 
 			if domain in self._DOESNT_WORK_WITH_FFMPEG:
-					self.write_debug(f"skipping {domain} (known not working)")
-					continue
-			elif domain in self._DELIVERED_ONDEMAND:
-					# override the defaults for delivered as on-demand
-					delivered_live = False
-					preference = 1
-					entry_protocol = None
+				self.write_debug(f"skipping {domain} (known not working)")
+				continue
+			if domain in self._DELIVERED_ONDEMAND:
+				# override the defaults for delivered as on-demand
+				delivered_live = False
+				preference = 1
+				entry_protocol = None
 
 			formats += self._extract_m3u8_formats(
 				playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data,
