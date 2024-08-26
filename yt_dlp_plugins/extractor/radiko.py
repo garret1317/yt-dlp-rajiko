@@ -84,9 +84,6 @@ class _RadikoBaseIE(InfoExtractor):
 	_DELIVERED_ONDEMAND = ('radiko.jp',)
 	_DOESNT_WORK_WITH_FFMPEG = ('tf-f-rpaa-radiko.smartstream.ne.jp', 'si-f-radiko.smartstream.ne.jp')
 
-	_region = None
-	_user = None
-
 	def _index_regions(self):
 		region_data = {}
 
@@ -175,30 +172,28 @@ class _RadikoBaseIE(InfoExtractor):
 			self.report_warning(auth2.strip())
 			self.report_warning(auth2_headers)
 
-		token = {
-			"X-Radiko-AreaId": actual_region,
-			"X-Radiko-AuthToken": auth_token,
+		auth_data = {
+			"token": {
+				"X-Radiko-AreaId": actual_region,
+				"X-Radiko-AuthToken": auth_token,
+			},
+			"user": auth2_headers["X-Radiko-User"],
 		}
 
-		self._user = auth2_headers["X-Radiko-User"]
 		if not region_mismatch:
-			self.cache.store("rajiko", station_region, {
-				"token": token,
-				"user": self._user,
-			})
-		return token
+			self.cache.store("rajiko", station_region, auth_data)
+		return auth_data
 
 	def _auth(self, station_region):
 		cachedata = self.cache.load("rajiko", station_region)
 		self.write_debug(cachedata)
 		if cachedata is not None:
-			token = cachedata.get("token")
-			self._user = cachedata.get("user")
+			auth_headers = cachedata.get("token")
 			response = self._download_webpage("https://radiko.jp/v2/api/auth_check", station_region, "Checking cached token",
-				headers=token, expected_status=401)
+				headers=auth_headers, expected_status=401)
 			self.write_debug(response)
 			if response == "OK":
-				return token
+				return cachedata
 		return self._negotiate_token(station_region)
 
 	def _get_station_meta(self, region, station_id):
@@ -253,7 +248,7 @@ class _RadikoBaseIE(InfoExtractor):
 			playlist_url = update_url_query(url, {
 					"station_id": station,
 					"l": "15",  # l = length, ie how many seconds in the live m3u8 (max 300)
-					"lsid": self._user,
+					"lsid": auth_data["user"],
 					"type": "b",  # it is a mystery
 				})
 
@@ -283,7 +278,7 @@ class _RadikoBaseIE(InfoExtractor):
 				entry_protocol = None
 
 			formats += self._extract_m3u8_formats(
-				playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data,
+				playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data["token"],
 				live=delivered_live, preference=preference, entry_protocol=entry_protocol,
 				note=f"Downloading m3u8 information from {domain}")
 		return formats
