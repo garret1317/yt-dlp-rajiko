@@ -2,6 +2,7 @@ import base64
 import datetime
 import random
 import urllib.parse
+import json
 
 import pkgutil
 
@@ -47,13 +48,10 @@ class _RadikoBaseIE(InfoExtractor):
 	}
 	# range detail :http://www.gsi.go.jp/KOKUJYOHO/CENTER/zenken.htm
 
-	_APP_VERSIONS = [f"8.0.{i}" for i in range(6+1)]
+	_APP_VERSIONS = ["8.1.8"]
 
 	_DELIVERED_ONDEMAND = ('radiko.jp',)
 	_DOESNT_WORK_WITH_FFMPEG = ('tf-f-rpaa-radiko.smartstream.ne.jp', 'si-f-radiko.smartstream.ne.jp')
-
-	_region = None
-	_user = None
 
 	def _index_regions(self):
 		region_data = {}
@@ -75,19 +73,7 @@ class _RadikoBaseIE(InfoExtractor):
 		# +/- 0 ~ 0.025 --> 0 ~ 1.5' ->  +/-  0 ~ 2.77/2.13km
 		lat = lat + random.random() / 40.0 * (random.choice([1, -1]))
 		long = long + random.random() / 40.0 * (random.choice([1, -1]))
-		coords = f"{round(lat, 6)},{round(long, 6)},gps"
-		self.write_debug(coords)
-		return coords
-
-	def _generate_random_info(self):
-		return {
-			"X-Radiko-App": "aSmartPhone8",
-			"X-Radiko-App-Version": random.choice(self._APP_VERSIONS),
-			"X-Radiko-Device": "android",
-			"X-Radiko-User": ''.join(random.choices('0123456789abcdef', k=32)),
-			"User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 4 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Mobile Safari/537.36"
-			# ^this appears to be hardcoded - i have a sony xa2 on android 9, i still get this. grepping for it in libapp.so shows it is there in some capacity
-		}
+		return {"latitude": round(lat, 6), "longitude": round(long, 6)}
 
 	def _get_station_region(self, station):
 		regions = self.cache.load("rajiko", "region_index")
@@ -98,17 +84,22 @@ class _RadikoBaseIE(InfoExtractor):
 		return regions[station]
 
 	def _negotiate_token(self, station_region):
-		device_info = self._generate_random_info()
-		response, auth1_handle = self._download_webpage_handle("https://radiko.jp/v2/api/auth1", None,
-			"Authenticating: step 1", headers=device_info)
+		ua_header = {"User-Agent": "Mozilla/5.0 (Linux; Android 10; Pixel 4 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Mobile Safari/537.36"}
+		# it's hardcoded in the actual app so its ok to hardcode it here
 
-		self.write_debug(response)
+		user_id = ''.join(random.choices('0123456789abcdef', k=32))
+		auth1 = self._download_json("https://api.radiko.jp/apparea/auth1", None,
+			"Authenticating: step 1", headers=ua_header, data=json.dumps({
+				"app_id": "aSmartPhone8",
+				"app_version": random.choice(self._APP_VERSIONS),
+				"user_id": user_id,
+				"device": "android",
+			}).encode())
 
-		auth1_response_headers = auth1_handle.headers
-		auth_token = auth1_response_headers["X-Radiko-AuthToken"]
+		token_info = auth1["auth_token_info"]
 
-		key_length = int(auth1_response_headers["X-Radiko-KeyLength"])
-		key_offset = int(auth1_response_headers["X-Radiko-KeyOffset"])
+		key_length = auth1["key_length"]
+		key_offset = auth1["key_offset"]
 		self.write_debug(f"KeyLength: {key_length}")
 		self.write_debug(f"KeyOffset: {key_offset}")
 
@@ -117,50 +108,45 @@ class _RadikoBaseIE(InfoExtractor):
 		self.write_debug(partial_key)
 
 		coords = self._get_coords(station_region)
-		auth2_headers = {
-			**device_info,
-			"X-Radiko-AuthToken": auth_token,
-			"X-Radiko-Location": coords,
-			"X-Radiko-Connection": random.choice(("wifi", "mobile",)),
-			"X-Radiko-Partialkey": partial_key,
-		}
+		self.write_debug(coords)
 
-		auth2 = self._download_webpage("https://radiko.jp/v2/api/auth2", station_region,
-			"Authenticating: step 2", headers=auth2_headers)
-		self.write_debug(auth2.strip())
-		actual_region, region_kanji, region_english = auth2.split(",")
+		auth2 = self._download_json("https://api.radiko.jp/apparea/auth2", station_region,
+			"Authenticating: step 2", headers=ua_header, data=json.dumps({
+				"auth_token": token_info["auth_token"],
+				"partial_key": partial_key,
+				"connection": random.choice(("wifi", "mobile",)),
+				"location": coords,
+			}).encode())
 
-		region_mismatch = actual_region != station_region
+		self.write_debug(auth2)
+
+		actual_regions = traverse_obj(auth2, ("areas", ..., "area_id"))
+
+		region_mismatch = station_region not in actual_regions
 		if region_mismatch:
-			self.report_warning(f"Region mismatch: Expected {station_region}, got {actual_region}. Coords: {coords}.")
+			self.report_warning(f"Region mismatch: Expected {station_region}, got {actual_regions}. Coords: {coords}.")
 			self.report_warning("Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues")
-			self.report_warning(auth2.strip())
-			self.report_warning(auth2_headers)
+			self.report_warning(auth2)
 
-		token = {
-			"X-Radiko-AreaId": actual_region,
-			"X-Radiko-AuthToken": auth_token,
+		auth_info = {
+			"headers": {
+				"X-Radiko-AreaId": station_region if not region_mismatch else actual_region[0],  # i dont know if we ever get more than 1 region
+				"X-Radiko-AuthToken": token_info["auth_token"],
+			},
+			"expiry": datetime.datetime.fromisoformat(token_info["expires_at"]).timestamp(),
+			"user_id": user_id,
 		}
 
-		self._user = auth2_headers["X-Radiko-User"]
 		if not region_mismatch:
-			self.cache.store("rajiko", station_region, {
-				"token": token,
-				"user": self._user,
-			})
+			self.cache.store("rajiko8", station_region, auth_info)
 		return token
 
 	def _auth(self, station_region):
-		cachedata = self.cache.load("rajiko", station_region)
+		cachedata = self.cache.load("rajiko8", station_region)
 		self.write_debug(cachedata)
 		if cachedata is not None:
-			token = cachedata.get("token")
-			self._user = cachedata.get("user")
-			response = self._download_webpage("https://radiko.jp/v2/api/auth_check", station_region, "Checking cached token",
-				headers=token, expected_status=401)
-			self.write_debug(response)
-			if response == "OK":
-				return token
+			if cachedata.get("expiry") > datetime.datetime.now().timestamp():
+				return cachedata
 		return self._negotiate_token(station_region)
 
 	def _get_station_meta(self, region, station_id):
@@ -215,7 +201,7 @@ class _RadikoBaseIE(InfoExtractor):
 			playlist_url = update_url_query(url, {
 					"station_id": station,
 					"l": "15",  # l = length, ie how many seconds in the live m3u8 (max 300)
-					"lsid": self._user,
+					"lsid": auth_data["user_id"],
 					"type": "b",  # it is a mystery
 				})
 
@@ -245,7 +231,7 @@ class _RadikoBaseIE(InfoExtractor):
 					entry_protocol = None
 
 			formats += self._extract_m3u8_formats(
-				playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data,
+				playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data["headers"],
 				live=delivered_live, preference=preference, entry_protocol=entry_protocol,
 				note=f"Downloading m3u8 information from {domain}")
 		return formats
