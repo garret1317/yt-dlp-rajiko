@@ -493,7 +493,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		end = times[1]
 		now = datetime.datetime.now(tz=rtime.JST)
 
-		if end.broadcast_day_end() < now - datetime.timedelta(days=7):
+		if end.expiry(False) < now:
 			self.raise_no_formats("Programme is no longer available.", video_id=meta["id"], expected=True)
 		elif start > now:
 			self.raise_no_formats("Programme has not aired yet.", video_id=meta["id"], expected=True)
@@ -701,7 +701,7 @@ class RadikoPersonIE(InfoExtractor):
 
 		now = rtime.RadikoTime.now(tz=rtime.JST)
 
-		min_start = (now - datetime.timedelta(days=7)).broadcast_day_start()
+		min_start = rtime.earliest_available(False)
 		# we set the earliest time as the earliest we can get,
 		# so, the start of the broadcast day 1 week ago
 		# that way we can get everything we can actually download, including stuff that aired at eg "26:00"
