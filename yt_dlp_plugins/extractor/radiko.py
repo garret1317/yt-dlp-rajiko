@@ -709,7 +709,7 @@ class RadikoPersonIE(InfoExtractor):
 		person_api_url = update_url_query("https://api.radiko.jp/program/api/v1/programs", {
 			"person_id": person_id,
 			"start_at_gte": min_start.isoformat(),
-			"end_at_lt": now.isoformat(),
+			"start_at_lt": now.isoformat(),
 		})
 		person_api = self._download_json(person_api_url, person_id)
 
