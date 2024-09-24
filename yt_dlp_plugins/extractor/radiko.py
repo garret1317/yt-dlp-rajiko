@@ -48,7 +48,7 @@ class _RadikoBaseIE(InfoExtractor):
 	}
 	# range detail :http://www.gsi.go.jp/KOKUJYOHO/CENTER/zenken.htm
 
-	_APP_VERSIONS = ["8.1.8"]
+	_APP_VERSIONS = ["8.1.11"]
 
 	_DELIVERED_ONDEMAND = ('radiko.jp',)
 	_DOESNT_WORK_WITH_FFMPEG = ('tf-f-rpaa-radiko.smartstream.ne.jp', 'si-f-radiko.smartstream.ne.jp')
