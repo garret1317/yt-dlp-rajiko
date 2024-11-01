@@ -36,16 +36,11 @@ class RadikoTime(datetime.datetime):
 		dt = datetime.datetime(date.year, date.month, date.day, 5, 0, 0, tzinfo=JST)
 		return dt
 
-	def expiry(self, tf30):
-		available_days = 30 if tf30 else 7
-		return self.broadcast_day_end() + datetime.timedelta(days=available_days)
-		# IF SOMETHING CHANGES HERE YOU NEED TO UPDATE ↓↓earliest_available↓↓ AS WELL!
+	def expiry(self):
+		free = self.broadcast_day_end() + datetime.timedelta(days=7)
+		tf30 = self.broadcast_day_end() + datetime.timedelta(days=30)
 
-
-def earliest_available(tf30):
-	available_days = 30 if tf30 else 7
-	return (RadikoTime.now(tz=JST) - datetime.timedelta(days=available_days)).broadcast_day_start()
-	# IF SOMETHING CHANGES HERE YOU NEED TO UPDATE ↑↑expiry↑↑ AS WELL!
+		return free, tf30
 
 
 class RadikoSiteTime(RadikoTime):

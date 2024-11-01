@@ -492,9 +492,13 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		start = times[0]
 		end = times[1]
 		now = datetime.datetime.now(tz=rtime.JST)
+		expiry_free, expiry_tf30 = end.expiry()
+		have_tf30 = False
 
-		if end.expiry(False) < now:
+		if expiry_tf30 < now:
 			self.raise_no_formats("Programme is no longer available.", video_id=meta["id"], expected=True)
+		elif not have_tf30 and expiry_free < now:
+			self.raise_login_required("Programme is only available with a Timefree 30 subscription")
 		elif start > now:
 			self.raise_no_formats("Programme has not aired yet.", video_id=meta["id"], expected=True)
 			live_status = "is_upcoming"
@@ -701,9 +705,9 @@ class RadikoPersonIE(InfoExtractor):
 
 		now = rtime.RadikoTime.now(tz=rtime.JST)
 
-		min_start = rtime.earliest_available(False)
-		# we set the earliest time as the earliest we can get,
-		# so, the start of the broadcast day 1 week ago
+		min_start = now - datetime.timedelta(days=30).broadcast_day_start()
+		# we set the earliest time as the earliest we can get (or at least, that it's possible to get),
+		# so, the start of the broadcast day 30 days ago
 		# that way we can get everything we can actually download, including stuff that aired at eg "26:00"
 
 		person_api_url = update_url_query("https://api.radiko.jp/program/api/v1/programs", {
