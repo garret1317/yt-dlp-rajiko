@@ -705,7 +705,7 @@ class RadikoPersonIE(InfoExtractor):
 
 		now = rtime.RadikoTime.now(tz=rtime.JST)
 
-		min_start = now - datetime.timedelta(days=30).broadcast_day_start()
+		min_start = (now - datetime.timedelta(days=30)).broadcast_day_start()
 		# we set the earliest time as the earliest we can get (or at least, that it's possible to get),
 		# so, the start of the broadcast day 30 days ago
 		# that way we can get everything we can actually download, including stuff that aired at eg "26:00"
