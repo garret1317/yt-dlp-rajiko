@@ -194,6 +194,7 @@ class _RadikoBaseIE(InfoExtractor):
 		self.write_debug(cachedata)
 		if cachedata is not None:
 			if tf30 and not cachedata.get("tf30"):
+				self.write_debug("Cached token doesn't have timefree 30, getting a new one")
 				return self._negotiate_token(station_region, tf30=True)
 
 			auth_headers = cachedata.get("token")
@@ -453,6 +454,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 				data=urlencode_postdata({'mail': username, 'pass': password}))
 			self._has_tf30 = '2' in login_info.get('privileges')
 			# areafree = 1, timefree30 = 2, double plan = both
+			self.write_debug({**login_info, "radiko_session": "PRIVATE", "member_ukey": "PRIVATE"})
 		except ExtractorError as error:
 			if isinstance(error.cause, HTTPError) and error.cause.status == 401:
 				raise ExtractorError('Invalid username and/or password', expected=True)
@@ -465,6 +467,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			return
 		account_info = self._download_json('https://radiko.jp/ap/member/webapi/v2/member/login/check',
 			None, note='Checking account status from cookies', expected_status=400)
+		self.write_debug({**account_info, "user_key": "PRIVATE"})
 		self._has_tf30 = account_info.get('timefreeplus') == '1'
 		return self._has_tf30
 
