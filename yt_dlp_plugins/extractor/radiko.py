@@ -7,12 +7,14 @@ import pkgutil
 
 from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.utils import (
+	ExtractorError,
 	OnDemandPagedList,
 	clean_html,
 	int_or_none,
 	join_nonempty,
 	parse_qs,
 	traverse_obj,
+	urlencode_postdata,
 	url_or_none,
 	update_url_query,
 )
@@ -229,8 +231,16 @@ class _RadikoBaseIE(InfoExtractor):
 		self.to_screen(f"{station_id}: Using cached station metadata")
 		return cachedata.get("meta")
 
-	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None):
-		device = self._configuration_arg('device', ['aSmartPhone7a'], casesense=True, ie_key="rajiko")[0]  # aSmartPhone7a formats = always happy path
+	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None, tf30_override=False):
+		config_device = traverse_obj(self._configuration_arg('device', casesense=True, ie_key="rajiko"), 0)
+
+		if not tf30_override:
+			device = config_device or "aSmartPhone7a"  # the only one that works for timefree with this is the on-demand one
+			# that's good imo - we just get the one that works, and don't bother with probing the rest as well
+		else:
+			device = config_device or "pc_html5" # the on-demand one doesnt work with timefree30 stuff sadly
+			# so just use pc_html5 which has everything
+
 		url_data = self._download_xml(f"https://radiko.jp/v3/station/stream/{device}/{station}.xml",
 			station, note=f"Downloading {device} stream information")
 
@@ -368,6 +378,7 @@ class RadikoLiveIE(_RadikoBaseIE):
 
 
 class RadikoTimeFreeIE(_RadikoBaseIE):
+	_NETRC_MACHINE = "rajiko"
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/ts/(?P<station>[A-Z0-9-_]+)/(?P<id>\d+)"
 	_TESTS = [{
 		"url": "https://radiko.jp/#!/ts/INT/20240809230000",
@@ -429,6 +440,29 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			"cast": ["PES"],
 		},
 	}]
+
+	_has_tf30 = None
+
+	def _perform_login(self, username, password):
+		try:
+			login_info = self._download_json('https://radiko.jp/ap/member/webapi/member/login', None, note='Logging in',
+				data=urlencode_postdata({'mail': username, 'pass': password}))
+			self._has_tf30 = '2' in login_info.get('privileges')
+			# areafree = 1, timefree30 = 2, double plan = both
+		except ExtractorError as error:
+			if isinstance(error.cause, HTTPError) and error.cause.status == 401:
+				raise ExtractorError('Invalid username and/or password', expected=True)
+			raise
+
+	def _check_tf30(self):
+		if self._has_tf30 is not None:
+			return self._has_tf30
+		if self._get_cookies('https://radiko.jp').get('radiko_session') is None:
+			return
+		account_info = self._download_json('https://radiko.jp/ap/member/webapi/v2/member/login/check',
+			None, note='Checking account status from cookies', expected_status=400)
+		self._has_tf30 = account_info.get('timefreeplus') == '1'
+		return self._has_tf30
 
 	def _get_programme_meta(self, station_id, url_time):
 		day = url_time.broadcast_day_string()
@@ -493,11 +527,11 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		end = times[1]
 		now = datetime.datetime.now(tz=rtime.JST)
 		expiry_free, expiry_tf30 = end.expiry()
-		have_tf30 = False
 
 		if expiry_tf30 < now:
 			self.raise_no_formats("Programme is no longer available.", video_id=meta["id"], expected=True)
-		elif not have_tf30 and expiry_free < now:
+		needs_tf30 = expiry_free < now
+		if needs_tf30 and not self._check_tf30():
 			self.raise_login_required("Programme is only available with a Timefree 30 subscription")
 		elif start > now:
 			self.raise_no_formats("Programme has not aired yet.", video_id=meta["id"], expected=True)
@@ -510,7 +544,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		station_meta = self._get_station_meta(region, station)
 		chapters = self._extract_chapters(station, start, end, video_id=meta["id"])
 		auth_data = self._auth(region)
-		formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end)
+		formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end, tf30_override=needs_tf30)
 
 		return {
 			**station_meta,
