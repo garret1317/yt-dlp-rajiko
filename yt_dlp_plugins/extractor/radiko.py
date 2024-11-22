@@ -182,20 +182,20 @@ class _RadikoBaseIE(InfoExtractor):
 				"X-Radiko-AuthToken": auth_token,
 			},
 			"user": auth2_headers["X-Radiko-User"],
-			"tf30": self._has_tf30,
+			"has_tf30": self._has_tf30,
 		}
 
 		if not region_mismatch:
 			self.cache.store("rajiko", station_region, auth_data)
 		return auth_data
 
-	def _auth(self, station_region, tf30=False):
+	def _auth(self, station_region, need_tf30=False):
 		cachedata = self.cache.load("rajiko", station_region)
 		self.write_debug(cachedata)
 		if cachedata is not None:
-			if tf30 and not cachedata.get("tf30"):
+			if need_tf30 and not cachedata.get("has_tf30"):
 				self.write_debug("Cached token doesn't have timefree 30, getting a new one")
-				return self._negotiate_token(station_region, tf30=True)
+				return self._negotiate_token(station_region)
 
 			auth_headers = cachedata.get("token")
 			response = self._download_webpage("https://radiko.jp/v2/api/auth_check", station_region, "Checking cached token",
@@ -238,11 +238,11 @@ class _RadikoBaseIE(InfoExtractor):
 		self.to_screen(f"{station_id}: Using cached station metadata")
 		return cachedata.get("meta")
 
-	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None, tf30=False):
+	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None, tf30_override=False):
 		config_device = traverse_obj(self._configuration_arg('device', casesense=True, ie_key="rajiko"), 0)
 
-		if not tf30:
-			device = config_device or "aSmartPhone7a"  # the only one that works for timefree with this is the on-demand one
+		if not tf30_override:
+			device = config_device or "aSmartPhone7a"  # this device only gives us the on-demand one for timefree
 			# that's good imo - we just get the one that works, and don't bother with probing the rest as well
 		else:
 			device = config_device or "pc_html5" # the on-demand one doesnt work with timefree30 stuff sadly
@@ -537,8 +537,8 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 		if expiry_tf30 < now:
 			self.raise_no_formats("Programme is no longer available.", video_id=meta["id"], expected=True)
-		needs_tf30 = expiry_free < now
-		if needs_tf30 and not self._check_tf30():
+		need_tf30 = expiry_free < now
+		if need_tf30 and not self._check_tf30():
 			self.raise_login_required("Programme is only available with a Timefree 30 subscription")
 		elif start > now:
 			self.raise_no_formats("Programme has not aired yet.", video_id=meta["id"], expected=True)
@@ -550,8 +550,8 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
 		chapters = self._extract_chapters(station, start, end, video_id=meta["id"])
-		auth_data = self._auth(region, tf30=needs_tf30)
-		formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end, tf30=needs_tf30)
+		auth_data = self._auth(region, need_tf30=need_tf30)
+		formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end, tf30_override=need_tf30)
 
 		return {
 			**station_meta,
