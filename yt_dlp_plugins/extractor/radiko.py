@@ -86,6 +86,8 @@ class _RadikoBaseIE(InfoExtractor):
 	_DELIVERED_ONDEMAND = ('radiko.jp',)
 	_DOESNT_WORK_WITH_FFMPEG = ('tf-f-rpaa-radiko.smartstream.ne.jp', 'si-f-radiko.smartstream.ne.jp')
 
+	_has_tf30 = None
+
 	def _index_regions(self):
 		region_data = {}
 
@@ -180,16 +182,20 @@ class _RadikoBaseIE(InfoExtractor):
 				"X-Radiko-AuthToken": auth_token,
 			},
 			"user": auth2_headers["X-Radiko-User"],
+			"tf30": self._has_tf30,
 		}
 
 		if not region_mismatch:
 			self.cache.store("rajiko", station_region, auth_data)
 		return auth_data
 
-	def _auth(self, station_region):
+	def _auth(self, station_region, tf30=False):
 		cachedata = self.cache.load("rajiko", station_region)
 		self.write_debug(cachedata)
 		if cachedata is not None:
+			if tf30 and not cachedata.get("tf30"):
+				return self._negotiate_token(station_region, tf30=True)
+
 			auth_headers = cachedata.get("token")
 			response = self._download_webpage("https://radiko.jp/v2/api/auth_check", station_region, "Checking cached token",
 				headers=auth_headers, expected_status=401)
@@ -231,10 +237,10 @@ class _RadikoBaseIE(InfoExtractor):
 		self.to_screen(f"{station_id}: Using cached station metadata")
 		return cachedata.get("meta")
 
-	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None, tf30_override=False):
+	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None, tf30=False):
 		config_device = traverse_obj(self._configuration_arg('device', casesense=True, ie_key="rajiko"), 0)
 
-		if not tf30_override:
+		if not tf30:
 			device = config_device or "aSmartPhone7a"  # the only one that works for timefree with this is the on-demand one
 			# that's good imo - we just get the one that works, and don't bother with probing the rest as well
 		else:
@@ -441,8 +447,6 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		},
 	}]
 
-	_has_tf30 = None
-
 	def _perform_login(self, username, password):
 		try:
 			login_info = self._download_json('https://radiko.jp/ap/member/webapi/member/login', None, note='Logging in',
@@ -543,8 +547,8 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
 		chapters = self._extract_chapters(station, start, end, video_id=meta["id"])
-		auth_data = self._auth(region)
-		formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end, tf30_override=needs_tf30)
+		auth_data = self._auth(region, tf30=needs_tf30)
+		formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end, tf30=needs_tf30)
 
 		return {
 			**station_meta,
