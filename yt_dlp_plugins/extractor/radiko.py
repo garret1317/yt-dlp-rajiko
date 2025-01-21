@@ -6,6 +6,7 @@ import urllib.parse
 import pkgutil
 
 from yt_dlp.extractor.common import InfoExtractor
+from yt_dlp.networking.exceptions import HTTPError
 from yt_dlp.utils import (
 	ExtractorError,
 	OnDemandPagedList,
