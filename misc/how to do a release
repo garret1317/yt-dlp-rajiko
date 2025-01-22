@@ -13,23 +13,13 @@ update the dl/ "latest" symlinks
 
 ## update the changelog file
 
-~/site2/yt-dlp-rajiko/CHANGELOG
+not bothering with the script any more, i just want to spout
 
-```
-version number
-date (git log v1.0 --pretty --date=rfc2822)
-url: whl download link
-sha256: sha256 of the whl
-brief summary of the release
-can span multiple lines
-
-bullet points of changes, 1 per line
-simple present tense, third person singular - continue "this release...", eg..
-fixes a bug where the computer would explode
-makes downloading 5000x faster
-```
-
-./generate_changelog.py to make the new rss feed
+write in html, paste into the feed xml like <![CDATA[
+stuff
+]]>
+make sure to set the link, date
+include the pip instructions, sha256sum etc
 
 ## update the website
 
