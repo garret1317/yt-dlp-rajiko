@@ -23,8 +23,12 @@ include the pip instructions, sha256sum etc
 
 ## update the website
 
+!!!!!!!!!!!
 move the previous release into the "Previous releases" <details>
 update the sha256 (just sha256 command in the pip dir)
+!!!!!!!!!!!
+(forgot last time)
+
 update the whl link
 repeat for japanese version
 
