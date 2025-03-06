@@ -609,6 +609,11 @@ class RadikoSearchIE(InfoExtractor):
 		# urllib.parse interprets the path as just one giant fragment because of the #, so we hack it away
 		queries = parse_qs(url)
 
+		if queries.get("cul_area_id"):
+			queries["cur_area_id"] =  queries.pop("cul_area_id")
+		# site used to use "cul_area_id" in the search url, now it uses "cur_area_id" (with an r)
+		# and outright rejects the old one with HTTP Error 415: Unsupported Media Type
+
 		search_url = update_url_query("https://radiko.jp/v3/api/program/search", {
 			**queries,
 			"uid": "".join(random.choices("0123456789abcdef", k=32)),
