@@ -614,7 +614,7 @@ class RadikoSearchIE(InfoExtractor):
 		# site used to use "cul_area_id" in the search url, now it uses "cur_area_id" (with an r)
 		# and outright rejects the old one with HTTP Error 415: Unsupported Media Type
 
-		search_url = update_url_query("https://radiko.jp/v3/api/program/search", {
+		search_url = update_url_query("https://api.annex-cf.radiko.jp/v1/programs/legacy/perl/program/search", {
 			**queries,
 			"uid": "".join(random.choices("0123456789abcdef", k=32)),
 			"app_id": "pc",
