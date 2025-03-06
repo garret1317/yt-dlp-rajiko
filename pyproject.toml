@@ -1,6 +1,6 @@
 [project]
 name = "yt-dlp-rajiko"
-version = "1.2"
+version = "1.3"
 description = "improved radiko.jp extractor for yt-dlp"
 authors = [
 	{ name="garret1317" },
