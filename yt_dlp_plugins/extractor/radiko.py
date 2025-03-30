@@ -256,6 +256,7 @@ class _RadikoBaseIE(InfoExtractor):
 		formats = []
 
 		timefree_int = 1 if timefree else 0
+		do_blacklist_streams = not len(self._configuration_arg("no_stream_blacklist", ie_key="rajiko")) > 0
 		for element in url_data.findall(f".//url[@timefree='{timefree_int}'][@areafree='0']/playlist_create_url"):
 		# find <url>s with matching timefree and no areafree, then get their <playlist_create_url>
 			url = element.text
@@ -286,7 +287,8 @@ class _RadikoBaseIE(InfoExtractor):
 			preference = -1
 			entry_protocol = 'm3u8'
 
-			if domain in self._DOESNT_WORK_WITH_FFMPEG:
+
+			if domain in self._DOESNT_WORK_WITH_FFMPEG and do_blacklist_streams:
 				self.write_debug(f"skipping {domain} (known not working)")
 				continue
 			if domain in self._DELIVERED_ONDEMAND:
