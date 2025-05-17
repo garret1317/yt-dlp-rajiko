@@ -7,7 +7,7 @@ yt-dlp-rajiko is an improved [radiko.jp](https://radiko.jp) extractor plugin for
 [Download the Python wheel](https://427738.xyz/yt-dlp-rajiko/dl/yt_dlp_rajiko-latest.whl) or `pip install
 --extra-index-url https://427738.xyz/yt-dlp-rajiko/pip/ yt-dlp-rajiko`
 
-Requires yt-dlp 2023.06.22 or above.
+Requires yt-dlp 2025.02.19 or above.
 
 Use the pip command if you installed yt-dlp with pip. If you installed
 yt-dlp with `pipx`, use `pipx inject --index-url
