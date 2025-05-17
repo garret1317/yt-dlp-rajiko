@@ -268,7 +268,7 @@ class _RadikoBaseIE(InfoExtractor):
 					"station_id": station,
 					"l": "15",  # l = length, ie how many seconds in the live m3u8 (max 300)
 					"lsid": auth_data["user"],
-					"type": "b",  # it is a mystery
+					"type": "b",  # a/b = in-region, c = areafree
 				})
 
 			if timefree:
