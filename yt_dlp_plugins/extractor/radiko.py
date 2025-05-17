@@ -258,6 +258,7 @@ class _RadikoBaseIE(InfoExtractor):
 
 		timefree_int = 1 if timefree else 0
 		do_blacklist_streams = not len(self._configuration_arg("no_stream_blacklist", ie_key="rajiko")) > 0
+		do_as_live_chunks = not len(self._configuration_arg("no_as_live_chunks", ie_key="rajiko")) > 0
 		for element in url_data.findall(f".//url[@timefree='{timefree_int}'][@areafree='0']/playlist_create_url"):
 		# find <url>s with matching timefree and no areafree, then get their <playlist_create_url>
 			url = element.text
@@ -297,7 +298,7 @@ class _RadikoBaseIE(InfoExtractor):
 				preference = 1
 				entry_protocol = None
 
-			if delivered_live and timefree:
+			if delivered_live and timefree and do_as_live_chunks:
 				chunks = hacks._generate_as_live_chunks(playlist_url, start_at, end_at)
 
 				formats.append({
