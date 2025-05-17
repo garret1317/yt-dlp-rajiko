@@ -21,6 +21,7 @@ from yt_dlp.utils import (
 )
 
 import yt_dlp_plugins.extractor.radiko_time as rtime
+import yt_dlp_plugins.extractor.radiko_hacks as hacks
 
 
 class _RadikoBaseIE(InfoExtractor):
@@ -287,7 +288,6 @@ class _RadikoBaseIE(InfoExtractor):
 			preference = -1
 			entry_protocol = 'm3u8'
 
-
 			if domain in self._DOESNT_WORK_WITH_FFMPEG and do_blacklist_streams:
 				self.write_debug(f"skipping {domain} (known not working)")
 				continue
@@ -297,10 +297,23 @@ class _RadikoBaseIE(InfoExtractor):
 				preference = 1
 				entry_protocol = None
 
-			formats += self._extract_m3u8_formats(
-				playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data["token"],
-				live=delivered_live, preference=preference, entry_protocol=entry_protocol,
-				note=f"Downloading m3u8 information from {domain}")
+			if delivered_live and timefree:
+				chunks = hacks._generate_as_live_chunks(playlist_url, start_at, end_at)
+
+				formats.append({
+					"url": playlist_url,  # fallback to live for ffmpeg etc
+					"format_id": join_nonempty(domain, "chunked"),
+					"live": False,
+					"hls_media_playlist_data": hacks._playlist_from_chunks(self, chunks, domain, auth_data["token"]),
+					"preference": preference,
+					"ext": "m4a",
+				})
+			else:
+
+				formats += self._extract_m3u8_formats(
+					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data["token"],
+					live=delivered_live, preference=preference, entry_protocol=entry_protocol,
+					note=f"Downloading m3u8 information from {domain}")
 		return formats
 
 
