@@ -299,13 +299,16 @@ class _RadikoBaseIE(InfoExtractor):
 				entry_protocol = None
 
 			if delivered_live and timefree and do_as_live_chunks:
-				chunks = hacks._generate_as_live_chunks(playlist_url, start_at, end_at)
+
+				chunks_playlist = hacks._generate_as_live_playlist(
+					self, playlist_url, start_at, end_at, domain, auth_data["token"]
+				)
 
 				formats.append({
 					"url": playlist_url,  # fallback to live for ffmpeg etc
 					"format_id": join_nonempty(domain, "chunked"),
 					"live": False,
-					"hls_media_playlist_data": hacks._playlist_from_chunks(self, chunks, domain, auth_data["token"]),
+					"hls_media_playlist_data": chunks_playlist,
 					"preference": preference,
 					"ext": "m4a",
 				})
