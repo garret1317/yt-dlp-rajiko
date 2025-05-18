@@ -2,6 +2,8 @@
 
 yt-dlp-rajiko is an improved [radiko.jp](https://radiko.jp) extractor plugin for yt-dlp.
 
+[日本語訳はこちら](https://427738.xyz/yt-dlp-rajiko/index.ja.html)
+
 ## Installation
 
 [Download the Python wheel](https://427738.xyz/yt-dlp-rajiko/dl/yt_dlp_rajiko-latest.whl) or `pip install
@@ -46,10 +48,12 @@ page.
 
 Just copying from the browser URL bar should work with no changes.
 
+## notes about this repository
+
+Generally you should use the release versions.
+`master` branch usually works, but should be considered experimental and may have bugs
+
 ----
 
 [Please see the website for more information](https://427738.xyz/yt-dlp-rajiko/).
 If the website is down, an archived copy may be available on [the Internet Archive's Wayback Machine](https://web.archive.org/web/*/https://427738.xyz/yt-dlp-rajiko/).
-
-[日本語訳は公式サイトをご覧ください。](https://427738.xyz/yt-dlp-rajiko/index.ja.html)
-サイトが無くなった場合は、多分[Internet ArchiveのWayback Machineにアーカイブされています](https://web.archive.org/web/*/https://427738.xyz/yt-dlp-rajiko/index.ja.html)。
