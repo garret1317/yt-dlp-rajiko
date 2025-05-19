@@ -298,10 +298,12 @@ class _RadikoBaseIE(InfoExtractor):
 				preference = 1
 				entry_protocol = None
 
+			auth_headers = auth_data["token"]
+
 			if delivered_live and timefree and do_as_live_chunks:
 
 				chunks_playlist = hacks._generate_as_live_playlist(
-					self, playlist_url, start_at, end_at, domain, auth_data["token"]
+					self, playlist_url, start_at, end_at, domain, auth_headers
 				)
 
 				formats.append({
@@ -315,7 +317,7 @@ class _RadikoBaseIE(InfoExtractor):
 			else:
 
 				formats += self._extract_m3u8_formats(
-					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_data["token"],
+					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_headers,
 					live=delivered_live, preference=preference, entry_protocol=entry_protocol,
 					note=f"Downloading m3u8 information from {domain}")
 		return formats
