@@ -3,3 +3,5 @@ __pycache__
 *.pyc
 wiki/
 dist/
+*.m4a*
+*.m3u8
