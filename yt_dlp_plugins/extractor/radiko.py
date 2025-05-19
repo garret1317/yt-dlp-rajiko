@@ -307,12 +307,14 @@ class _RadikoBaseIE(InfoExtractor):
 				)
 
 				formats.append({
-					"url": playlist_url,  # fallback to live for ffmpeg etc
 					"format_id": join_nonempty(domain, "chunked"),
-					"live": False,
 					"hls_media_playlist_data": chunks_playlist,
 					"preference": preference,
 					"ext": "m4a",
+
+					# fallback to live for ffmpeg etc
+					"url": playlist_url,
+					"http_headers": auth_headers,
 				})
 			else:
 
