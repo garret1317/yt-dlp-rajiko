@@ -532,10 +532,12 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			"start_time_gte": start.isoformat(),
 			"end_time_lt": end.isoformat(),
 		})
-		data = self._download_json(api_url, video_id, note="Downloading tracklist").get("data")
+		data_json = self._download_json(
+			api_url, video_id, note="Downloading tracklist", errnote="Downloading tracklist", fatal=False
+		)
 
 		chapters = []
-		for track in data:
+		for track in traverse_obj(data_json, "data") or []:
 			artist = traverse_obj(track, ("artist", "name")) or track.get("artist_name")
 			chapters.append({
 				"title": join_nonempty(artist, track.get("title"), delim=" - "),
