@@ -8,8 +8,8 @@ python3 -m build
 
 and then put BOTH items from `dist` into the pip index dir - ~/site2/yt-dlp-rajiko/pip/yt-dlp-rajiko/
 because without the .whl pip has to "build" it itself, with all the stuff that needs to be installed for that to work
-update the pip index html
-update the dl/ "latest" symlinks
+
+run script to update the pip index html and the dl/ "latest" symlinks
 
 ## update the changelog file
 
@@ -19,6 +19,7 @@ write in html, paste into the feed xml like <![CDATA[
 stuff
 ]]>
 make sure to set the link, date
+(git log --pretty --date=rfc2822)
 include the pip instructions, sha256sum etc
 
 ## update the website
