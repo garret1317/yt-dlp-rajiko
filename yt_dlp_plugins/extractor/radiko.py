@@ -619,15 +619,25 @@ class RadikoSearchIE(InfoExtractor):
 	}]
 
 	def _strip_date(self, date):
+		# lazy way of making a timestring (from eg 2025-05-20 01:00:00)
 		return date.replace(" ", "").replace("-", "").replace(":", "")
 
 	def _pagefunc(self, url, idx):
 		url = update_url_query(url, {"page_idx": idx})
 		data = self._download_json(url, None, note=f"Downloading page {idx+1}")
 
-		return [self.url_result("https://radiko.jp/#!/ts/{station}/{time}".format(
-				station = i.get("station_id"), time = self._strip_date(i.get("start_time"))))
-			for i in data.get("data")]
+		results = []
+		for r in data.get("data"):
+			station = r.get("station_id")
+			timestring = self._strip_date(r.get("start_time"))
+
+			results.append(
+				self.url_result(
+					f"https://radiko.jp/#!/ts/{station}/{timestring}",
+					id=join_nonempty(station, timestring)
+				)
+			)
+			return results
 
 	def _real_extract(self, url):
 		url = url.replace("/#!/", "/!/", 1)
