@@ -711,7 +711,10 @@ class RadikoShareIE(InfoExtractor):
 		station = traverse_obj(queries, ("sid", 0))
 		time = traverse_obj(queries, ("t", 0))
 		time = rtime.RadikoShareTime(time).timestring()
-		return self.url_result(f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE)
+		return self.url_result(
+			f"https://radiko.jp/#!/ts/{station}/{time}", RadikoTimeFreeIE,
+			id=join_nonempty(station, time)
+		)
 
 
 class RadikoStationButtonIE(InfoExtractor):
