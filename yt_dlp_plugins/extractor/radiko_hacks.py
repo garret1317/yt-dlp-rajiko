@@ -35,7 +35,7 @@ def _generate_as_live_playlist(self, playlist_url, start_at, end_at, domain, hea
 	return playlist
 
 def _get_chunk_playlist(self, chunk_url, src_id, chunk_num, headers={}):
-	EXTINF_duration = re.compile("^#EXTINF:([\d.]+),", flags=re.MULTILINE)
+	EXTINF_duration = re.compile(r"^#EXTINF:([\d.]+),", flags=re.MULTILINE)
 
 	playlist = ""
 	chunk_id = join_nonempty(src_id, chunk_num)
