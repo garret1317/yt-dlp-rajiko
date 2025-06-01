@@ -10,10 +10,9 @@ and then put BOTH items from `dist` into the pip index dir - ~/site2/yt-dlp-raji
 because without the .whl pip has to "build" it itself, with all the stuff that needs to be installed for that to work
 
 run script to update the pip index html and the dl/ "latest" symlinks
+this also updates the sha256s on the site
 
 ## update the changelog file
-
-not bothering with the script any more, i just want to spout
 
 write in html, paste into the feed xml like <![CDATA[
 stuff
@@ -22,21 +21,14 @@ make sure to set the link, date
 (git log --pretty --date=rfc2822)
 include the pip instructions, sha256sum etc
 
-## update the website
-
-!!!!!!!!!!!
-move the previous release into the "Previous releases" <details>
-update the sha256 (just sha256 command in the pip dir)
-!!!!!!!!!!!
-(forgot last time)
-
-update the whl link
-repeat for japanese version
 
 now push to the server
 
 ## update github
 
 paste the changelog output into a github release, upload the new builds
+change link at the bottom to just "below"
+
+post in the radiko thread on 5ch if i can be bothered
 
 and thats probably all
