@@ -240,10 +240,10 @@ class _RadikoBaseIE(InfoExtractor):
 		self.to_screen(f"{station_id}: Using cached station metadata")
 		return cachedata.get("meta")
 
-	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None, tf30_override=False):
+	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None, use_pc_html5=False):
 		config_device = traverse_obj(self._configuration_arg('device', casesense=True, ie_key="rajiko"), 0)
 
-		if not tf30_override:
+		if not use_pc_html5:
 			device = config_device or "aSmartPhone7a"  # this device only gives us the on-demand one for timefree
 			# that's good imo - we just get the one that works, and don't bother with probing the rest as well
 		else:
@@ -398,7 +398,7 @@ class RadikoLiveIE(_RadikoBaseIE):
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
 		auth_data = self._auth(region)
-		formats = self._get_station_formats(station, False, auth_data)
+		formats = self._get_station_formats(station, False, auth_data, use_pc_html5=True)
 
 		return {
 			"is_live": True,
@@ -577,7 +577,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		station_meta = self._get_station_meta(region, station)
 		chapters = self._extract_chapters(station, start, end, video_id=meta["id"])
 		auth_data = self._auth(region, need_tf30=need_tf30)
-		formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end, tf30_override=need_tf30)
+		formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end, use_pc_html5=need_tf30)
 
 		return {
 			**station_meta,
