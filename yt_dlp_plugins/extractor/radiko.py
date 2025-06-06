@@ -637,7 +637,7 @@ class RadikoSearchIE(InfoExtractor):
 					id=join_nonempty(station, timestring)
 				)
 			)
-			return results
+		return results
 
 	def _real_extract(self, url):
 		url = url.replace("/#!/", "/!/", 1)
