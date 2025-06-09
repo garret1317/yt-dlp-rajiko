@@ -18,7 +18,9 @@ write in html, paste into the feed xml like <![CDATA[
 stuff
 ]]>
 make sure to set the link, date
-(git log --pretty --date=rfc2822)
+to get date use:
+git log --pretty --date=rfc2822
+
 include the pip instructions, sha256sum etc
 
 
