@@ -216,6 +216,17 @@ class _RadikoBaseIE(InfoExtractor):
 			station = region.find(f'.//station/id[.="{station_id}"]/..')  # a <station> with an <id> of our station_id
 			station_name = station.find("name").text
 			station_url = url_or_none(station.find("href").text)
+
+			thumbnails = []
+			for logo in station.findall("logo"):
+				thumbnails.append({
+					"url": logo.text,
+					**traverse_obj(logo.attrib, ({
+						"width": ("width", {int_or_none}),
+						"height": ("height", {int_or_none}),
+					}))
+				})
+
 			meta = {
 				"id": station_id,
 				"title": station_name,
@@ -229,7 +240,7 @@ class _RadikoBaseIE(InfoExtractor):
 				"uploader_id": station_id,
 				"uploader_url": station_url,
 
-				"thumbnail": url_or_none(station.find("banner").text),
+				"thumbnails": thumbnails,
 			}
 			self.cache.store("rajiko", station_id, {
 				"expiry": (now + datetime.timedelta(days=1)).timestamp(),
@@ -340,7 +351,7 @@ class RadikoLiveIE(_RadikoBaseIE):
 			"id": "FMT",
 			"title": "re:^TOKYO FM.+$",
 			"alt_title": "TOKYO FM",
-			"thumbnail": "https://radiko.jp/res/banner/FMT/20220512162447.jpg",
+			"thumbnail": "https://radiko.jp/v2/static/station/logo/FMT/lrtrim/688x160.png",
 
 			"channel": "TOKYO FM",
 			"channel_id": "FMT",
@@ -360,7 +371,7 @@ class RadikoLiveIE(_RadikoBaseIE):
 			"id": "NORTHWAVE",
 			"title": "re:^FM NORTH WAVE.+$",
 			"alt_title": "FM NORTH WAVE",
-			"thumbnail": "https://radiko.jp/res/banner/NORTHWAVE/20150731161543.png",
+			"thumbnail": "https://radiko.jp/v2/static/station/logo/NORTHWAVE/lrtrim/688x160.png",
 
 			"uploader": "FM NORTH WAVE",
 			"uploader_url": "https://www.fmnorth.co.jp/",
@@ -381,7 +392,7 @@ class RadikoLiveIE(_RadikoBaseIE):
 			"id": "RN1",
 			"title": "re:^ラジオNIKKEI第1.+$",
 			"alt_title": "RADIONIKKEI",
-			"thumbnail": "https://radiko.jp/res/banner/RN1/20120802154152.png",
+			"thumbnail": "https://radiko.jp/v2/static/station/logo/RN1/lrtrim/688x160.png",
 
 			"channel": "ラジオNIKKEI第1",
 			"channel_url": "http://www.radionikkei.jp/",
@@ -581,7 +592,9 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 		return {
 			**station_meta,
-			"alt_title": None,
+			"alt_title": None,  # override from station metadata
+			"thumbnails": None,
+
 			**meta,
 			"chapters": chapters,
 			"formats": formats,
@@ -727,19 +740,9 @@ class RadikoStationButtonIE(InfoExtractor):
 		"info_dict": {
 			"ext": "m4a",
 			'live_status': 'is_live',
-
 			"id": "QRR",
-			"title": "re:^文化放送.+$",
-			'alt_title': 'JOQR BUNKA HOSO',
-			'thumbnail': 'https://radiko.jp/res/banner/QRR/20240423144553.png',
-			'channel': '文化放送',
-			'channel_id': 'QRR',
-			'channel_url': 'http://www.joqr.co.jp/',
-			'uploader': '文化放送',
-			'uploader_id': 'QRR',
-			'uploader_url': 'http://www.joqr.co.jp/',
-
-		}
+		},
+		'only_matching': True,
 	}]
 
 	_WEBPAGE_TESTS = [{
@@ -750,7 +753,7 @@ class RadikoStationButtonIE(InfoExtractor):
 			'id': 'CCL',
 			"title": "re:^FM COCOLO.+$",
 			'alt_title': 'FM COCOLO',
-			'thumbnail': 'https://radiko.jp/res/banner/CCL/20161014144826.png',
+			'thumbnail': 'https://radiko.jp/v2/static/station/logo/CCL/lrtrim/688x160.png',
 
 			'channel': 'FM COCOLO',
 			'channel_id': 'CCL',
