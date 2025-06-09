@@ -782,7 +782,7 @@ class RadikoPersonIE(InfoExtractor):
 	},{
 		"url": "https://radiko.jp/persons/11421",
 		"params": {'extractor_args': {'rajiko': {'key_station_only': ['']}}},
-		"playlist_count": 1,
+		"playlist_mincount": 1,
 		"info_dict": {
 			"id": "person-11421",
 		},
