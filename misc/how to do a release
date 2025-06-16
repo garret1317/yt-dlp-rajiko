@@ -23,8 +23,13 @@ git log --pretty --date=rfc2822
 
 include the pip instructions, sha256sum etc
 
-
 now push to the server
+
+!!NEW!!
+upload to pip proper as well
+go to dl/ dir and do
+twine upload yt_dlp_rajiko-1.x*
+
 
 ## update github
 
