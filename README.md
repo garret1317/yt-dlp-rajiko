@@ -2,24 +2,21 @@
 
 yt-dlp-rajiko is an improved [radiko.jp](https://radiko.jp) extractor plugin for yt-dlp.
 
-[日本語訳はこちら](https://427738.xyz/yt-dlp-rajiko/index.ja.html)
-
 ## Installation
 
-[Download the Python wheel](https://427738.xyz/yt-dlp-rajiko/dl/yt_dlp_rajiko-latest.whl) or `pip install
---extra-index-url https://427738.xyz/yt-dlp-rajiko/pip/ yt-dlp-rajiko`
+[Download the Python wheel](https://427738.xyz/yt-dlp-rajiko/dl/yt_dlp_rajiko-latest.whl) or `pip install yt-dlp-rajiko`
 
 Requires yt-dlp 2025.02.19 or above.
 
 Use the pip command if you installed yt-dlp with pip. If you installed
-yt-dlp with `pipx`, use `pipx inject --index-url
-https://427738.xyz/yt-dlp-rajiko/pip/ yt-dlp yt-dlp-rajiko` to install
+yt-dlp with `pipx`, use `pipx inject yt-dlp yt-dlp-rajiko` to install
 the plugin in yt-dlp's environment.
 
 Otherwise, download the wheel, and place it in one of these locations:
 
   - `~/.config/yt-dlp/plugins/` (on Linux and Mac)
   - `%appdata%/yt-dlp/plugins/` (on Windows)
+  - a `yt-dlp-plugins` folder next to your `yt-dlp.exe` (<a href="https://427738.xyz/yt-dlp-rajiko/i/installation-pluginsfolder.png">like this</a>)
   - anywhere else listed in [the yt-dlp
     documentation](https://github.com/yt-dlp/yt-dlp#installing-plugins).
 
@@ -65,6 +62,13 @@ As a general rule, just copying from the browser URL bar should work with no cha
 (Apparently on Windows it won't work unless you use "double quotes", but on Linux it won't work unless you use 'single quotes'. If the command doesnt work with one quote type then try the other.)
 
 **[You can find more usage tips on the website](https://427738.xyz/yt-dlp-rajiko/)**
+
+## How do I get help?
+
+[Open an issue on github](https://github.com/garret1317/yt-dlp-rajiko/issues) or [send a message via the "hate mail" form](https://427738.xyz/hate-mail.html).
+You can also ping me [in the yt-dlp discord server](https://discord.gg/H5MNcFW63r), username `garret1317`.
+
+Please try to include a verbose log if you're reporting a problem, it helps with diagnosing the issue.
 
 ## notes about this repository
 
