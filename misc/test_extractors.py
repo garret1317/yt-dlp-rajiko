@@ -15,8 +15,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, "/home/g/Downloads/yt-dlp/")  # TODO: un-hardcode. has to be the source/git repo because pip doesnt carry the tests
 
 from yt_dlp_plugins.extractor import radiko_time as rtime
-from yt_dlp_plugins.extractor.radiko import RadikoTimeFreeIE
-
 
 MON, TUE, WED, THU, FRI, SAT, SUN = range(7)
 weekdays = {0: "MON", 1: "TUE", 2: "WED", 3: "THU", 4: "FRI", 5: "SAT", 6: "SUN"}
@@ -44,8 +42,11 @@ def get_test_timefields(airtime, release_time):
 
 
 
+from yt_dlp_plugins.extractor.radiko import RadikoTimeFreeIE
 
 RadikoTimeFreeIE._TESTS = []
+
+
 
 # TOKYO MOON - interfm - EVERY FRI 2300
 airtime, release_time = get_latest_airtimes(now, FRI, 23, 0, datetime.timedelta(hours=1))
