@@ -42,7 +42,7 @@ def get_test_timefields(airtime, release_time):
 
 
 
-from yt_dlp_plugins.extractor.radiko import RadikoTimeFreeIE
+from yt_dlp_plugins.extractor.radiko import RadikoTimeFreeIE, RadikoShareIE
 
 RadikoTimeFreeIE._TESTS = []
 
@@ -104,8 +104,40 @@ RadikoTimeFreeIE._TESTS.append({
 })
 
 
+# testing 29-hour clock handling
+airtime, release_time = get_latest_airtimes(now, WED, 0, 0, datetime.timedelta(minutes=55))
+share_timestring = (airtime - datetime.timedelta(days=1)).strftime("%Y%m%d") + "240000"
 
-IEs = [RadikoTimeFreeIE]
+RadikoShareIE._TESTS = [{
+		"url": f"http://radiko.jp/share/?sid=FMT&t={share_timestring}",
+		"info_dict": {
+			"live_status": "was_live",
+			"ext": "m4a",
+			"id": f"FMT-{airtime.timestring()}",
+
+			**get_test_timefields(airtime, release_time),
+
+			"title": "JET STREAM",
+			"series": "JET STREAM",
+			"description": r"re:^JET STREAM・・・作家が描く世界への旅。[\s\S]+https://www.tfm.co.jp/f/jetstream/message$",
+			"chapters": list,
+			"thumbnail": "https://program-static.cf.radiko.jp/greinlrspi.jpg",
+
+			"channel": "TOKYO FM",
+			"channel_id": "FMT",
+			"channel_url": "https://www.tfm.co.jp/",
+			"uploader": "TOKYO FM",
+			"uploader_id": "FMT",
+			"uploader_url": "https://www.tfm.co.jp/",
+
+			"cast": ["福山雅治"],
+			"tags": ["福山雅治", "夜間飛行", "音楽との出会いが楽しめる", "朗読を楽しめる", "寝る前に聴きたい"],
+		},
+	}]
+
+
+
+IEs = [RadikoTimeFreeIE, RadikoShareIE]
 
 import test.helper as th
 
