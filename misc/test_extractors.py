@@ -76,7 +76,32 @@ RadikoTimeFreeIE._TESTS.append({
 })
 
 
+# late-night/v. early morning show, to test broadcast day handling
+# this should be monday 27:00 / tuesday 03:00
+airtime, release_time = get_latest_airtimes(now, TUE, 3, 0, datetime.timedelta(hours=2))
+RadikoTimeFreeIE._TESTS.append({
+	"url": f"https://radiko.jp/#!/ts/TBS/{airtime.timestring()}",
+	"info_dict": {
+		"ext": "m4a",
+		"id": f"TBS-{airtime.timestring()}",
 
+		**get_test_timefields(airtime, release_time),
+		'title': 'CITY CHILL CLUB',
+		'description': r"re:^目を閉じて…リラックスして[\S\s]+chill@tbs.co.jp$",
+		'uploader': 'TBSラジオ',
+		'uploader_id': 'TBS',
+		'uploader_url': 'https://www.tbsradio.jp/',
+		'channel': 'TBSラジオ',
+		'channel_id': 'TBS',
+		'channel_url': 'https://www.tbsradio.jp/',
+		'thumbnail': 'https://program-static.cf.radiko.jp/nrf8fowbjo.jpg',
+		'chapters': list,
+		'tags': ['CCC905', '音楽との出会いが楽しめる', '人気アーティストトーク', '音楽プロデューサー出演', 'ドライブ中におすすめ', '寝る前におすすめ', '学生におすすめ'],
+		'cast': list,
+		'series': 'CITY CHILL CLUB',
+		'live_status': 'was_live',
+	},
+})
 
 
 

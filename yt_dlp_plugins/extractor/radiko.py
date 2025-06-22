@@ -422,66 +422,7 @@ class RadikoLiveIE(_RadikoBaseIE):
 class RadikoTimeFreeIE(_RadikoBaseIE):
 	_NETRC_MACHINE = "rajiko"
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/ts/(?P<station>[A-Z0-9-_]+)/(?P<id>\d+)"
-	_TESTS = [{
-		"url": "https://radiko.jp/#!/ts/INT/20240809230000",
-		"info_dict": {
-			"live_status": "was_live",
-			"ext": "m4a",
-			"id": "INT-20240809230000",
-
-			"title": "TOKYO MOON",
-			"series": "Tokyo Moon",
-			"description": "md5:20e68d2f400a391fa34d4e7c8c702cb8",
-			"chapters": "count:14",
-			"thumbnail": "https://program-static.cf.radiko.jp/ehwtw6mcvy.jpg",
-
-			"upload_date": "20240809",
-			"timestamp": 1723212000.0,
-			"release_date": "20240809",
-			"release_timestamp": 1723215600.0,
-			"duration": 3600,
-
-			"channel": "interfm",
-			"channel_id": "INT",
-			"channel_url": "https://www.interfm.co.jp/",
-			"uploader": "interfm",
-			"uploader_id": "INT",
-			"uploader_url": "https://www.interfm.co.jp/",
-
-			"cast": ["松浦\u3000俊夫"],
-			"tags": ["松浦俊夫"],
-		},
-	}, {
-		# late-night/early-morning show to test broadcast day checking
-		"url": "https://radiko.jp/#!/ts/TBS/20240810033000",
-		"info_dict": {
-			"live_status": "was_live",
-			"ext": "m4a",
-			"id": "TBS-20240810033000",
-
-			"title": "CITY CHILL CLUB",
-			"series": "CITY CHILL CLUB",
-			"description": "md5:3fba2c1125059bed27247c0be90e58fa",
-			"chapters": "count:22",
-			"thumbnail": "https://program-static.cf.radiko.jp/ku7t4ztnaq.jpg",
-
-			"upload_date": "20240809",
-			"timestamp": 1723228200.0,
-			"release_date": "20240809",
-			"release_timestamp": 1723233600.0,
-			"duration": 5400,
-
-			"channel": "TBSラジオ",
-			"channel_url": "https://www.tbsradio.jp/",
-			"channel_id": "TBS",
-			"uploader": "TBSラジオ",
-			"uploader_url": "https://www.tbsradio.jp/",
-			"uploader_id": "TBS",
-
-			"tags": ["CCC905", "音楽との出会いが楽しめる", "人気アーティストトーク", "音楽プロデューサー出演", "ドライブ中におすすめ", "寝る前におすすめ", "学生におすすめ"],
-			"cast": ["PES"],
-		},
-	}]
+	# TESTS use a custom-ish script that updates the airdates automatically, see misc/test_extractors.py
 
 	def _perform_login(self, username, password):
 		try:
