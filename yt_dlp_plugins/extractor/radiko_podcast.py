@@ -25,8 +25,8 @@ class _RadikoPodcastBaseIE(InfoExtractor):
 
 				"series": "channelTitle",
 				"series_id": "channelId",
-				"channel": "stationName",
-				"uploader": "stationName",
+				"channel": "channelStationName",
+				"uploader": "channelStationName",
 			}),
 			"thumbnail": traverse_obj(episode_info, ("imageUrl", {url_or_none}))
 				or traverse_obj(episode_info, ("channelImageUrl", {url_or_none})),
@@ -54,6 +54,8 @@ class RadikoPodcastEpisodeIE(_RadikoPodcastBaseIE):
 			'series_id': '09f27a48-ae04-4ce7-a024-572460e46eb7',
 			'timestamp': 1751554800,
 			'upload_date': '20250703',
+			'uploader': 'IBCラジオ',
+			'channel': 'IBCラジオ',
 		},
 	}]
 
