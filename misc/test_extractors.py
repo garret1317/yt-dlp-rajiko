@@ -59,7 +59,7 @@ RadikoTimeFreeIE._TESTS.append({
 		**get_test_timefields(airtime, release_time),
 
 		'title': 'TOKYO MOON',
-		'description': 'md5:4185349a530cfc4d0580e6996a511273',
+		'description': r're:[\S\s]+Xハッシュタグは「#tokyomoon」$',
 		'uploader': 'interfm',
 		'uploader_id': 'INT',
 		'uploader_url': 'https://www.interfm.co.jp/',
