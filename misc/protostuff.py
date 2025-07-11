@@ -86,7 +86,7 @@ headers = {
 
 response = requests.post('https://api.annex.radiko.jp/radiko.PodcastService/ListPodcastEpisodes', headers=headers,
 	data=add_grpc_header(protobug.dumps(ListPodcastEpisodesRequest(
-		channel_id="09f27a48-ae04-4ce7-a024-572460e46eb7",
+		channel_id="1c931755-4d85-46f3-814c-7c13d771cf3c",
 		dontknow=1,
 		page_length=100,  # site uses 20
 #		cursor="ef693874-0ad2-48cc-8c52-ac4de31cbf54"  # here you put the id of the last episode you've seen in the list
@@ -137,10 +137,11 @@ class PodcastEpisode:
 @protobug.message
 class ListPodcastEpisodesResponse:
 	episodes: list[PodcastEpisode] = protobug.field(1)
-	hasNextPage: protobug.Bool | None = protobug.field(2, default=None)
+	hasNextPage: protobug.Bool = protobug.field(2, default=False)
 
 
 episodes_response = protobug.loads(episodes, ListPodcastEpisodesResponse)
 
 for e in episodes_response.episodes:
 	print(e.title, e.id)
+print(episodes_response.hasNextPage)
