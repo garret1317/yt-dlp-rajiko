@@ -86,9 +86,9 @@ headers = {
 
 response = requests.post('https://api.annex.radiko.jp/radiko.PodcastService/ListPodcastEpisodes', headers=headers,
 	data=add_grpc_header(protobug.dumps(ListPodcastEpisodesRequest(
-		channel_id="1c931755-4d85-46f3-814c-7c13d771cf3c",
+		channel_id="0ce1d2d7-5e07-4ec5-901a-d0eacdacc332",
 		dontknow=1,
-		page_length=100,  # site uses 20
+		page_length=200,  # site uses 20
 #		cursor="ef693874-0ad2-48cc-8c52-ac4de31cbf54"  # here you put the id of the last episode you've seen in the list
 	)))
 )
@@ -98,8 +98,8 @@ print(response)
 episodes = strip_grpc_response(response.content)
 
 
-#with open("ListPodcastEpisodes.bin", "rb") as f:
-#	response = strip_grpc(f.read())
+with open("ListPodcastEpisodes.bin", "wb") as f:
+	f.write(episodes)
 
 
 @protobug.message
@@ -123,16 +123,21 @@ class PodcastEpisode:
 	channelId: protobug.String = protobug.field(3)
 	title: protobug.String = protobug.field(4)
 	description: protobug.String = protobug.field(5)
+
 	audio: Audio = protobug.field(8)
 	channelImageUrl: protobug.String = protobug.field(16)
 	channelTitle: protobug.String = protobug.field(17)
 	channelStationName: protobug.String = protobug.field(18)
 	channelAuthor: protobug.String = protobug.field(19)
+
 	channelThumbnailImageUrl: protobug.String = protobug.field(21)
 	channelStationType: protobug.UInt32 = protobug.field(22)
 	startAt: EpisodeStartAt = protobug.field(27)
 	isEnabled: protobug.Bool = protobug.field(29)
 	hasTranscription: protobug.Bool = protobug.field(32)
+
+	imageUrl: protobug.String = protobug.field(7, default=None)
+	thumbnailImageUrl: protobug.String = protobug.field(20, default=None)
 
 @protobug.message
 class ListPodcastEpisodesResponse:
@@ -141,6 +146,8 @@ class ListPodcastEpisodesResponse:
 
 
 episodes_response = protobug.loads(episodes, ListPodcastEpisodesResponse)
+
+print(episodes_response)
 
 for e in episodes_response.episodes:
 	print(e.title, e.id)
