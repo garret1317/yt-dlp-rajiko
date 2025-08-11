@@ -6,9 +6,12 @@ from yt_dlp.utils import (
 	str_or_none,
 )
 
-# nice simple one for a change...
-# the app uses a similar system to regular programmes, thankfully the site doesn't
-# but it does need protobufs to get more than 20 items...
+try:
+	import protobug
+	import yt_dlp_plugins.extractor.radiko_protobufs as pb
+except ImportError:
+	protobug = None
+
 
 class _RadikoPodcastBaseIE(InfoExtractor):
 
@@ -32,7 +35,7 @@ class _RadikoPodcastBaseIE(InfoExtractor):
 				or traverse_obj(episode_info, ("channelImageUrl", {url_or_none})),
 
 			# so that --download-archive still works if you download from the playlist page
-			"webpage_url": "https://radiko.jp/podcast/episodes/{id}".format(id=episode_info.get("id")),
+			"webpage_url": "https://radiko.jp/podcast/episodes/{id}".format(id=traverse_obj(episode_info, "id")),
 			'extractor_key': RadikoPodcastEpisodeIE.ie_key(),
 			'extractor': 'RadikoPodcastEpisode',
 		}
@@ -82,29 +85,35 @@ class RadikoPodcastChannelIE(_RadikoPodcastBaseIE):
 	}]
 
 	def _real_extract(self, url):
-		video_id = self._match_id(url)
-		webpage = self._download_webpage(url, video_id)
-		next_data = self._search_nextjs_data(webpage, video_id)["props"]["pageProps"]
+		channel_id = self._match_id(url)
+		webpage = self._download_webpage(url, channel_id)
+		next_data = self._search_nextjs_data(webpage, channel_id)["props"]["pageProps"]
 
 		channel_info = next_data["podcastChannel"]
 		episode_list_response = next_data["listPodcastEpisodesResponse"]
 
 
 		def entries():
+			has_next_page = episode_list_response.get("hasNextPage")
 			for episode in episode_list_response["episodesList"]:
+				cursor = episode.get("id")
 				yield self._extract_episode(episode)
 
-		if traverse_obj(episode_list_response, "hasNextPage"):
-			self.report_warning(f'Currently this extractor can only extract the latest {len(episode_list_response["episodesList"])} episodes')
-
-		# TODO: GRPC/protobuf stuff to get the next page
-		# https://api.annex.radiko.jp/radiko.PodcastService/ListPodcastEpisodes
-		# see さらに表示 button on site
-
+			if has_next_page:
+				if protobug:
+					userservice_token = pb.auth_userservice(self)
+					while has_next_page:
+						page = pb.get_podcast_episodes(self, channel_id, userservice_token, cursor)
+						has_next_page = page.hasNextPage
+						for episode in page.episodes:
+							cursor = episode.id
+							yield self._extract_episode(episode)
+				else:
+					self.report_warning(f'Only extracting the latest {len(episode_list_response["episodesList"])} episodes. Install protobug for more.')
 
 		return {
 			"_type": "playlist",
-			"id": video_id,
+			"id": channel_id,
 			**traverse_obj(channel_info, {
 				"playlist_title": "title",
 				"playlist_id": "id",
