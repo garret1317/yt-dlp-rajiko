@@ -125,7 +125,7 @@ RadikoShareIE._TESTS = [{
 
 			"title": "JET STREAM",
 			"series": "JET STREAM",
-			"description": r"re:^JET STREAM・・・作家が描く世界への旅。[\s\S]+https://www.tfm.co.jp/f/jetstream/message$",
+			"description": r"re:^JET STREAM・・・[\s\S]+https://www.tfm.co.jp/f/jetstream/message$",
 			"chapters": list,
 			"thumbnail": "https://program-static.cf.radiko.jp/greinlrspi.jpg",
 
