@@ -6,6 +6,7 @@ from yt_dlp.utils import (
 	str_or_none,
 )
 
+import dataclasses
 try:
 	import protobug
 	import yt_dlp_plugins.extractor.radiko_protobufs as pb
@@ -107,7 +108,7 @@ class RadikoPodcastChannelIE(_RadikoPodcastBaseIE):
 						has_next_page = page.hasNextPage
 						for episode in page.episodes:
 							cursor = episode.id
-							yield self._extract_episode(episode)
+							yield self._extract_episode(dataclasses.asdict(episode))
 				else:
 					self.report_warning(f'Only extracting the latest {len(episode_list_response["episodesList"])} episodes. Install protobug for more.')
 
