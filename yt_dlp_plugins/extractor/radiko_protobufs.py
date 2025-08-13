@@ -88,7 +88,7 @@ if protobug:  # i suppose it works lmao
 	@protobug.message
 	class ListPodcastEpisodesRequest:
 		channel_id: protobug.String = protobug.field(1)
-		dontknow: protobug.Int32 = protobug.field(2)
+		sort_by_latest: protobug.Bool = protobug.field(2)
 		page_length: protobug.Int32 = protobug.field(4)
 		cursor: protobug.String = protobug.field(5, default=None)
 
@@ -145,7 +145,7 @@ if protobug:  # i suppose it works lmao
 			headers={'Authorization': f'Bearer {jwt}'},
 			data=ListPodcastEpisodesRequest(
 				channel_id=channel_id,
-				dontknow=1,
+				sort_by_latest=True,
 				page_length=page_length,
 				cursor=cursor,
 			)
