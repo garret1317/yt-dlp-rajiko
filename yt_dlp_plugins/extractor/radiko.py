@@ -87,6 +87,7 @@ class _RadikoBaseIE(InfoExtractor):
 
 	_DELIVERED_ONDEMAND = ('radiko.jp',)
 	_DOESNT_WORK_WITH_FFMPEG = ('tf-f-rpaa-radiko.smartstream.ne.jp', 'si-f-radiko.smartstream.ne.jp', 'alliance-stream-radiko.smartstream.ne.jp')
+	_AD_INSERTION = ('si-f-radiko.smartstream.ne.jp', )
 
 	_has_tf30 = None
 
@@ -299,6 +300,7 @@ class _RadikoBaseIE(InfoExtractor):
 			delivered_live = True
 			preference = -1
 			entry_protocol = 'm3u8'
+			format_note=[]
 
 			if domain in self._DOESNT_WORK_WITH_FFMPEG and do_blacklist_streams:
 				self.write_debug(f"skipping {domain} (known not working)")
@@ -306,8 +308,12 @@ class _RadikoBaseIE(InfoExtractor):
 			if domain in self._DELIVERED_ONDEMAND:
 				# override the defaults for delivered as on-demand
 				delivered_live = False
-				preference = 1
+				preference += 2
 				entry_protocol = None
+			if domain in self._AD_INSERTION:
+				preference -= 3
+				format_note.append("Ad insertion")
+
 
 			auth_headers = auth_data["token"]
 
@@ -328,6 +334,7 @@ class _RadikoBaseIE(InfoExtractor):
 					"url": playlist_url,
 					"http_headers": auth_headers,
 				}]
+				format_note.append("Chunked")
 			else:
 
 				m3u8_formats = self._extract_m3u8_formats(
