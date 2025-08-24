@@ -30,6 +30,8 @@ jobs:
 
     - name: install ffmpeg
       uses: AnimMouse/setup-ffmpeg@v1
+      with:
+        version: master
 
     - name: get yt-dlp source (for the test_download script we override)
       uses: actions/checkout@v4
