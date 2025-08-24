@@ -322,6 +322,7 @@ class _RadikoBaseIE(InfoExtractor):
 					"hls_media_playlist_data": chunks_playlist,
 					"preference": preference,
 					"ext": "m4a",
+					"vcodec": "none",
 
 					# fallback to live for ffmpeg etc
 					"url": playlist_url,
