@@ -317,7 +317,7 @@ class _RadikoBaseIE(InfoExtractor):
 					self, playlist_url, start_at, end_at, domain, auth_headers
 				)
 
-				formats.append({
+				m3u8_formats = [{
 					"format_id": join_nonempty(domain, "chunked"),
 					"hls_media_playlist_data": chunks_playlist,
 					"preference": preference,
@@ -327,13 +327,20 @@ class _RadikoBaseIE(InfoExtractor):
 					# fallback to live for ffmpeg etc
 					"url": playlist_url,
 					"http_headers": auth_headers,
-				})
+				}]
 			else:
 
-				formats += self._extract_m3u8_formats(
+				m3u8_formats = self._extract_m3u8_formats(
 					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_headers,
 					live=delivered_live, preference=preference, entry_protocol=entry_protocol,
 					note=f"Downloading m3u8 information from {domain}")
+
+			for f in m3u8_formats:
+				# ffmpeg sends a Range header which some streams reject. here we disable that (and also some icecast header as well)
+				f['downloader_options'] = {'ffmpeg_args': ['-seekable', '0', '-http_seekable', '0', '-icy', '0']}
+				f['format_note'] = ", ".join(format_note)
+				formats.append(f)
+
 		return formats
 
 
