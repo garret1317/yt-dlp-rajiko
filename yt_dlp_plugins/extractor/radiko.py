@@ -733,19 +733,16 @@ class RadikoPersonIE(InfoExtractor):
 		def entries():
 			key_station_only = len(self._configuration_arg("key_station_only", ie_key="rajiko")) > 0
 			for episode in person_api.get("data"):
-				if key_station_only and episode.get("key_station_id") != episode.get("station_id"):
+
+				station = episode.get("station_id")
+				if key_station_only and episode.get("key_station_id") != station:
 					continue
 
-				share_url = traverse_obj(episode, ("radiko_url", ("pc", "sp", "android", "ios", "app"),
-					{url_or_none}), get_all=False)
-				# they're all identical share links at the moment (5th aug 2024) but they might not be in the future
+				start = episode.get("start_at")
+				timestring = rtime.RadikoTime.fromisoformat(start).timestring()
 
-				# predictions:
-				# pc will probably stay the same
-				# don't know what sp is, possibly "SmartPhone"?, anyway seems reasonably generic
-				# android is easier for me to reverse-engineer than ios (no ithing)
-				# i assume "app" would be some internal tell-it-to-do-something link, not a regular web link
-
-				yield self.url_result(share_url, ie=RadikoShareIE, video_title=episode.get("title"))
+				timefree_id = join_nonempty(station, timestring)
+				timefree_url = f"https://radiko.jp/#!/ts/{station}/{timestring}"
+				yield self.url_result(timefree_url, ie=RadikoTimeFreeIE, video_id=timefree_id)
 
 		return self.playlist_result(entries(), playlist_id=join_nonempty("person", person_id))
