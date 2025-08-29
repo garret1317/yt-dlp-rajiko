@@ -746,3 +746,45 @@ class RadikoPersonIE(InfoExtractor):
 				yield self.url_result(timefree_url, ie=RadikoTimeFreeIE, video_id=timefree_id)
 
 		return self.playlist_result(entries(), playlist_id=join_nonempty("person", person_id))
+
+
+class RadikoRSeasonsIE(InfoExtractor):
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/(?:mobile/)?r_seasons/(?P<id>\d+$)"
+	_TESTS = [{
+		"url": "https://radiko.jp/r_seasons/10012302",
+		"playlist_mincount": 4,
+		"info_dict": {
+			"id": '10012302',
+			"title": '山下達郎の楽天カード サンデー・ソングブック',
+		}
+	}, {
+		"url": "https://radiko.jp/r_seasons/10002831",
+		"playlist_mincount": 4,
+		"info_dict": {
+			"id": "10002831",
+			"title": "Tokyo Moon",
+		}
+	}]
+
+	def _real_extract(self, url):
+		season_id = self._match_id(url)
+		html = self._download_webpage(url, season_id)
+		pageProps = self._search_nextjs_data(html, season_id)["props"]["pageProps"]
+		season_id = traverse_obj(pageProps, ("rSeason", "id")) or season_id
+
+		def entries():
+			for episode in pageProps.get("pastPrograms"):
+				station = traverse_obj(episode, ("stationId"))
+				start = traverse_obj(episode, ("startAt", "seconds"))
+				timestring = rtime.RadikoTime.fromtimestamp(start, tz=rtime.JST).timestring()
+
+				timefree_id = join_nonempty(station, timestring)
+				timefree_url = f"https://radiko.jp/#!/ts/{station}/{timestring}"
+
+				yield self.url_result(timefree_url, ie=RadikoTimeFreeIE, video_id=timefree_id)
+
+		return self.playlist_result(
+			entries(),
+			playlist_id=season_id,
+			playlist_title=traverse_obj(pageProps, ("rSeason", "rSeasonName")),
+		)
