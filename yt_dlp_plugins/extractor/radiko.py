@@ -542,9 +542,13 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
-		chapters = self._extract_chapters(station, start, end, video_id=meta["id"])
-		auth_data = self._auth(region, need_tf30=need_tf30)
-		formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end, use_pc_html5=need_tf30)
+		if live_status == "was_live":
+			chapters = self._extract_chapters(station, start, end, video_id=meta["id"])
+			auth_data = self._auth(region, need_tf30=need_tf30)
+			formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end, use_pc_html5=need_tf30)
+		else:
+			chapters = None
+			formats = None
 
 		return {
 			**station_meta,
