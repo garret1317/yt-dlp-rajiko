@@ -256,8 +256,7 @@ class _RadikoBaseIE(InfoExtractor):
 		config_device = traverse_obj(self._configuration_arg('device', casesense=True, ie_key="rajiko"), 0)
 
 		if not use_pc_html5:
-			device = config_device or "aSmartPhone7a"  # this device only gives us the on-demand one for timefree
-			# that's good imo - we just get the one that works, and don't bother with probing the rest as well
+			device = config_device or "aSmartPhone7a"  # still has the radiko.jp on-demand one for timefree
 		else:
 			device = config_device or "pc_html5" # the on-demand one doesnt work with timefree30 stuff sadly
 			# so just use pc_html5 which has everything
@@ -273,6 +272,7 @@ class _RadikoBaseIE(InfoExtractor):
 		do_as_live_chunks = not len(self._configuration_arg("no_as_live_chunks", ie_key="rajiko")) > 0
 		for element in url_data.findall(f".//url[@timefree='{timefree_int}'][@areafree='0']/playlist_create_url"):
 		# find <url>s with matching timefree and no areafree, then get their <playlist_create_url>
+		# we don't want areafree here because we should always be in-region
 			url = element.text
 			if url in seen_urls:  # there are always dupes, even with ^ specific filtering
 				continue
