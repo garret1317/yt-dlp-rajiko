@@ -5,6 +5,7 @@
 import difflib
 import os
 import sys
+import xml.etree.ElementTree as ET
 from datetime import datetime
 
 import requests
@@ -22,10 +23,25 @@ else:
 devices = ('pc_html5', 'aSmartPhone7a', 'aSmartPhone8')
 stations = ('FMT', 'CCL', 'NORTHWAVE', 'TBS')
 
+def format_xml(txt):
+	root = ET.fromstring(txt)
+	res = ""
+	for el in root.findall("url"):
+		res += el.find("playlist_create_url").text
+		for k, v in el.attrib.items():
+			res += f" {k}:{v}"
+
+		res += "\n"
+	return res
+
 for device in devices:
 	for station in stations:
 		url = STREAMS_API.format(device=device, station=station)
-		now = s.get(url).text
+		now_response = s.get(url)
+		now = now_response.text
+		now_modified = now_response.headers["last-modified"]
+		now_datetime = datetime.strptime(now_modified, "%a, %d %b %Y %H:%M:%S %Z")
+
 
 		filename = f"{PATH}{station}-{device}.xml"
 		with open(filename, "a+") as f:
@@ -34,9 +50,9 @@ for device in devices:
 
 			modtime = datetime.fromtimestamp(os.path.getmtime(filename))
 			diff = difflib.unified_diff(
-				past.splitlines(), now.splitlines(),
+				format_xml(past).splitlines(), format_xml(now).splitlines(),
 				fromfile=url, tofile=url,
-				fromfiledate=str(modtime), tofiledate=str(datetime.now()),
+				fromfiledate=str(modtime), tofiledate=str(now_datetime.now()),
 			)
 
 			diff_str = "\n".join(diff)
@@ -45,9 +61,6 @@ for device in devices:
 				f.write(now)
 
 				s.post(DISCORD_WEBHOOK, json={
-					"embeds": [{
-						"type": "rich",
-						"title": f"Streams changed: {station} {device}",
-						"description": "\n".join(("```diff", diff_str, "```"))
-					}]
+					"content": f"**Streams changed: {station} {device}**\n" + "\n".join(("```diff", diff_str, "```")),
 				})
+		os.utime(filename, (now_datetime.timestamp(), now_datetime.timestamp()))
