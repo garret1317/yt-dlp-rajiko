@@ -94,7 +94,7 @@ class _RadikoBaseIE(InfoExtractor):
 	def _index_regions(self):
 		region_data = {}
 
-		tree = self._download_xml("https://radiko.jp/v3/station/region/full.xml", None, note="Indexing regions")
+		tree = self._download_xml("https://radiko.jp/v3/station/region/full.xml", None, note="Indexing station regions")
 		for stations in tree:
 			for station in stations:
 				area = station.find("area_id").text
