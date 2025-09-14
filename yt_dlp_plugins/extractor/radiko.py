@@ -437,7 +437,7 @@ class RadikoLiveIE(_RadikoBaseIE):
 class RadikoTimeFreeIE(_RadikoBaseIE):
 	_NETRC_MACHINE = "rajiko"
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/ts/(?P<station>[A-Z0-9-_]+)/(?P<id>\d+)"
-	# TESTS use a custom-ish script that updates the airdates automatically, see misc/test_extractors.py
+	# TESTS use a custom-ish script that updates the airdates automatically, see contrib/test_extractors.py
 
 	def _perform_login(self, username, password):
 		try:

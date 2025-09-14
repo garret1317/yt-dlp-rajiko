@@ -45,4 +45,4 @@ jobs:
     - name: Run tests
       env:
         PYTHONPATH: ${{ github.workspace }}/yt-dlp${{ runner.os == 'Windows' && ';' || ':' }}${{ env.PYTHONPATH }}
-      run: python ./yt-dlp-plugins/yt-dlp-rajiko/misc/test_extractors.py
+      run: python ./yt-dlp-plugins/yt-dlp-rajiko/contrib/test_extractors.py
