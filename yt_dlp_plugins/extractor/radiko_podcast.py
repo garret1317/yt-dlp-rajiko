@@ -109,7 +109,7 @@ class RadikoPodcastChannelIE(_RadikoPodcastBaseIE):
 							cursor = episode.id
 							yield self._extract_episode(dataclasses.asdict(episode))
 				else:
-					self.report_warning(f'Only extracting the latest {len(episode_list_response["episodesList"])} episodes. Install protobug for more.')
+					self.report_warning(f'protobug is required to extract more than the latest {len(episode_list_response["episodesList"])} episodes.\nIf you installed yt-dlp-rajiko manually, use the .zip bundle instead. If you installed with pip, install protobug as well.')
 
 		return {
 			"_type": "playlist",
