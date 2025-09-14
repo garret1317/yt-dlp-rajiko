@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-try:
-	import protobug
-except ImportError:
-	protobug = None
-
 import struct
 import random
+
+from yt_dlp_plugins.extractor.radiko_dependencies import protobug
 
 if protobug:  # i suppose it works lmao
 

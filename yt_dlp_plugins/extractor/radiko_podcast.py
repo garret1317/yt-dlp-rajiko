@@ -7,11 +7,10 @@ from yt_dlp.utils import (
 )
 
 import dataclasses
-try:
-	import protobug
+
+from yt_dlp_plugins.extractor.radiko_dependencies import protobug
+if protobug:
 	import yt_dlp_plugins.extractor.radiko_protobufs as pb
-except ImportError:
-	protobug = None
 
 
 class _RadikoPodcastBaseIE(InfoExtractor):
