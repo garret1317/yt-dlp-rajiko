@@ -4,11 +4,8 @@ try:
 except ImportError:
 	protobug = None
 
-import base64
 import struct
-
 import random
-import requests
 
 if protobug:  # i suppose it works lmao
 
