@@ -302,7 +302,9 @@ class _RadikoBaseIE(InfoExtractor):
 			entry_protocol = 'm3u8'
 			format_note=[]
 
-			if domain in self._DOESNT_WORK_WITH_FFMPEG and do_blacklist_streams:
+			if timefree and domain in self._DOESNT_WORK_WITH_FFMPEG and do_blacklist_streams:
+				# TODO: remove this completely
+				# https://github.com/garret1317/yt-dlp-rajiko/issues/29
 				self.write_debug(f"skipping {domain} (known not working)")
 				continue
 			if domain in self._DELIVERED_ONDEMAND:
