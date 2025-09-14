@@ -4,6 +4,7 @@ version = "1.7"
 description = "improved radiko.jp extractor for yt-dlp (fast and areafree)"
 
 readme = "README.md"
+license = "0BSD"
 license-files = ["LICENCE"]
 
 authors = [
@@ -12,7 +13,6 @@ authors = [
 
 requires-python = ">=3.8"
 classifiers = [
-	"License :: OSI Approved :: Zero-Clause BSD (0BSD)",
 	"Environment :: Plugins",
 ]
 
