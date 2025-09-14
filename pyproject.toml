@@ -16,13 +16,14 @@ classifiers = [
 	"Environment :: Plugins",
 ]
 
+dependencies = [
+	"protobug"
+]
+
 [project.urls]
 Homepage = "https://427738.xyz/yt-dlp-rajiko/"
 "Source Code" = "https://github.com/garret1317/yt-dlp-rajiko/"
 "Release Notes" = "https://427738.xyz/yt-dlp-rajiko/CHANGELOG.xml"
-
-[project.optional-dependencies]
-protobuf = ["protobug"]
 
 [build-system]
 requires = ["setuptools>=61.0"]
