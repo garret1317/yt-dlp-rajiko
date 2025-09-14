@@ -4,7 +4,7 @@ yt-dlp-rajiko is an improved [radiko.jp](https://radiko.jp) extractor plugin for
 
 ## Installation
 
-[Download the Python wheel](https://427738.xyz/yt-dlp-rajiko/dl/yt_dlp_rajiko-latest.whl) or `pip install yt-dlp-rajiko`
+[Download the plugin bundle](https://427738.xyz/yt-dlp-rajiko/dl/yt_dlp_rajiko-latest.bundle.zip) or `pip install yt-dlp-rajiko`
 
 Requires yt-dlp 2025.02.19 or above.
 
@@ -12,7 +12,7 @@ Use the pip command if you installed yt-dlp with pip. If you installed
 yt-dlp with `pipx`, use `pipx inject yt-dlp yt-dlp-rajiko` to install
 the plugin in yt-dlp's environment.
 
-Otherwise, download the wheel, and place it in one of these locations:
+Otherwise, download the plugin bundle, and place it in one of these locations:
 
   - `~/.config/yt-dlp/plugins/` (on Linux and Mac)
   - `%appdata%/yt-dlp/plugins/` (on Windows)
@@ -21,6 +21,7 @@ Otherwise, download the wheel, and place it in one of these locations:
     documentation](https://github.com/yt-dlp/yt-dlp#installing-plugins).
 
 You'll have to create those folders if they don't already exist.
+There is no need to unzip the plugin bundle.
 
 More information about yt-dlp plugins is available from [yt-dlp's documentation](https://github.com/yt-dlp/yt-dlp#plugins).
 
