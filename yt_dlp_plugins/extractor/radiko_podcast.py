@@ -1,12 +1,16 @@
 from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.utils import (
 	clean_html,
+	OnDemandPagedList,
+	parse_qs,
 	traverse_obj,
+	update_url_query,
 	url_or_none,
 	str_or_none,
 )
 
 import dataclasses
+import random
 
 from yt_dlp_plugins.extractor.radiko_dependencies import protobug
 if protobug:
@@ -123,3 +127,40 @@ class RadikoPodcastChannelIE(_RadikoPodcastBaseIE):
 			}),
 			"entries": entries(),
 		}
+
+
+class RadikoPodcastSearchIE(InfoExtractor):
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/podcast/(?:timeshift|live)\?"
+
+	def _pagefunc(self, url, idx):
+		url = update_url_query(url, {"pageIdx": idx})
+		data = self._download_json(url, None, note=f"Downloading page {idx+1}")
+
+		results = []
+		for channel in data.get("channels"):
+			results.append(
+				self.url_result(
+					channel.get("channelUrl"),
+					id=channel.get("id"),
+					ie=RadikoPodcastChannelIE,
+				)
+			)
+		return results
+
+
+	def _real_extract(self, url):
+		# hack away the # so urllib.parse will work (same as normal RadikoSearchIE)
+		url = url.replace("/#!/", "/!/", 1)
+		queries = parse_qs(url)
+
+		keywords = traverse_obj(queries, ("key", 0))
+		search_url = update_url_query("https://api.annex-cf.radiko.jp/v1/podcasts/channels/search_with_keywords_by_offset", {
+			"keywords": keywords,
+			"uid": "".join(random.choices("0123456789abcdef", k=32)),
+			"limit": 50,  # result limit. the actual limit before the api errors is 5000, but that seems a bit rude so i'll leave as 50 like the radio one
+		})
+
+		return self.playlist_result(
+			OnDemandPagedList(lambda idx: self._pagefunc(search_url, idx), 50),
+			title=keywords,
+		)
