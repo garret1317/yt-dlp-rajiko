@@ -592,6 +592,7 @@ class RadikoSearchIE(InfoExtractor):
 			"id": "ニュース-all-all",
 			"title": "ニュース"
 		},
+		'expected_warnings': ['Skipping podcasts. If you really want EVERY EPISODE of EVERY RESULT, set your search filter to Podcasts only.'],
 	}]
 
 	def _strip_date(self, date):
