@@ -45,7 +45,7 @@ def get_test_timefields(airtime, release_time):
 from yt_dlp_plugins.extractor.radiko import (
 	RadikoTimeFreeIE, RadikoShareIE,
 	RadikoLiveIE, RadikoPersonIE, RadikoStationButtonIE,
-	RadikoRSeasonsIE
+	RadikoSearchIE, RadikoRSeasonsIE
 )
 
 from yt_dlp_plugins.extractor.radiko_podcast import (
@@ -148,7 +148,7 @@ IEs = [
 	RadikoTimeFreeIE, RadikoShareIE,
 	RadikoLiveIE, RadikoPersonIE, RadikoStationButtonIE,
 	RadikoPodcastEpisodeIE, RadikoPodcastChannelIE,
-	RadikoRSeasonsIE,
+	RadikoSearchIE, RadikoRSeasonsIE,
 ]
 
 import test.helper as th
