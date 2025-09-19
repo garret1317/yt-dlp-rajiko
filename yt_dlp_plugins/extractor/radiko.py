@@ -627,29 +627,30 @@ class RadikoSearchIE(InfoExtractor):
 		if queries.get("cul_area_id"):
 			queries["cur_area_id"] =  queries.pop("cul_area_id")
 
-		filter_str = ""
 		if queries.get("filter"):
 			filter_set = set(queries["filter"][0].split("|"))
 			del queries["filter"]
+		else:
+			filter_set = {"future", "past", "channel"}
 
-			if filter_set == {"channel"}:
-				podcast_search_url = update_url_query(
-					"https://radiko.jp/!/search/podcast/live", {"key": key}
-				).replace("!", "#!", 1)  # same shit with urllib.parse
-				return self.url_result(podcast_search_url, ie=RadikoPodcastSearchIE)
+		if filter_set == {"channel"}:
+			podcast_search_url = update_url_query(
+				"https://radiko.jp/!/search/podcast/live", {"key": key}
+			).replace("!", "#!", 1)  # same shit with urllib.parse
+			return self.url_result(podcast_search_url, ie=RadikoPodcastSearchIE)
 
-			if "channel" in filter_set:
-				self.report_warning("Skipping podcasts. If you really want EVERY EPISODE of EVERY RESULT, set your search filter to Podcasts only.")
+		if "channel" in filter_set:
+			self.report_warning("Skipping podcasts. If you really want EVERY EPISODE of EVERY RESULT, set your search filter to Podcasts only.")
+		filter_set.discard("channel")
 
-			filter_set.discard("channel")
-			if filter_set == {"future", "past"}:
-				filter_str = ""
-			else:
-				filter_str = "|".join(filter_set)  # there should be only one filter now, so this should be the same as filter_set[0]
-				# but if there's more than one, then we should at least try to pass it through as-is, in the hope that it works
-				if len(filter_set) != 1:
-					# but also kick up a stink about it so it's clear it probably won't
-					self.report_warning("Your search has an unknkown combination of filters, so this request will probably fail!")
+		if filter_set == {"future", "past"}:
+			filter_str = ""
+		else:
+			filter_str = "|".join(filter_set)  # there should be only one filter now, so this should be the same as filter_set[0]
+			# but if there's more than one, then we should at least try to pass it through as-is, in the hope that it works
+			if len(filter_set) != 1:
+				# but also kick up a stink about it so it's clear it probably won't
+				self.report_warning("Your search has an unknkown combination of filters, so this request will probably fail!")
 
 		search_url = update_url_query("https://api.annex-cf.radiko.jp/v1/programs/legacy/perl/program/search", {
 			**queries,
