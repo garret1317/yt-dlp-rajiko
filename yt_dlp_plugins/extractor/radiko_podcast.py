@@ -131,6 +131,14 @@ class RadikoPodcastChannelIE(_RadikoPodcastBaseIE):
 
 class RadikoPodcastSearchIE(InfoExtractor):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/podcast/(?:timeshift|live)\?"
+	_TESTS = [{
+		"url": "https://radiko.jp/#!/search/podcast/live?key=ドラマ",
+		"playlist_mincount": 51,
+		"info_dict": {
+			"id": "ドラマ",
+			"title": "ドラマ",
+		},
+	}]
 
 	def _pagefunc(self, url, idx):
 		url = update_url_query(url, {"pageIdx": idx})
@@ -163,4 +171,5 @@ class RadikoPodcastSearchIE(InfoExtractor):
 		return self.playlist_result(
 			OnDemandPagedList(lambda idx: self._pagefunc(search_url, idx), 50),
 			title=keywords,
+			id=keywords,  # i have to put some kind of id or the tests fail
 		)

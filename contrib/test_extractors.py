@@ -49,7 +49,7 @@ from yt_dlp_plugins.extractor.radiko import (
 )
 
 from yt_dlp_plugins.extractor.radiko_podcast import (
-	RadikoPodcastEpisodeIE, RadikoPodcastChannelIE,
+	RadikoPodcastEpisodeIE, RadikoPodcastChannelIE, RadikoPodcastSearchIE,
 )
 RadikoTimeFreeIE._TESTS = []
 
@@ -148,7 +148,7 @@ IEs = [
 	RadikoTimeFreeIE, RadikoShareIE,
 	RadikoLiveIE, RadikoPersonIE, RadikoStationButtonIE,
 	RadikoPodcastEpisodeIE, RadikoPodcastChannelIE,
-	RadikoSearchIE, RadikoRSeasonsIE,
+	RadikoSearchIE, RadikoPodcastSearchIE, RadikoRSeasonsIE,
 ]
 
 import test.helper as th
