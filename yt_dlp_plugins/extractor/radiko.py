@@ -19,6 +19,7 @@ from yt_dlp.utils import (
 	url_or_none,
 	update_url_query,
 )
+from yt_dlp_plugins.extractor.radiko_podcast import RadikoPodcastSearchIE
 
 import yt_dlp_plugins.extractor.radiko_time as rtime
 import yt_dlp_plugins.extractor.radiko_hacks as hacks
@@ -566,7 +567,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 
 class RadikoSearchIE(InfoExtractor):
-	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/(?:timeshift|live|history)\?"
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/(?:radio/)?(?:timeshift|live|history)\?"
 	_TESTS = [{
 		# timefree, specific area
 		"url": "https://radiko.jp/#!/search/live?key=city%20chill%20club&filter=past&start_day=&end_day=&region_id=&area_id=JP13&cul_area_id=JP13&page_idx=0",
@@ -609,23 +610,50 @@ class RadikoSearchIE(InfoExtractor):
 			results.append(
 				self.url_result(
 					f"https://radiko.jp/#!/ts/{station}/{timestring}",
-					id=join_nonempty(station, timestring)
+					id=join_nonempty(station, timestring),
+					ie=RadikoTimeFreeIE,
 				)
 			)
 		return results
 
 	def _real_extract(self, url):
-		url = url.replace("/#!/", "/!/", 1)
 		# urllib.parse interprets the path as just one giant fragment because of the #, so we hack it away
+		url = url.replace("/#!/", "/!/", 1)
 		queries = parse_qs(url)
+		key = traverse_obj(queries, ("key", 0))
 
-		if queries.get("cul_area_id"):
-			queries["cur_area_id"] =  queries.pop("cul_area_id")
 		# site used to use "cul_area_id" in the search url, now it uses "cur_area_id" (with an r)
 		# and outright rejects the old one with HTTP Error 415: Unsupported Media Type
+		if queries.get("cul_area_id"):
+			queries["cur_area_id"] =  queries.pop("cul_area_id")
+
+		filter_str = ""
+		if queries.get("filter"):
+			filter_set = set(queries["filter"][0].split("|"))
+			del queries["filter"]
+
+			if filter_set == {"channel"}:
+				podcast_search_url = update_url_query(
+					"https://radiko.jp/!/search/podcast/live", {"key": key}
+				).replace("!", "#!", 1)  # same shit with urllib.parse
+				return self.url_result(podcast_search_url, ie=RadikoPodcastSearchIE)
+
+			if "channel" in filter_set:
+				self.report_warning("Skipping podcasts. If you really want EVERY EPISODE of EVERY RESULT, set your search filter to Podcasts only.")
+
+			filter_set.discard("channel")
+			if filter_set == {"future", "past"}:
+				filter_str = ""
+			else:
+				filter_str = "|".join(filter_set)  # there should be only one filter now, so this should be the same as filter_set[0]
+				# but if there's more than one, then we should at least try to pass it through as-is, in the hope that it works
+				if len(filter_set) != 1:
+					# but also kick up a stink about it so it's clear it probably won't
+					self.report_warning("Your search has an unknkown combination of filters, so this request will probably fail!")
 
 		search_url = update_url_query("https://api.annex-cf.radiko.jp/v1/programs/legacy/perl/program/search", {
 			**queries,
+			"filter": filter_str,
 			"uid": "".join(random.choices("0123456789abcdef", k=32)),
 			"app_id": "pc",
 			"row_limit": 50,  # higher row_limit = more results = less requests = more good
@@ -633,19 +661,19 @@ class RadikoSearchIE(InfoExtractor):
 
 		results = OnDemandPagedList(lambda idx: self._pagefunc(search_url, idx), 50)
 
-		key = traverse_obj(queries, ("key", 0))
 		day = traverse_obj(queries, ("start_day", 0)) or "all"
 		region = traverse_obj(queries, ("region_id", 0)) or traverse_obj(queries, ("area_id", 0))
-		status_filter = traverse_obj(queries, ("filter", 0)) or "all"
+		status_filter = filter_str or "all"
 
 		playlist_id = join_nonempty(key, status_filter, day, region)
 
 		return {
 			"_type": "playlist",
-			"title": traverse_obj(queries, ("key", 0)),
+			"title": key,
 			"id": playlist_id,
 			"entries": results,
 		}
+
 
 class RadikoShareIE(InfoExtractor):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/share/"
