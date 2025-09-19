@@ -651,7 +651,7 @@ class RadikoSearchIE(InfoExtractor):
 			# but if there's more than one, then we should at least try to pass it through as-is, in the hope that it works
 			if len(filter_set) != 1:
 				# but also kick up a stink about it so it's clear it probably won't
-				self.report_warning("Your search has an unknkown combination of filters, so this request will probably fail!")
+				self.report_warning("Your search has an unknown combination of filters, so this request will probably fail!")
 
 		search_url = update_url_query("https://api.annex-cf.radiko.jp/v1/programs/legacy/perl/program/search", {
 			**queries,
