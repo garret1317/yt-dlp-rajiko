@@ -792,6 +792,7 @@ class RadikoRSeasonsIE(InfoExtractor):
 		"info_dict": {
 			"id": '10012302',
 			"title": '山下達郎の楽天カード サンデー・ソングブック',
+			'thumbnail': 'https://program-static.cf.radiko.jp/935a87fc-4a52-48e5-9468-7b2ef9448d9f.jpeg',
 		}
 	}, {
 		"url": "https://radiko.jp/r_seasons/10002831",
@@ -799,6 +800,8 @@ class RadikoRSeasonsIE(InfoExtractor):
 		"info_dict": {
 			"id": "10002831",
 			"title": "Tokyo Moon",
+			'description': 'md5:3eef525003bbe96ccf33ec647c43d904',
+			'thumbnail': 'https://program-static.cf.radiko.jp/0368ee85-5d5f-41c9-8ee1-6c1035d87b3f.jpeg',
 		}
 	}]
 
@@ -822,5 +825,9 @@ class RadikoRSeasonsIE(InfoExtractor):
 		return self.playlist_result(
 			entries(),
 			playlist_id=season_id,
-			playlist_title=traverse_obj(pageProps, ("rSeason", "rSeasonName")),
+			**traverse_obj(pageProps, ("rSeason", {
+				"playlist_title": "rSeasonName",
+				"thumbnail": "backgroundImageUrl",
+				"description": ("summary", filter),
+			})),
 		)
