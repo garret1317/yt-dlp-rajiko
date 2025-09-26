@@ -20,6 +20,7 @@ site_sha256 = []
 
 tarballs = []
 wheels = []
+bundles = []
 
 for item in sorted(os.listdir()):#, key=lambda x: x.name):
 	if os.path.islink(item):
@@ -29,6 +30,8 @@ for item in sorted(os.listdir()):#, key=lambda x: x.name):
 		tarballs.append(item)
 	elif item.endswith(".whl"):
 		wheels.append(item)
+	elif item.endswith(".bundle.zip"):
+		bundles.append(item)
 	else:
 		continue
 
@@ -45,7 +48,7 @@ for item in sorted(os.listdir()):#, key=lambda x: x.name):
 	pip_index.write(item)
 	pip_index.write("</a>\n")
 
-	site_string = checksum + "&nbsp;&nbsp;" + '<a href="dl/' + item + '">' + item + "</a><br>"
+	site_string = checksum + "  " + '<a href="dl/' + item + '">' + item + "</a>"
 	site_sha256.append(site_string)
 
 pip_index.write("""</ul>
@@ -55,7 +58,8 @@ pip_index.write("""</ul>
 
 latest_tarball = tarballs[-1]
 latest_wheel = wheels[-1]
-print(latest_tarball, latest_wheel)
+latest_bundle = bundles[-1]
+print(latest_tarball, latest_wheel, latest_bundle)
 
 os.remove("yt_dlp_rajiko-latest.tar.gz")
 os.symlink(latest_tarball, "yt_dlp_rajiko-latest.tar.gz")
@@ -63,12 +67,15 @@ os.symlink(latest_tarball, "yt_dlp_rajiko-latest.tar.gz")
 os.remove("yt_dlp_rajiko-latest.whl")
 os.symlink(latest_wheel, "yt_dlp_rajiko-latest.whl")
 
+os.remove("yt_dlp_rajiko-latest.bundle.zip")
+os.symlink(latest_bundle, "yt_dlp_rajiko-latest.bundle.zip")
+
 site_sha256.reverse()
 
-latest_list = site_sha256[:2]
-previous_list = site_sha256[2:]
+latest_list = site_sha256[:3]
+previous_list = site_sha256[3:]
 
-latest = "\n".join(["<!-- LATEST SHA256 START -->", "<code>", "\n".join(latest_list), "</code>", "<!-- LATEST SHA256 END -->"])
+latest = "\n".join(["<!-- LATEST SHA256 START -->", "<pre>", "\n".join(latest_list), "</pre>", "<!-- LATEST SHA256 END -->"])
 
 previous = "\n".join(["<!-- PREVIOUS SHA256 START -->", "<code>", "\n".join(previous_list), "</code>", "<!-- PREVIOUS SHA256 END -->"])
 
