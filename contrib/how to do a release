@@ -4,13 +4,18 @@ update the pyproject.toml
 tag it in git, eg v1.0
 
 ## build the builds
+
+WHEEL + SOURCE TARBALL
 python3 -m build
 
-and then put BOTH items from `dist` into the pip index dir - ~/site2/yt-dlp-rajiko/pip/yt-dlp-rajiko/
+ZIP BUNDLE
+contrib/bundle.sh
+
+and then put ALL items from `dist` into the pip index dir - ~/site2/yt-dlp-rajiko/pip/yt-dlp-rajiko/
 because without the .whl pip has to "build" it itself, with all the stuff that needs to be installed for that to work
 
 run script to update the pip index html and the dl/ "latest" symlinks
-this also updates the sha256s on the site
+this also updates the sha256 blocks on the site
 
 ## update the changelog file
 
@@ -25,10 +30,10 @@ include the pip instructions, sha256sum etc
 
 now push to the server
 
-!!NEW!!
-upload to pip proper as well
-go to dl/ dir and do
-twine upload yt_dlp_rajiko-1.x*
+NOW UPLOAD TO PYPI AS WELL
+
+go to dl/ dir and do like
+twine upload yt_dlp_rajiko-1.x-py3-none-any.whl yt_dlp_rajiko-1.x.tar.gz
 
 
 ## update github
