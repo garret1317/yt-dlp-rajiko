@@ -36,6 +36,12 @@ class RadikoTime(datetime.datetime):
 		dt = datetime.datetime(date.year, date.month, date.day, 5, 0, 0, tzinfo=JST)
 		return dt
 
+	def expiry(self):
+		free = self.broadcast_day_end() + datetime.timedelta(days=7)
+		tf30 = self.broadcast_day_end() + datetime.timedelta(days=30)
+
+		return free, tf30
+
 
 class RadikoSiteTime(RadikoTime):
 
@@ -79,7 +85,7 @@ if __name__ == "__main__":
 	# cursed (no seconds) - seems to do -1s
 	assert RadikoSiteTime('202308240100').timestring() == "20230824005959"
 	# broadcast day starts at 05:00, ends at 04:59 (29:59)
-	assert RadikoSiteTime('20230824030000').broadcast_day() == '20230823'
+	assert RadikoSiteTime('20230824030000').broadcast_day_string() == '20230823'
 	assert RadikoSiteTime('20230824130000').broadcast_day_end() == datetime.datetime(2023, 8, 25, 5, 0, 0, tzinfo=JST)
 	assert RadikoSiteTime('20230824030000').broadcast_day_end() == datetime.datetime(2023, 8, 24, 5, 0, 0, tzinfo=JST)
 	# checking timezone

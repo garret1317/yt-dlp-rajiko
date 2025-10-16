@@ -1,25 +1,36 @@
 [project]
 name = "yt-dlp-rajiko"
-version = "1.1"
-description = "improved radiko.jp extractor for yt-dlp"
+version = "1.9"
+description = "improved radiko.jp extractor for yt-dlp (fast and areafree)"
+
+readme = "README.md"
+license = "0BSD"
+license-files = ["LICENCE"]
+
 authors = [
 	{ name="garret1317" },
 ]
+
 requires-python = ">=3.8"
 classifiers = [
-	"License :: OSI Approved :: Zero-Clause BSD (0BSD)",
 	"Environment :: Plugins",
+]
+
+dependencies = [
+	"protobug"
 ]
 
 [project.urls]
 Homepage = "https://427738.xyz/yt-dlp-rajiko/"
+"Source Code" = "https://github.com/garret1317/yt-dlp-rajiko/"
+"Release Notes" = "https://427738.xyz/yt-dlp-rajiko/CHANGELOG.xml"
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-exclude = ["tests"]
+include = ["yt_dlp_plugins.extractor"]
 
 [tool.setuptools.package-data]
-"yt_dlp_plugins.extractor" = ["*.bin"]
+"yt_dlp_plugins.extractor" = ["*.bin", "*.jpg"]

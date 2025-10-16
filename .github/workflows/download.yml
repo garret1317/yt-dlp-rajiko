@@ -1,0 +1,48 @@
+name: Tests
+on: [push, pull_request]
+permissions:
+  contents: read
+
+jobs:
+  full:
+    name: Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.10', '3.11', '3.12', '3.13', pypy-3.10]
+        include:
+        # atleast one of each CPython/PyPy tests must be in windows
+        - os: windows-latest
+          python-version: '3.9'
+        - os: windows-latest
+          python-version: pypy-3.10
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        path: './yt-dlp-plugins/yt-dlp-rajiko/'
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: install ffmpeg
+      uses: AnimMouse/setup-ffmpeg@v1
+      with:
+        version: master
+
+    - name: get yt-dlp source (for the test_download script we override)
+      uses: actions/checkout@v4
+      with:
+        path: './yt-dlp/'
+        repository: yt-dlp/yt-dlp
+
+    - name: Install yt-dlp from source (editable mode)
+      run: pip install -e ./yt-dlp/
+
+    - name: Run tests
+      env:
+        PYTHONPATH: ${{ github.workspace }}/yt-dlp${{ runner.os == 'Windows' && ';' || ':' }}${{ env.PYTHONPATH }}
+      run: python ./yt-dlp-plugins/yt-dlp-rajiko/contrib/test_extractors.py
