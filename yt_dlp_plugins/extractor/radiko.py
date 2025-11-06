@@ -255,12 +255,7 @@ class _RadikoBaseIE(InfoExtractor):
 
 	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None, use_pc_html5=False):
 		config_device = traverse_obj(self._configuration_arg('device', casesense=True, ie_key="rajiko"), 0)
-
-		if not use_pc_html5:
-			device = config_device or "aSmartPhone7a"  # still has the radiko.jp on-demand one for timefree
-		else:
-			device = config_device or "pc_html5" # the on-demand one doesnt work with timefree30 stuff sadly
-			# so just use pc_html5 which has everything
+		device = config_device or "pc_html5"
 
 		url_data = self._download_xml(f"https://radiko.jp/v3/station/stream/{device}/{station}.xml",
 			station, note=f"Downloading {device} stream information")
