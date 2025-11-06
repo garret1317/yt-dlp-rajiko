@@ -310,13 +310,15 @@ class _RadikoBaseIE(InfoExtractor):
 
 			if delivered_live and timefree and do_as_live_chunks:
 
-				chunks_playlist = hacks._generate_as_live_playlist(
-					self, playlist_url, start_at, end_at, domain, auth_headers
-				)
+				def fragments_generator(_):
+					return hacks._generate_as_live_fragments(
+						self, playlist_url, start_at, end_at, domain, auth_headers
+					)
 
 				m3u8_formats = [{
 					"format_id": join_nonempty(domain, "chunked"),
-					"hls_media_playlist_data": chunks_playlist,
+					"fragments": fragments_generator,
+					"protocol": "http_dash_segments_generator",
 					"preference": preference,
 					"ext": "m4a",
 					"vcodec": "none",
@@ -324,6 +326,7 @@ class _RadikoBaseIE(InfoExtractor):
 					# fallback to live for ffmpeg etc
 					"url": playlist_url,
 					"http_headers": auth_headers,
+					"is_live": "yesn't",
 				}]
 				format_note.append("Chunked")
 			else:
