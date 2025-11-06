@@ -87,7 +87,6 @@ class _RadikoBaseIE(InfoExtractor):
 	_APP_VERSIONS = ["7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.9", "7.4.8", "7.4.7", "7.4.6", "7.4.5", "7.4.4", "7.4.3", "7.4.2", "7.4.1", "7.4.0", "7.3.8", "7.3.7", "7.3.6", "7.3.1", "7.3.0", "7.2.11", "7.2.10"]
 
 	_DELIVERED_ONDEMAND = ('radiko.jp',)
-	_DOESNT_WORK_WITH_FFMPEG = ('tf-f-rpaa-radiko.smartstream.ne.jp', 'si-f-radiko.smartstream.ne.jp', 'alliance-stream-radiko.smartstream.ne.jp')
 	_AD_INSERTION = ('si-f-radiko.smartstream.ne.jp', )
 
 	_has_tf30 = None
@@ -264,7 +263,6 @@ class _RadikoBaseIE(InfoExtractor):
 		formats = []
 
 		timefree_int = 1 if timefree else 0
-		do_blacklist_streams = not len(self._configuration_arg("no_stream_blacklist", ie_key="rajiko")) > 0
 		do_as_live_chunks = not len(self._configuration_arg("no_as_live_chunks", ie_key="rajiko")) > 0
 		for element in url_data.findall(f".//url[@timefree='{timefree_int}'][@areafree='0']/playlist_create_url"):
 		# find <url>s with matching timefree and no areafree, then get their <playlist_create_url>
@@ -298,11 +296,6 @@ class _RadikoBaseIE(InfoExtractor):
 			entry_protocol = 'm3u8'
 			format_note=[]
 
-			if timefree and domain in self._DOESNT_WORK_WITH_FFMPEG and do_blacklist_streams:
-				# TODO: remove this completely
-				# https://github.com/garret1317/yt-dlp-rajiko/issues/29
-				self.write_debug(f"skipping {domain} (known not working)")
-				continue
 			if domain in self._DELIVERED_ONDEMAND:
 				# override the defaults for delivered as on-demand
 				delivered_live = False
