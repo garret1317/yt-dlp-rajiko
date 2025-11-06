@@ -10,7 +10,7 @@ from yt_dlp.utils import (
 
 # "hacks" as in great jank/schizo shit that works anyway
 
-def _generate_as_live_fragments(self, playlist_base_url, start_at, end_at, domain, headers={}):
+def _generate_as_live_fragments(self, playlist_base_url, start_at, end_at, domain, headers={}, first_chunk=None):
 	playlist = []
 	chunk_length = 300  # max the api allows
 
@@ -26,27 +26,35 @@ def _generate_as_live_fragments(self, playlist_base_url, start_at, end_at, domai
 			"l": chunk_length,
 		})
 
-		chunk_fragments, real_chunk_length = _get_chunk_playlist(self, chunk_url, domain, chunk_num, headers)
+		chunk_fragments, real_chunk_length = _get_chunk_playlist(self, chunk_url, domain, chunk_num, headers, first_chunk)
 
 		cursor += round(real_chunk_length)
 		chunk_num += 1
+		first_chunk = None
 
 		for frag in chunk_fragments:
 			yield frag
 
 
-def _get_chunk_playlist(self, chunk_url, src_id, chunk_num, headers={}):
+def _get_chunk_playlist(self, chunk_url, src_id, chunk_num, headers={}, first_chunk=None):
 	EXTINF_duration = re.compile(r"^#EXTINF:([\d.]+),", flags=re.MULTILINE)
 
 	playlist = ""
 	chunk_id = join_nonempty(src_id, chunk_num)
-	base_format = self._extract_m3u8_formats(
-		chunk_url, chunk_id, fatal=False, headers=headers,
-#		note=f"Preparing {src_id} chunk {chunk_num}"
-		note=False,
-		errnote=f"Failed to get {src_id} chunk {chunk_num} base format",
-	)
-	m3u8_url = traverse_obj(base_format, (..., "url",), get_all=False)
+
+	if first_chunk:
+		m3u8_url = first_chunk
+	else:
+		self.write_debug(f"Preparing {src_id} chunk {chunk_num}")
+		base_formats = self._extract_m3u8_formats(
+			chunk_url, chunk_id, fatal=False, headers=headers,
+	#		note=f"Preparing {src_id} chunk {chunk_num}"
+			note=False,
+			errnote=f"Failed to get {src_id} chunk {chunk_num} base format",
+		)
+		m3u8_url = traverse_obj(base_formats, (..., "url",), get_all=False)
+
+	self.write_debug(f"Getting {src_id} chunk {chunk_num} playlist")
 	playlist = self._download_webpage(m3u8_url, chunk_id, note=False, errnote=f"Failed to get {src_id} chunk {chunk_num} playlist")
 	#note=f"Getting {src_id} chunk {chunk_num} fragments")
 

@@ -286,6 +286,7 @@ class _RadikoBaseIE(InfoExtractor):
 
 					"end_at": end_at.timestring(),
 					"to": end_at.timestring(),
+					"l": 300,
 				})
 
 			domain = urllib.parse.urlparse(playlist_url).netloc
@@ -308,11 +309,19 @@ class _RadikoBaseIE(InfoExtractor):
 
 			auth_headers = auth_data["token"]
 
+			m3u8_formats = self._extract_m3u8_formats(
+					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_headers,
+					live=delivered_live, preference=preference, entry_protocol=entry_protocol,
+					note=f"Downloading m3u8 information from {domain}"
+			)
+
 			if delivered_live and timefree and do_as_live_chunks:
+
+				first_chunk = traverse_obj(m3u8_formats, (..., "url",), get_all=False)
 
 				def fragments_generator(_):
 					return hacks._generate_as_live_fragments(
-						self, playlist_url, start_at, end_at, domain, auth_headers
+						self, playlist_url, start_at, end_at, domain, auth_headers, first_chunk
 					)
 
 				m3u8_formats = [{
@@ -324,17 +333,11 @@ class _RadikoBaseIE(InfoExtractor):
 					"vcodec": "none",
 
 					# fallback to live for ffmpeg etc
-					"url": playlist_url,
+					"url": first_chunk,
 					"http_headers": auth_headers,
 					"is_live": "yesn't",
 				}]
 				format_note.append("Chunked")
-			else:
-
-				m3u8_formats = self._extract_m3u8_formats(
-					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_headers,
-					live=delivered_live, preference=preference, entry_protocol=entry_protocol,
-					note=f"Downloading m3u8 information from {domain}")
 
 			for f in m3u8_formats:
 				# ffmpeg sends a Range header which some streams reject. here we disable that (and also some icecast header as well)
