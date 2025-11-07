@@ -318,6 +318,7 @@ class _RadikoBaseIE(InfoExtractor):
 			if delivered_live and timefree and do_as_live_chunks:
 
 				first_chunk = traverse_obj(m3u8_formats, (..., "url",), get_all=False)
+				# we have this so that we can still return a semi-useful `url` for use in mpv etc
 
 				def fragments_generator(_):
 					return hacks._generate_as_live_fragments(
