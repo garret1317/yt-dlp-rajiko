@@ -335,7 +335,7 @@ class _RadikoBaseIE(InfoExtractor):
 					# fallback to live for ffmpeg etc
 					"url": first_chunk,
 					"http_headers": auth_headers,
-					"is_live": "yesn't",
+					"is_from_start": True,
 				}]
 				format_note.append("Chunked")
 
