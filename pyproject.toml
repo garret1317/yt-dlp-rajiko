@@ -22,6 +22,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://427738.xyz/yt-dlp-rajiko/"
+"日本語" = "https://427738.xyz/yt-dlp-rajiko/index.ja.html"
 "Source Code" = "https://github.com/garret1317/yt-dlp-rajiko/"
 "Release Notes" = "https://427738.xyz/yt-dlp-rajiko/CHANGELOG.xml"
 
