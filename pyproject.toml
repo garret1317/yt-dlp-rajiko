@@ -1,6 +1,6 @@
 [project]
 name = "yt-dlp-rajiko"
-version = "1.9"
+version = "1.10"
 description = "improved radiko.jp extractor for yt-dlp (fast and areafree)"
 
 readme = "README.md"
