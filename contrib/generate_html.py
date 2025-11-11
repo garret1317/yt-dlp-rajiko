@@ -22,7 +22,18 @@ tarballs = []
 wheels = []
 bundles = []
 
-for item in sorted(os.listdir()):#, key=lambda x: x.name):
+def sortkey(item):
+	if os.path.islink(item):
+		return [0]
+	ver = re.search(r"\d+\.\d+", item)
+	if not ver:
+		return [0]
+
+	ver=ver.group()
+	return list(map(int, ver.split(".")))
+
+
+for item in sorted(os.listdir(), key=sortkey):
 	if os.path.islink(item):
 		continue
 
