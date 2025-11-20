@@ -321,14 +321,11 @@ class _RadikoBaseIE(InfoExtractor):
 				first_chunk = traverse_obj(m3u8_formats, (..., "url",), get_all=False)
 				# we have this so that we can still return a semi-useful `url` for use in mpv etc
 
-				def fragments_generator(_):
-					return hacks._generate_as_live_fragments(
-						self, playlist_url, start_at, end_at, domain, auth_headers, first_chunk
-					)
-
 				m3u8_formats = [{
 					"format_id": join_nonempty(domain, "chunked"),
-					"fragments": fragments_generator,
+					"fragments": hacks._generate_as_live_fragments(
+						self, playlist_url, start_at, end_at, domain, auth_headers, first_chunk
+					),
 					"protocol": "http_dash_segments_generator",
 					"preference": preference,
 					"ext": "m4a",
