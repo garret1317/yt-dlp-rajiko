@@ -1,29 +1,45 @@
 # yt-dlp-rajiko
 
-yt-dlp-rajiko is an improved [radiko.jp](https://radiko.jp) extractor plugin for yt-dlp.
+improved [radiko.jp](https://radiko.jp) extractor plugin for yt-dlp (fast and areafree)
 
-### [日本語](https://427738.xyz/yt-dlp-rajiko/index.ja.html)
+<p>yt-dlp-rajiko lets you download Japanese radio shows from <a href="https://radiko.jp">radiko.jp</a> without a VPN, using <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a>.
+It downloads quickly, and works for any participating station*, from anywhere in the world.<br>
+<small>*except NHK, but they have <a href="https://www.nhk.or.jp/radio/">their own site</a> which is supported
+in yt-dlp proper</small></p>
+
+
+<p>Intended for personal archiving, not for commercial use. Please subscribe to radiko Premium if you are able.<br>
+<small>(It's Free Software, so this is just me asking nicely, not a hard requirement. but you should do it so that radiko can keep existing)<br>
+(also, if you get the timefree30 plan you can use it with yt-dlp :P)
+</small></p>
+
+### [日本語  🇯🇵](https://427738.xyz/yt-dlp-rajiko/index.ja.html)
 
 ## Installation
 
 [Download the plugin bundle](https://427738.xyz/yt-dlp-rajiko/dl/yt_dlp_rajiko-latest.bundle.zip) or `pip install yt-dlp-rajiko`
 
-Requires yt-dlp 2025.02.19 or above.
+<p>Requires yt-dlp 2025.02.19 or newer.</p>
 
-Use the pip command if you installed yt-dlp with pip. If you installed
-yt-dlp with `pipx`, use `pipx inject yt-dlp yt-dlp-rajiko` to install
-the plugin in yt-dlp's environment.
+<p>If you installed yt-dlp with pip, use the pip command above.
+If you installed yt-dlp with <code>pipx</code>,
+use <code>pipx inject yt-dlp yt-dlp-rajiko</code> to install the plugin in yt-dlp's environment.</p>
 
-Otherwise, download the plugin bundle, and place it in one of these locations:
+<p>If you installed with the .exe/binary or any other method,
+download the bundle and place it in one of these locations: </p>
 
-  - `~/.config/yt-dlp/plugins/` (on Linux and Mac)
-  - `%appdata%/yt-dlp/plugins/` (on Windows)
-  - a `yt-dlp-plugins` folder next to your `yt-dlp.exe` (<a href="https://427738.xyz/yt-dlp-rajiko/i/installation-pluginsfolder.png">like this</a>)
-  - anywhere else listed in [the yt-dlp
-    documentation](https://github.com/yt-dlp/yt-dlp#installing-plugins).
+<ul>
+	<li><code>%appdata%\yt-dlp\plugins\</code> (on Windows)</li>
+	<li><code>~/.config/yt-dlp/plugins/</code> (on Linux and Mac)</li>
+	<li>a <code>yt-dlp-plugins</code> folder next to your <code>yt-dlp.exe</code> <a href="https://427738.xyz/yt-dlp-rajiko/i/installation-pluginsfolder2.png">(like this)</a><br>
+	<li>anywhere else listed in <a href="https://github.com/yt-dlp/yt-dlp#installing-plugins">the yt-dlp documentation</a>.</li>
+</ul>
 
-You'll have to create those folders if they don't already exist.
-There is no need to unzip the plugin bundle.
+<p>You'll have to create those folders if they don't already exist.<br>
+<b>There is no need to extract the zip file.</b></p>
+
+<p>You can check you've installed correctly by running <code>yt-dlp -v</code> and looking for the <code>[debug] Extractor Plugins:</code> or <code>[debug] Plugin directories:</code> lines. <a href="https://427738.xyz/yt-dlp-rajiko/i/plugincheck.png">(like this)</a>
+</p>
 
 More information about yt-dlp plugins is available from [yt-dlp's documentation](https://github.com/yt-dlp/yt-dlp#plugins).
 
@@ -33,7 +49,7 @@ More information about yt-dlp plugins is available from [yt-dlp's documentation]
 
 [日本語訳もあります](https://427738.xyz/yt-dlp-rajiko/index.ja.html)
 
-## notes about this repository
+## about this repository
 
 this is just where the source code and bug tracker live. most of the info is on the website.
 
