@@ -11,6 +11,8 @@ from yt_dlp.utils import (
 	ExtractorError,
 	OnDemandPagedList,
 	clean_html,
+	filesize_from_tbr,
+	format_bytes,
 	int_or_none,
 	join_nonempty,
 	make_archive_id,
@@ -263,6 +265,11 @@ class _RadikoBaseIE(InfoExtractor):
 		seen_urls = []
 		formats = []
 
+		if timefree:
+			duration = (end_at - start_at).total_seconds()
+			est_size = filesize_from_tbr(48, duration)
+
+
 		timefree_int = 1 if timefree else 0
 		do_as_live_chunks = not len(self._configuration_arg("no_as_live_chunks", ie_key="rajiko")) > 0
 		for element in url_data.findall(f".//url[@timefree='{timefree_int}'][@areafree='0']/playlist_create_url"):
@@ -317,11 +324,11 @@ class _RadikoBaseIE(InfoExtractor):
 			)
 
 			if delivered_live and timefree and do_as_live_chunks:
-
 				first_chunk = traverse_obj(m3u8_formats, (..., "url",), get_all=False)
 				# we have this so that we can still return a semi-useful `url` for use in mpv etc
 
 				m3u8_formats = [{
+					"filesize_approx": est_size,
 					"format_id": join_nonempty(domain, "chunked"),
 					"fragments": hacks._generate_as_live_fragments(
 						self, playlist_url, start_at, end_at, domain, auth_headers, first_chunk
@@ -343,6 +350,9 @@ class _RadikoBaseIE(InfoExtractor):
 				f['downloader_options'] = {'ffmpeg_args': ['-seekable', '0', '-http_seekable', '0', '-icy', '0']}
 				f['format_note'] = ", ".join(format_note)
 				formats.append(f)
+
+		if timefree:
+			self.to_screen(f"Estimated filesize: {format_bytes(est_size)}")
 
 		return formats
 
