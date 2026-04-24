@@ -331,7 +331,7 @@ class _RadikoBaseIE(InfoExtractor):
 					"filesize_approx": est_size,
 					"format_id": join_nonempty(domain, "chunked"),
 					"fragments": hacks._generate_as_live_fragments(
-						self, playlist_url, start_at, end_at, domain, auth_headers, first_chunk
+						self, playlist_url, start_at, end_at, domain, auth_headers, first_chunk, station
 					),
 					"protocol": "http_dash_segments_generator",
 					"preference": preference,

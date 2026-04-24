@@ -10,7 +10,7 @@ from yt_dlp.utils import (
 
 # "hacks" as in great jank/schizo shit that works anyway
 
-def _generate_as_live_fragments(self, playlist_base_url, start_at, end_at, domain, headers={}, first_chunk=None):
+def _generate_as_live_fragments(self, playlist_base_url, start_at, end_at, domain, headers={}, first_chunk=None, station_id=None):
 	playlist = []
 	chunk_length = 300  # max the api allows
 
@@ -26,7 +26,7 @@ def _generate_as_live_fragments(self, playlist_base_url, start_at, end_at, domai
 			"l": chunk_length,
 		})
 
-		chunk_fragments, real_chunk_length = _get_chunk_playlist(self, chunk_url, domain, chunk_num, headers, first_chunk)
+		chunk_fragments, real_chunk_length = _get_chunk_playlist(self, chunk_url, domain, chunk_num, headers, first_chunk, station_id)
 
 		cursor += round(real_chunk_length)
 		chunk_num += 1
@@ -36,7 +36,7 @@ def _generate_as_live_fragments(self, playlist_base_url, start_at, end_at, domai
 			yield frag
 
 
-def _get_chunk_playlist(self, chunk_url, src_id, chunk_num, headers={}, first_chunk=None):
+def _get_chunk_playlist(self, chunk_url, src_id, chunk_num, headers={}, first_chunk=None, station_id=None):
 	EXTINF_duration = re.compile(r"^#EXTINF:([\d.]+),", flags=re.MULTILINE)
 
 	playlist = ""
@@ -58,9 +58,9 @@ def _get_chunk_playlist(self, chunk_url, src_id, chunk_num, headers={}, first_ch
 	playlist = self._download_webpage(m3u8_url, chunk_id, note=False, errnote=f"Failed to get {src_id} chunk {chunk_num} playlist")
 	#note=f"Getting {src_id} chunk {chunk_num} fragments")
 
-	return _parse_hls(playlist)
+	return _parse_hls(self, playlist, station_id)
 
-def _parse_hls(m3u8_doc):
+def _parse_hls(self, m3u8_doc, station_id=None):
 	fragments = []
 
 	# playlists can sometimes be longer than they should
@@ -76,6 +76,7 @@ def _parse_hls(m3u8_doc):
 
 	playlist_duration = 0
 	fragment_duration = None
+	ads_flagged = False
 	for line in m3u8_doc.splitlines():
 		if line.startswith("#EXTINF:"):
 			fragment_duration = float(line[len('#EXTINF:'):].split(',')[0])  # from common._parse_m3u8_vod_duration
@@ -86,5 +87,9 @@ def _parse_hls(m3u8_doc):
 		fragments.append({"url": line, "duration": fragment_duration})
 		playlist_duration += fragment_duration or 0
 		fragment_duration = None
+
+		if station_id and f"/{station_id}/" not in line and not ads_flagged:
+			self.report_warning("Possible ad insertion detected. Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues")
+			ads_flagged = True
 
 	return fragments, playlist_duration
