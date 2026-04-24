@@ -352,7 +352,7 @@ class _RadikoBaseIE(InfoExtractor):
 				formats.append(f)
 
 		if timefree:
-			self.to_screen(f"Estimated filesize: {format_bytes(est_size)}")
+			self.to_screen(f"Estimated filesize: ~{format_bytes(est_size)}")
 
 		return formats
 
