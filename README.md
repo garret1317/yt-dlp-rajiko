@@ -1,3 +1,35 @@
+
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="center">
+        <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=en">English</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=zh-CN">简体中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=zh-TW">繁體中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=ja">日本語</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=ko">한국어</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=hi">हिन्दी</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=th">ไทย</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=fr">Français</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=de">Deutsch</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=es">Español</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=it">Italiano</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=ru">Русский</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=pt">Português</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=nl">Nederlands</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=pl">Polski</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=ar">العربية</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=fa">فارسی</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=tr">Türkçe</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=vi">Tiếng Việt</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=id">Bahasa Indonesia</a>
+        | <a href="https://openaitx.github.io/view.html?user=garret1317&project=yt-dlp-rajiko&lang=as">অসমীয়া</
+      </div>
+    </div>
+  </details>
+</div>
+
 # yt-dlp-rajiko
 
 improved [radiko.jp](https://radiko.jp) extractor plugin for yt-dlp (fast and areafree)
