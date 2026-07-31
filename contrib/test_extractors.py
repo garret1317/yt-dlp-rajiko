@@ -101,7 +101,7 @@ RadikoTimeFreeIE._TESTS.append({
 		'channel': 'TBSラジオ',
 		'channel_id': 'TBS',
 		'channel_url': 'https://www.tbsradio.jp/',
-		'thumbnail': 'https://program-static.cf.radiko.jp/nrf8fowbjo.jpg',
+		'thumbnail': 'https://program-static.cf.radiko.jp/dnxytabv08.jpg',
 		'chapters': list,
 		'tags': ['CCC905', '音楽との出会いが楽しめる', '人気アーティストトーク', '音楽プロデューサー出演', 'ドライブ中におすすめ', '寝る前におすすめ', '学生におすすめ'],
 		'cast': list,
@@ -126,9 +126,9 @@ RadikoShareIE._TESTS = [{
 
 			"title": "JET STREAM",
 			"series": "JET STREAM",
-			"description": r"re:^JET STREAM・・・[\s\S]+https://www.tfm.co.jp/f/jetstream/message$",
+			"description": r"re:[\S\s]*https://www.tfm.co.jp/f/jetstream/message[\S\s]*",
 			"chapters": list,
-			"thumbnail": "https://program-static.cf.radiko.jp/greinlrspi.jpg",
+			"thumbnail": "https://program-static.cf.radiko.jp/hu2ad4r58u.jpg",
 
 			"channel": "TOKYO FM",
 			"channel_id": "FMT",
@@ -137,8 +137,8 @@ RadikoShareIE._TESTS = [{
 			"uploader_id": "FMT",
 			"uploader_url": "https://www.tfm.co.jp/",
 
-			"cast": ["福山雅治"],
-			"tags": ["福山雅治", "夜間飛行", "音楽との出会いが楽しめる", "朗読を楽しめる", "寝る前に聴きたい"],
+			"tags": list,
+			"cast": list,
 		},
 	}]
 

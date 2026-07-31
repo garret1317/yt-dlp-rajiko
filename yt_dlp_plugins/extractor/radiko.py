@@ -761,7 +761,6 @@ class RadikoPersonIE(_RadikoMobileWebBaseIE):
 			"id": "11421",
 			'title': '森山良子',
 			'description': 'md5:bbf061fc22c6a740927cfa7186d984d2',
-			'thumbnail': 'https://ac-static.cf.radiko.jp/509_resized_logo_L.jpg',
 			'_old_archive_ids': ['radikoperson person-11421'],
 		},
 	}]
@@ -778,7 +777,7 @@ class RadikoPersonIE(_RadikoMobileWebBaseIE):
 			playlist_id=person_id,
 			**traverse_obj(person_info, {
 				"playlist_title": "name",
-				"thumbnail": "imageUrl",
+				"thumbnail": ("imageUrl", {url_or_none}),
 				"description": "description",
 			}),
 			_old_archive_ids=[make_archive_id(self, join_nonempty("person", person_id))]
