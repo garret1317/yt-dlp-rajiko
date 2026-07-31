@@ -14,7 +14,7 @@ contrib/bundle.sh
 and then put ALL items from `dist` into the pip index dir - ~/site2/yt-dlp-rajiko/pip/yt-dlp-rajiko/
 because without the .whl pip has to "build" it itself, with all the stuff that needs to be installed for that to work
 
-run script to update the pip index html and the dl/ "latest" symlinks
+run generate_html.py to update the pip index and the dl/ "latest" symlinks
 this also updates the sha256 blocks on the site
 
 ## update the changelog file
@@ -28,6 +28,8 @@ git log --pretty --date=rfc2822
 
 include the pip instructions, sha256sum etc
 
+run update_version.py , to put the new number and changelog on the site
+
 now push to the server
 
 NOW UPLOAD TO PYPI AS WELL
@@ -38,8 +40,8 @@ twine upload yt_dlp_rajiko-1.x-py3-none-any.whl yt_dlp_rajiko-1.x.tar.gz
 
 ## update github
 
-paste the changelog output into a github release, upload the new builds
-change link at the bottom to just "below"
+paste the changelog into a github release (it accepts html), upload the new builds
+change eg "you can download it here(link)" to "you can download it below"
 
 post in the radiko thread on 5ch if i can be bothered
 
