@@ -23,6 +23,7 @@ from yt_dlp.utils import (
 	update_url_query,
 )
 from yt_dlp_plugins.extractor.radiko_podcast import RadikoPodcastSearchIE
+from yt_dlp_plugins.extractor.radiko_common import _RadikoNextJSBaseIE
 
 import yt_dlp_plugins.extractor.radiko_time as rtime
 import yt_dlp_plugins.extractor.radiko_hacks as hacks
@@ -738,12 +739,7 @@ class RadikoStationButtonIE(InfoExtractor):
 		return self.url_result(f"https://radiko.jp/#!/live/{station}", RadikoLiveIE)
 
 
-class _RadikoMobileWebBaseIE(InfoExtractor):
-
-	def _download_pageprops(self, url, video_id):
-		html = self._download_webpage(url, video_id)
-		return self._search_nextjs_data(html, video_id)["props"]["pageProps"]
-
+class _RadikoMobileWebBaseIE(_RadikoNextJSBaseIE):
 	def _programs_entries(self, Programs):
 		for episode in Programs:
 			station = traverse_obj(episode, ("stationId"))
@@ -773,7 +769,8 @@ class RadikoPersonIE(_RadikoMobileWebBaseIE):
 	def _real_extract(self, url):
 		person_id = self._match_id(url)
 
-		person_info = self._download_pageprops(url, person_id)["data"]
+		html = self._download_webpage(url, person_id)
+		person_info = self._get_nextjs(html, "data", person_id)
 		person_id = traverse_obj(person_info, "id") or person_id
 
 		return self.playlist_result(
@@ -811,15 +808,17 @@ class RadikoRSeasonsIE(_RadikoMobileWebBaseIE):
 
 	def _real_extract(self, url):
 		season_id = self._match_id(url)
-		pageProps = self._download_pageprops(url, season_id)
-		season_id = traverse_obj(pageProps, ("rSeason", "id")) or season_id
+		html = self._download_webpage(url, season_id)
+
+		rSeason = self._get_nextjs(html, "rSeason", season_id)
+		season_id = rSeason.get("id", season_id)
 
 		return self.playlist_result(
-			self._programs_entries(pageProps.get("pastPrograms")),
+			self._programs_entries(self._get_nextjs(html, "pastPrograms", season_id)),
 			playlist_id=season_id,
-			**traverse_obj(pageProps, ("rSeason", {
+			**traverse_obj(rSeason, {
 				"playlist_title": "rSeasonName",
 				"thumbnail": "backgroundImageUrl",
 				"description": ("summary", filter),
-			})),
+			}),
 		)

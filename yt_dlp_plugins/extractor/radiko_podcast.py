@@ -12,12 +12,14 @@ from yt_dlp.utils import (
 import dataclasses
 import random
 
+from yt_dlp_plugins.extractor.radiko_common import _RadikoNextJSBaseIE
+
 from yt_dlp_plugins.extractor.radiko_dependencies import protobug
 if protobug:
 	import yt_dlp_plugins.extractor.radiko_protobufs as pb
 
 
-class _RadikoPodcastBaseIE(InfoExtractor):
+class _RadikoPodcastBaseIE(_RadikoNextJSBaseIE):
 
 	def _extract_episode(self, episode_info):
 		return {
@@ -69,9 +71,7 @@ class RadikoPodcastEpisodeIE(_RadikoPodcastBaseIE):
 	def _real_extract(self, url):
 		video_id = self._match_id(url)
 		webpage = self._download_webpage(url, video_id)
-		next_data = self._search_nextjs_data(webpage, video_id)["props"]["pageProps"]
-
-		episode_info = next_data["podcastEpisode"]
+		episode_info = self._get_nextjs(webpage, "podcastEpisode", video_id)
 
 		return self._extract_episode(episode_info)
 
@@ -91,10 +91,9 @@ class RadikoPodcastChannelIE(_RadikoPodcastBaseIE):
 	def _real_extract(self, url):
 		channel_id = self._match_id(url)
 		webpage = self._download_webpage(url, channel_id)
-		next_data = self._search_nextjs_data(webpage, channel_id)["props"]["pageProps"]
 
-		channel_info = next_data["podcastChannel"]
-		episode_list_response = next_data["listPodcastEpisodesResponse"]
+		channel_info = self._get_nextjs(webpage, "podcastChannel", channel_id)
+		episode_list_response = self._get_nextjs(webpage, "listPodcastEpisodesResponse", channel_id)
 
 
 		def entries():
