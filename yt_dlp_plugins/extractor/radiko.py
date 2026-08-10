@@ -26,8 +26,6 @@ from yt_dlp_plugins.extractor.radiko_podcast import RadikoPodcastSearchIE
 from yt_dlp_plugins.extractor.radiko_common import _RadikoNextJSBaseIE
 
 import yt_dlp_plugins.extractor.radiko_time as rtime
-import yt_dlp_plugins.extractor.radiko_hacks as hacks
-
 
 class _RadikoBaseIE(InfoExtractor):
 	_FULL_KEY =  pkgutil.get_data(__name__, "radiko_aSmartPhone7a.bin")
@@ -264,7 +262,7 @@ class _RadikoBaseIE(InfoExtractor):
 			station, note=f"Downloading {device} stream information")
 
 		seen_urls = []
-		formats = []
+		formats_list = []
 
 		if timefree:
 			duration = (end_at - start_at).total_seconds()
@@ -318,44 +316,42 @@ class _RadikoBaseIE(InfoExtractor):
 
 			auth_headers = auth_data["token"]
 
-			m3u8_formats = self._extract_m3u8_formats(
-					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_headers,
-					live=delivered_live, preference=preference, entry_protocol=entry_protocol,
-					note=f"Downloading m3u8 information from {domain}"
-			)
 
-			if delivered_live and timefree and do_as_live_chunks:
-				first_chunk = traverse_obj(m3u8_formats, (..., "url",), get_all=False)
-				# we have this so that we can still return a semi-useful `url` for use in mpv etc
+			if delivered_live and timefree:
 
-				m3u8_formats = [{
-					"filesize_approx": est_size,
+				formats = [{
+					"url": playlist_url,
+					"protocol": "radiko_chunked",
+					"downloader_options": {
+						"station_id": station,
+						"start_at": start_at,
+						"end_at": end_at,
+						"auth_headers": auth_headers,
+					},
+
 					"format_id": join_nonempty(domain, "chunked"),
-					"fragments": hacks._generate_as_live_fragments(
-						self, playlist_url, start_at, end_at, domain, auth_headers, first_chunk, station
-					),
-					"protocol": "http_dash_segments_generator",
 					"preference": preference,
 					"ext": "m4a",
 					"vcodec": "none",
-
-					# fallback to live for ffmpeg etc
-					"url": first_chunk,
-					"http_headers": auth_headers,
-					"is_from_start": True,
 				}]
 				format_note.append("Chunked")
+			else:
+				formats = self._extract_m3u8_formats(
+					playlist_url, station, m3u8_id=domain, fatal=False, headers=auth_headers,
+					live=delivered_live, preference=preference, entry_protocol=entry_protocol,
+					note=f"Downloading m3u8 information from {domain}"
+				)
 
-			for f in m3u8_formats:
+			for f in formats:
 				# ffmpeg sends a Range header which some streams reject. here we disable that (and also some icecast header as well)
-				f['downloader_options'] = {'ffmpeg_args': ['-seekable', '0', '-http_seekable', '0', '-icy', '0']}
+				f.setdefault("downloader_options", {}).update({'ffmpeg_args': ['-seekable', '0', '-http_seekable', '0', '-icy', '0']})
 				f['format_note'] = ", ".join(format_note)
-				formats.append(f)
+				formats_list.append(f)
 
 		if timefree:
 			self.to_screen(f"Estimated filesize: ~{format_bytes(est_size)}")
 
-		return formats
+		return formats_list
 
 
 class RadikoLiveIE(_RadikoBaseIE):
