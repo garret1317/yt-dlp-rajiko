@@ -30,7 +30,6 @@ class RadikoChunkedFD(FragmentFD):
 
 		# so to work around this, we track the real duration from the #EXTINF tags
 
-		playlist_duration = 0
 		fragment_duration = None
 		ads_flagged = False
 		for line in m3u8_doc.splitlines():
@@ -40,16 +39,20 @@ class RadikoChunkedFD(FragmentFD):
 			elif line.startswith("#"):
 				continue
 
-			fragments.append({"url": line, "frag_index": frag_index, 'fragment_count': ctx['fragment_count']})
-			playlist_duration += fragment_duration or 0
-			fragment_duration = None
+			fragments.append({
+				"url": line,
+				"frag_index": frag_index,
+				'fragment_count': ctx['fragment_count'],
+				'duration': fragment_duration,
+				"chunk_index": ctx['extra_state']['chunk_index']
+			})
 			frag_index += 1
 
 			if station_id and f"/{station_id}/" not in line and not ads_flagged:
 				self.report_warning("Possible ad insertion detected. Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues")
 				ads_flagged = True
 
-		return fragments, playlist_duration, frag_index
+		return fragments, frag_index
 
 	def _get_chunk_playlist(self, ctx, chunk_url, chunk_num, frag_index, headers={}, station_id=None):
 		playlist = ""
@@ -104,8 +107,6 @@ class RadikoChunkedFD(FragmentFD):
 		# which does make the fragment counter work, but it breaks the percentage %,
 		# because we immediately get to 100% of the 0 fragments it needs
 
-		self._prepare_and_start_frag_download(ctx, info_dict)
-
 
 		# XXX !!!!!!!!! MASSIVE HACK !!!!!!!!! XXX
 
@@ -121,30 +122,51 @@ class RadikoChunkedFD(FragmentFD):
 
 		# XXX !!!!!!!!! MASSIVE HACK !!!!!!!!! XXX
 
+		self._prepare_and_start_frag_download(ctx, info_dict)
+
+		extra_state = ctx.setdefault('extra_state', {
+			'cursor': 0,
+			'chunk_index': 1,
+		})
 
 		chunk_length = 300  # max the api allows
-		cursor = 0
-		chunk_idx = 1
-		frag_index = 1
-		while cursor < duration:
-			chunk_length = min(chunk_length, duration - cursor)
+		cursor = extra_state['cursor']
+		chunk_index = int(extra_state['chunk_index'])
+		frag_index = ctx['fragment_index'] + 1
 
-			chunk_start = start_at + datetime.timedelta(seconds=cursor)
+		while cursor < duration:
+			chunk_length = min(chunk_length, duration - round(cursor))
+
+			chunk_start = start_at + datetime.timedelta(seconds=round(cursor))
 			chunk_url = update_url_query(playlist_base_url, {
 				"seek": chunk_start.timestring(),
 				"l": chunk_length,
 			})
 
+
 			expected_chunk_fragments = math.ceil(chunk_length / 5)
-			chunk_fragments, real_chunk_length, frag_index = self._get_chunk_playlist(ctx, chunk_url, chunk_idx, frag_index, auth_headers, station_id)
+			chunk_fragments, frag_index = self._get_chunk_playlist(ctx, chunk_url, chunk_index, frag_index, auth_headers, station_id)
+
+			chunk_index += 1
+			ctx['extra_state']['chunk_index'] = chunk_index
 
 			excess_fragments = max(0, len(chunk_fragments) - expected_chunk_fragments)
 			ctx['fragment_count'] += excess_fragments
 
-			cursor += round(real_chunk_length)
-			chunk_idx += 1
+			fragments_by_index = {
+				fragment['frag_index']: fragment
+				for fragment in chunk_fragments
+			}
 
-			self.download_and_append_fragments(ctx, chunk_fragments, info_dict)
+			def commit_fragment(fragment_content, fragment_index):
+				ctx['extra_state']['cursor'] += fragments_by_index[fragment_index]["duration"]
+				ctx['extra_state']['chunk_index'] = chunk_index
+				return fragment_content
+
+			self.download_and_append_fragments(ctx, chunk_fragments, info_dict, pack_func=commit_fragment)
+
+			cursor = ctx['extra_state']['cursor']
+
 
 		# XXX !!!!!!!!! MASSIVE HACK !!!!!!!!! XXX
 		self._finish_frag_download = real_finish_frag_download
