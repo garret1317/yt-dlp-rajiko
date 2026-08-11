@@ -121,56 +121,56 @@ class RadikoChunkedFD(FragmentFD):
 		self._finish_frag_download = fake_finish_frag_download
 
 		# XXX !!!!!!!!! MASSIVE HACK !!!!!!!!! XXX
+		try:
+			self._prepare_and_start_frag_download(ctx, info_dict)
 
-		self._prepare_and_start_frag_download(ctx, info_dict)
-
-		extra_state = ctx.setdefault('extra_state', {
-			'cursor': 0,
-			'chunk_index': 1,
-		})
-
-		chunk_length = 300  # max the api allows
-		cursor = extra_state['cursor']
-		chunk_index = int(extra_state['chunk_index'])
-		frag_index = ctx['fragment_index'] + 1
-
-		while cursor < duration:
-			chunk_length = min(chunk_length, duration - round(cursor))
-
-			chunk_start = start_at + datetime.timedelta(seconds=round(cursor))
-			chunk_url = update_url_query(playlist_base_url, {
-				"seek": chunk_start.timestring(),
-				"l": chunk_length,
+			extra_state = ctx.setdefault('extra_state', {
+				'cursor': 0,
+				'chunk_index': 1,
 			})
 
+			chunk_length = 300  # max the api allows
+			cursor = extra_state['cursor']
+			chunk_index = int(extra_state['chunk_index'])
+			frag_index = ctx['fragment_index'] + 1
 
-			expected_chunk_fragments = math.ceil(chunk_length / 5)
-			chunk_fragments, frag_index = self._get_chunk_playlist(ctx, chunk_url, chunk_index, frag_index, auth_headers, station_id)
+			while cursor < duration:
+				chunk_length = min(chunk_length, duration - round(cursor))
 
-			chunk_index += 1
-			ctx['extra_state']['chunk_index'] = chunk_index
+				chunk_start = start_at + datetime.timedelta(seconds=round(cursor))
+				chunk_url = update_url_query(playlist_base_url, {
+					"seek": chunk_start.timestring(),
+					"l": chunk_length,
+				})
 
-			excess_fragments = max(0, len(chunk_fragments) - expected_chunk_fragments)
-			ctx['fragment_count'] += excess_fragments
 
-			fragments_by_index = {
-				fragment['frag_index']: fragment
-				for fragment in chunk_fragments
-			}
+				expected_chunk_fragments = math.ceil(chunk_length / 5)
+				chunk_fragments, frag_index = self._get_chunk_playlist(ctx, chunk_url, chunk_index, frag_index, auth_headers, station_id)
 
-			def commit_fragment(fragment_content, fragment_index):
-				ctx['extra_state']['cursor'] += fragments_by_index[fragment_index]["duration"]
+				chunk_index += 1
 				ctx['extra_state']['chunk_index'] = chunk_index
-				return fragment_content
 
-			self.download_and_append_fragments(ctx, chunk_fragments, info_dict, pack_func=commit_fragment)
+				excess_fragments = max(0, len(chunk_fragments) - expected_chunk_fragments)
+				ctx['fragment_count'] += excess_fragments
 
-			cursor = ctx['extra_state']['cursor']
+				fragments_by_index = {
+					fragment['frag_index']: fragment
+					for fragment in chunk_fragments
+				}
 
+				def commit_fragment(fragment_content, fragment_index):
+					ctx['extra_state']['cursor'] += fragments_by_index[fragment_index]["duration"]
+					ctx['extra_state']['chunk_index'] = chunk_index
+					return fragment_content
 
-		# XXX !!!!!!!!! MASSIVE HACK !!!!!!!!! XXX
-		self._finish_frag_download = real_finish_frag_download
-		return self._finish_frag_download(ctx, info_dict)
-		# XXX !!!!!!!!! MASSIVE HACK !!!!!!!!! XXX
+				self.download_and_append_fragments(ctx, chunk_fragments, info_dict, pack_func=commit_fragment)
+
+				cursor = ctx['extra_state']['cursor']
+
+			# XXX !!!!!!!!! MASSIVE HACK !!!!!!!!! XXX
+			return real_finish_frag_download(ctx, info_dict)
+		finally:
+			self._finish_frag_download = real_finish_frag_download
+			# XXX !!!!!!!!! MASSIVE HACK !!!!!!!!! XXX
 
 yt_dlp.downloader.PROTOCOL_MAP['radiko_chunked'] = RadikoChunkedFD
