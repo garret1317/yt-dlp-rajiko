@@ -264,11 +264,6 @@ class _RadikoBaseIE(InfoExtractor):
 		seen_urls = []
 		formats_list = []
 
-		if timefree:
-			duration = (end_at - start_at).total_seconds()
-			est_size = filesize_from_tbr(48, duration)
-
-
 		timefree_int = 1 if timefree else 0
 		do_as_live_chunks = not len(self._configuration_arg("no_as_live_chunks", ie_key="rajiko")) > 0
 		for element in url_data.findall(f".//url[@timefree='{timefree_int}'][@areafree='0']/playlist_create_url"):
@@ -347,9 +342,6 @@ class _RadikoBaseIE(InfoExtractor):
 				f.setdefault("downloader_options", {}).update({'ffmpeg_args': ['-seekable', '0', '-http_seekable', '0', '-icy', '0']})
 				f['format_note'] = ", ".join(format_note)
 				formats_list.append(f)
-
-		if timefree:
-			self.to_screen(f"Estimated filesize: ~{format_bytes(est_size)}")
 
 		return formats_list
 
