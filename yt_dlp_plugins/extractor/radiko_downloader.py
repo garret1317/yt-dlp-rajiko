@@ -14,8 +14,6 @@ from yt_dlp.utils import (
 
 class RadikoChunkedFD(FragmentFD):
 
-	FD_NAME = "radiko_chunked"
-
 	def _parse_hls(self, ctx, m3u8_doc, frag_index, station_id=None):
 		fragments = []
 
@@ -55,8 +53,6 @@ class RadikoChunkedFD(FragmentFD):
 		return fragments, frag_index
 
 	def _get_chunk_playlist(self, ctx, chunk_url, chunk_num, frag_index, headers={}, station_id=None):
-		playlist = ""
-
 		self.write_debug(f"Preparing chunk {chunk_num}")
 
 		ie = InfoExtractor(self.ydl)
@@ -65,6 +61,7 @@ class RadikoChunkedFD(FragmentFD):
 			note=False,
 			errnote=f"Failed to get chunk {chunk_num} base format",
 		)
+
 		m3u8_url = traverse_obj(base_formats, (..., "url",), get_all=False)
 
 		self.write_debug(f"Getting chunk {chunk_num} playlist")
@@ -72,20 +69,16 @@ class RadikoChunkedFD(FragmentFD):
 
 		return self._parse_hls(ctx, playlist, frag_index, station_id)
 
-
-
 	def real_download(self, filename, info_dict):
 		downloader_options = info_dict["downloader_options"]
 
 		playlist_base_url = info_dict["url"]
-
 		start_at = downloader_options["start_at"]
 		end_at = downloader_options["end_at"]
 		station_id = downloader_options["station_id"]
 		auth_headers = downloader_options["auth_headers"]
 
 		duration = int(end_at.timestamp() - start_at.timestamp())
-
 		estimated_fragment_count = math.ceil(duration / 5)
 
 		ctx = {
@@ -107,6 +100,9 @@ class RadikoChunkedFD(FragmentFD):
 		# which does make the fragment counter work, but it breaks the percentage %,
 		# because we immediately get to 100% of the 0 fragments it needs
 
+		# at the minute we are uselessly updating the fragment_count, in the hope that core will change to make this possible
+		# (also it helps with debuggering)
+
 
 		# XXX !!!!!!!!! MASSIVE HACK !!!!!!!!! XXX
 
@@ -121,6 +117,8 @@ class RadikoChunkedFD(FragmentFD):
 		self._finish_frag_download = fake_finish_frag_download
 
 		# XXX !!!!!!!!! MASSIVE HACK !!!!!!!!! XXX
+
+
 		try:
 			self._prepare_and_start_frag_download(ctx, info_dict)
 
@@ -129,13 +127,13 @@ class RadikoChunkedFD(FragmentFD):
 				'chunk_index': 1,
 			})
 
-			chunk_length = 300  # max the api allows
+			MAX_CHUNK_LENGTH = 300  # max the api allows
 			cursor = extra_state['cursor']
 			chunk_index = int(extra_state['chunk_index'])
 			frag_index = ctx['fragment_index'] + 1
 
 			while cursor < duration:
-				chunk_length = min(chunk_length, duration - round(cursor))
+				chunk_length = min(MAX_CHUNK_LENGTH, duration - round(cursor))
 
 				chunk_start = start_at + datetime.timedelta(seconds=round(cursor))
 				chunk_url = update_url_query(playlist_base_url, {
@@ -144,19 +142,22 @@ class RadikoChunkedFD(FragmentFD):
 				})
 
 
-				expected_chunk_fragments = math.ceil(chunk_length / 5)
 				chunk_fragments, frag_index = self._get_chunk_playlist(ctx, chunk_url, chunk_index, frag_index, auth_headers, station_id)
+
+
+				# sometimes there can be more fragments than we are expecting, see comment earlier
+				expected_chunk_fragments = math.ceil(chunk_length / 5)
+				excess_fragments = max(0, len(chunk_fragments) - expected_chunk_fragments)
+				ctx['fragment_count'] += excess_fragments
 
 				chunk_index += 1
 				ctx['extra_state']['chunk_index'] = chunk_index
-
-				excess_fragments = max(0, len(chunk_fragments) - expected_chunk_fragments)
-				ctx['fragment_count'] += excess_fragments
 
 				fragments_by_index = {
 					fragment['frag_index']: fragment
 					for fragment in chunk_fragments
 				}
+
 
 				def commit_fragment(fragment_content, fragment_index):
 					ctx['extra_state']['cursor'] += fragments_by_index[fragment_index]["duration"]
@@ -164,6 +165,7 @@ class RadikoChunkedFD(FragmentFD):
 					return fragment_content
 
 				self.download_and_append_fragments(ctx, chunk_fragments, info_dict, pack_func=commit_fragment)
+
 
 				cursor = ctx['extra_state']['cursor']
 

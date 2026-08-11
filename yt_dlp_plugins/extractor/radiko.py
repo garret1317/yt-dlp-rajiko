@@ -265,7 +265,6 @@ class _RadikoBaseIE(InfoExtractor):
 		formats_list = []
 
 		timefree_int = 1 if timefree else 0
-		do_as_live_chunks = not len(self._configuration_arg("no_as_live_chunks", ie_key="rajiko")) > 0
 		for element in url_data.findall(f".//url[@timefree='{timefree_int}'][@areafree='0']/playlist_create_url"):
 		# find <url>s with matching timefree and no areafree, then get their <playlist_create_url>
 		# we don't want areafree here because we should always be in-region
@@ -308,12 +307,9 @@ class _RadikoBaseIE(InfoExtractor):
 				preference -= 3
 				format_note.append("Ad insertion")
 
-
 			auth_headers = auth_data["token"]
 
-
 			if delivered_live and timefree:
-
 				formats = [{
 					"url": playlist_url,
 					"protocol": "radiko_chunked",
