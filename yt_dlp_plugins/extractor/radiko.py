@@ -795,13 +795,13 @@ class RadikoRSeasonsIE(_RadikoMobileWebBaseIE):
 			'thumbnail': 'https://program-static.cf.radiko.jp/935a87fc-4a52-48e5-9468-7b2ef9448d9f.jpeg',
 		}
 	}, {
-		"url": "https://radiko.jp/r_seasons/10002831",
+		# issues with extracting nextjs data
+		"url": "https://radiko.jp/r_seasons/10012174",
 		"playlist_mincount": 4,
 		"info_dict": {
-			"id": "10002831",
-			"title": "Tokyo Moon",
-			'description': 'md5:3eef525003bbe96ccf33ec647c43d904',
-			'thumbnail': 'https://program-static.cf.radiko.jp/0368ee85-5d5f-41c9-8ee1-6c1035d87b3f.jpeg',
+			"id": "10012174",
+			"title": "日向坂46の「ひ」",
+			'thumbnail': 'https://program-static.cf.radiko.jp/b244348d-daab-42ef-876f-243a4475ebd4.jpeg',
 		}
 	}]
 
