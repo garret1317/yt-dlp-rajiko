@@ -763,6 +763,15 @@ class RadikoPersonIE(_RadikoMobileWebBaseIE):
 			'description': 'md5:bbf061fc22c6a740927cfa7186d984d2',
 			'_old_archive_ids': ['radikoperson person-11421'],
 		},
+	}, {
+		# issues with next.js
+		"url": "https://radiko.jp/persons/33901",
+		"playlist_mincount": 1,
+		"info_dict": {
+			"id": "33901",
+			'title': '大友良英',
+			'_old_archive_ids': ['radikoperson person-33901'],
+		},
 	}]
 
 	def _real_extract(self, url):
