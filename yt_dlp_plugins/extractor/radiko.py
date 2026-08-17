@@ -15,7 +15,6 @@ from yt_dlp.utils import (
 	format_bytes,
 	int_or_none,
 	join_nonempty,
-	make_archive_id,
 	parse_qs,
 	traverse_obj,
 	urlencode_postdata,

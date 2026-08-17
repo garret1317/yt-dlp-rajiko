@@ -3,9 +3,10 @@ import random
 import struct
 
 import protobug
+import dataclasses
 import yt_dlp_plugins.extractor.radiko_time as rtime
 from yt_dlp.extractor.common import InfoExtractor
-from yt_dlp.utils import get_first, join_nonempty, traverse_obj
+from yt_dlp.utils import get_first, join_nonempty, make_archive_id, traverse_obj
 
 from yt_dlp_plugins.extractor.protos import(
 	BoolValue, Timestamp,
@@ -43,6 +44,7 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 		if len(protobuf) > 0:
 			return protobug.loads(protobuf, response_message)
 		else:
+			#TODO
 			print(response)
 			print(urlh.headers)
 
@@ -128,7 +130,6 @@ class RadikoRSeasonsIE(_RadikoGRPCBaseIE):
 			data=GetRSeasonRequest(rSeasonId=season_id),
 		)
 
-		import dataclasses
 		rSeason = dataclasses.asdict(rSeason)["rSeason"]
 		season_id = traverse_obj(rSeason, "id") or season_id
 
