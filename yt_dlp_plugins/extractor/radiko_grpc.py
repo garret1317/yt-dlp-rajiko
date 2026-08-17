@@ -9,19 +9,21 @@ from yt_dlp.extractor.common import InfoExtractor
 import yt_dlp_plugins.extractor.radiko_time as rtime
 
 from yt_dlp.utils import (
+	ExtractorError,
 	get_first,
 	join_nonempty,
 	make_archive_id,
 	traverse_obj,
 )
 
-from yt_dlp_plugins.extractor.protos import(
-	BoolValue, Timestamp,
-	SignInRequest, SignInResponse, SignUpRequest,
-	GetRSeasonRequest, GetRSeasonResponse,
-	SearchProgramsRequest, SearchProgramsResponse,
-	GetActorRequest, GetActorResponse,
-)
+if protobug:
+	from yt_dlp_plugins.extractor.protos import(
+		BoolValue, Timestamp,
+		SignInRequest, SignInResponse, SignUpRequest,
+		GetRSeasonRequest, GetRSeasonResponse,
+		SearchProgramsRequest, SearchProgramsResponse,
+		GetActorRequest, GetActorResponse,
+	)
 
 
 class _RadikoGRPCBaseIE(InfoExtractor):
@@ -77,6 +79,7 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 
 
 	def auth_userservice(self):
+		# TODO: to cache or not to cache
 		cachedata = self.cache.load("rajiko", "UserService")
 		if cachedata is not None:
 			lsid = cachedata.get("lsid")
@@ -88,6 +91,9 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 
 
 	def _real_initialize(self):
+		if not protobug:
+			raise ExtractorError("The \"protobug\" library is required for this extractor.\nIf you installed yt-dlp-rajiko manually (with the .whl), use the .zip bundle instead. If you installed with pip, pip install protobug .", expected=True)
+
 		self._jwt = self.auth_userservice()
 
 	def _programs_entries(self, Programs):
