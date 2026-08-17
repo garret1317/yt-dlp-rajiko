@@ -136,6 +136,7 @@ class RadikoRSeasonsIE(_RadikoGRPCBaseIE):
 		"info_dict": {
 			"id": "10012174",
 			"title": "日向坂46の「ひ」",
+			"description": "md5:5701c7fa92c41233c0c988a1d079a6ee",
 			'thumbnail': 'https://program-static.cf.radiko.jp/b244348d-daab-42ef-876f-243a4475ebd4.jpeg',
 		}
 	}]
