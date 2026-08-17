@@ -23,7 +23,7 @@ from yt_dlp.utils import (
 	update_url_query,
 )
 from yt_dlp_plugins.extractor.radiko_podcast import RadikoPodcastSearchIE
-from yt_dlp_plugins.extractor.radiko_common import _RadikoNextJSBaseIE
+from yt_dlp_plugins.extractor.radiko_common import _RadikoMobileWebBaseIE
 
 import yt_dlp_plugins.extractor.radiko_time as rtime
 import yt_dlp_plugins.extractor.radiko_hacks as hacks
@@ -739,19 +739,6 @@ class RadikoStationButtonIE(InfoExtractor):
 		return self.url_result(f"https://radiko.jp/#!/live/{station}", RadikoLiveIE)
 
 
-class _RadikoMobileWebBaseIE(_RadikoNextJSBaseIE):
-	def _programs_entries(self, Programs):
-		for episode in Programs:
-			station = traverse_obj(episode, ("stationId"))
-			start = traverse_obj(episode, ("startAt", "seconds"))
-			timestring = rtime.RadikoTime.fromtimestamp(start, tz=rtime.JST).timestring()
-
-			timefree_id = join_nonempty(station, timestring)
-			timefree_url = f"https://radiko.jp/#!/ts/{station}/{timestring}"
-
-			yield self.url_result(timefree_url, ie=RadikoTimeFreeIE, video_id=timefree_id)
-
-
 class RadikoPersonIE(_RadikoMobileWebBaseIE):
 	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/persons/(?P<id>\d+)"
 	_TESTS = [{
@@ -816,13 +803,53 @@ class RadikoRSeasonsIE(_RadikoMobileWebBaseIE):
 
 	def _real_extract(self, url):
 		season_id = self._match_id(url)
-		html = self._download_webpage(url, season_id)
 
-		rSeason = self._get_nextjs(html, "rSeason", season_id)
-		season_id = rSeason.get("id", season_id)
+		from yt_dlp_plugins.extractor.protos import (
+			GetRSeasonRequest,
+			GetRSeasonResponse,
+			SearchProgramsWithExplicitKeysRequest,
+			SearchProgramsWithExplicitKeysResponse,
+			Timestamp,
+			SearchProgramsRequest,
+			SearchProgramsResponse,
+			BoolValue,
+		)
+
+		rSeason = self._download_grpc(
+			"https://api.annex.radiko.jp/radiko.RSeasonService/GetRSeason",
+			season_id,
+			GetRSeasonResponse,
+			data=GetRSeasonRequest(rSeasonId=season_id),
+		)
+
+		import dataclasses
+		rSeason = dataclasses.asdict(rSeason)["rSeason"]
+		season_id = traverse_obj(rSeason, "id") or season_id
+
+		now = rtime.RadikoTime.now(tz=rtime.JST)
+		min_start = (now - datetime.timedelta(days=30)).broadcast_day_start()
+
+
+		jwt=self.auth_userservice()
+
+		programs = self._download_grpc(
+			"https://api.annex.radiko.jp/radiko.ProgramService/SearchPrograms",
+			season_id,
+			SearchProgramsResponse,
+			headers={'Authorization': f'Bearer {jwt}'},
+			data=SearchProgramsRequest(
+				isSearchEvent=BoolValue(value=True),
+				rSeasonId=season_id,
+				startAtLt=Timestamp(seconds=int(now.timestamp())),
+				startAtGte=Timestamp(seconds=int(min_start.timestamp())),
+				sortKey="introduction_start_at",
+				timefreeDays=30,
+				limit=20,
+			),
+		)
 
 		return self.playlist_result(
-			self._programs_entries(self._get_nextjs(html, "pastPrograms", season_id)),
+			self._programs_entries(dataclasses.asdict(programs)["programs"]),
 			playlist_id=season_id,
 			**traverse_obj(rSeason, {
 				"playlist_title": "rSeasonName",

@@ -12,14 +12,14 @@ from yt_dlp.utils import (
 import dataclasses
 import random
 
-from yt_dlp_plugins.extractor.radiko_common import _RadikoNextJSBaseIE
+from yt_dlp_plugins.extractor.radiko_common import _RadikoMobileWebBaseIE
 
 from yt_dlp_plugins.extractor.radiko_dependencies import protobug
 if protobug:
 	import yt_dlp_plugins.extractor.radiko_protobufs as pb
 
 
-class _RadikoPodcastBaseIE(_RadikoNextJSBaseIE):
+class _RadikoPodcastBaseIE(_RadikoMobileWebBaseIE):
 
 	def _extract_episode(self, episode_info):
 		return {
