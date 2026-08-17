@@ -97,6 +97,25 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 	def _get_nextjs(self, html, key, video_id):
 		return get_first(self._search_nextjs_v13_data(html, video_id), key)
 
+	def _get_past_Programs(self, video_id, **kwargs):
+		now = rtime.RadikoTime.now(tz=rtime.JST)
+		min_start = (now - datetime.timedelta(days=30)).broadcast_day_start()
+		return self._download_grpc(
+			"https://api.annex.radiko.jp/radiko.ProgramService/SearchPrograms",
+			video_id,
+			SearchProgramsResponse,
+			headers={'Authorization': f'Bearer {self._jwt}'},
+			data=SearchProgramsRequest(
+				isSearchEvent=BoolValue(value=True),
+				startAtLt=Timestamp(seconds=int(now.timestamp())),
+				startAtGte=Timestamp(seconds=int(min_start.timestamp())),
+				sortKey="introduction_start_at",
+				timefreeDays=30,
+				limit=20,
+				**kwargs
+			),
+		)
+
 
 
 class RadikoRSeasonsIE(_RadikoGRPCBaseIE):
@@ -132,26 +151,7 @@ class RadikoRSeasonsIE(_RadikoGRPCBaseIE):
 
 		rSeason = dataclasses.asdict(rSeason)["rSeason"]
 		season_id = traverse_obj(rSeason, "id") or season_id
-
-		now = rtime.RadikoTime.now(tz=rtime.JST)
-		min_start = (now - datetime.timedelta(days=30)).broadcast_day_start()
-
-
-		programs = self._download_grpc(
-			"https://api.annex.radiko.jp/radiko.ProgramService/SearchPrograms",
-			season_id,
-			SearchProgramsResponse,
-			headers={'Authorization': f'Bearer {self._jwt}'},
-			data=SearchProgramsRequest(
-				isSearchEvent=BoolValue(value=True),
-				rSeasonId=season_id,
-				startAtLt=Timestamp(seconds=int(now.timestamp())),
-				startAtGte=Timestamp(seconds=int(min_start.timestamp())),
-				sortKey="introduction_start_at",
-				timefreeDays=30,
-				limit=20,
-			),
-		)
+		programs = self._get_past_Programs(season_id, rSeasonId=season_id)
 
 		return self.playlist_result(
 			self._programs_entries(dataclasses.asdict(programs)["programs"]),
