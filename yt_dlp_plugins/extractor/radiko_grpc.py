@@ -1,12 +1,19 @@
 import datetime
+import dataclasses
 import random
 import struct
 
 import protobug
-import dataclasses
-import yt_dlp_plugins.extractor.radiko_time as rtime
+
 from yt_dlp.extractor.common import InfoExtractor
-from yt_dlp.utils import get_first, join_nonempty, make_archive_id, traverse_obj
+import yt_dlp_plugins.extractor.radiko_time as rtime
+
+from yt_dlp.utils import (
+	get_first,
+	join_nonempty,
+	make_archive_id,
+	traverse_obj,
+)
 
 from yt_dlp_plugins.extractor.protos import(
 	BoolValue, Timestamp,
