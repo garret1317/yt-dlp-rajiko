@@ -13,6 +13,7 @@ from yt_dlp_plugins.extractor.protos import(
 	SignInRequest, SignInResponse, SignUpRequest,
 	GetRSeasonRequest, GetRSeasonResponse,
 	SearchProgramsRequest, SearchProgramsResponse,
+	GetActorRequest, GetActorResponse,
 )
 
 
@@ -188,16 +189,16 @@ class RadikoPersonIE(_RadikoGRPCBaseIE):
 	def _real_extract(self, url):
 		person_id = self._match_id(url)
 
-		html = self._download_webpage(url, person_id)
-		person_info = self._get_nextjs(html, "data", person_id)
-		person_id = traverse_obj(person_info, "id") or person_id
+		person_metadata = dataclasses.asdict(self._download_grpc("https://actor-and-article.annex.radiko.jp/radiko.ActorService/GetActor",
+			person_id, GetActorResponse, note="Downloading person metadata", data=GetActorRequest(actorKey=person_id),
+		))["actor"]
+		programs = dataclasses.asdict(self._get_past_Programs(person_id, actorId=person_id))["programs"]
 
 		return self.playlist_result(
-			self._programs_entries(person_info.get("pastPrograms")),
+			self._programs_entries(programs),
 			playlist_id=person_id,
-			**traverse_obj(person_info, {
+			**traverse_obj(person_metadata, {
 				"playlist_title": "name",
-				"thumbnail": ("imageUrl", {url_or_none}),
 				"description": "description",
 			}),
 			_old_archive_ids=[make_archive_id(self, join_nonempty("person", person_id))]
