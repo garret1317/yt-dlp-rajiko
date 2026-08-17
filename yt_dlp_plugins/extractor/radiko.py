@@ -21,7 +21,7 @@ from yt_dlp.utils import (
 	url_or_none,
 	update_url_query,
 )
-from yt_dlp_plugins.extractor.radiko_podcast import RadikoPodcastSearchIE
+from yt_dlp_plugins.extractor.radiko_grpc import RadikoPodcastChannelIE
 
 import yt_dlp_plugins.extractor.radiko_time as rtime
 import yt_dlp_plugins.extractor.radiko_hacks as hacks
@@ -735,3 +735,48 @@ class RadikoStationButtonIE(InfoExtractor):
 		station = traverse_obj(queries, ("station_id", 0))
 
 		return self.url_result(f"https://radiko.jp/#!/live/{station}", RadikoLiveIE)
+
+class RadikoPodcastSearchIE(InfoExtractor):
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/podcast/(?:timeshift|live)\?"
+	_TESTS = [{
+		"url": "https://radiko.jp/#!/search/podcast/live?key=ドラマ",
+		"playlist_mincount": 51,
+		"info_dict": {
+			"id": "ドラマ",
+			"title": "ドラマ",
+		},
+	}]
+
+	def _pagefunc(self, url, idx):
+		url = update_url_query(url, {"pageIdx": idx})
+		data = self._download_json(url, None, note=f"Downloading page {idx+1}")
+
+		results = []
+		for channel in data.get("channels"):
+			results.append(
+				self.url_result(
+					channel.get("channelUrl"),
+					id=channel.get("id"),
+					ie=RadikoPodcastChannelIE,
+				)
+			)
+		return results
+
+
+	def _real_extract(self, url):
+		# hack away the # so urllib.parse will work (same as normal RadikoSearchIE)
+		url = url.replace("/#!/", "/!/", 1)
+		queries = parse_qs(url)
+
+		keywords = traverse_obj(queries, ("key", 0))
+		search_url = update_url_query("https://api.annex-cf.radiko.jp/v1/podcasts/channels/search_with_keywords_by_offset", {
+			"keywords": keywords,
+			"uid": "".join(random.choices("0123456789abcdef", k=32)),
+			"limit": 50,  # result limit. the actual limit before the api errors is 5000, but that seems a bit rude so i'll leave as 50 like the radio one
+		})
+
+		return self.playlist_result(
+			OnDemandPagedList(lambda idx: self._pagefunc(search_url, idx), 50),
+			title=keywords,
+			id=keywords,  # i have to put some kind of id or the tests fail
+		)
