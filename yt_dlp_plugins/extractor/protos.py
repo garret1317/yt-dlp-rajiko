@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import protobug
+from yt_dlp_plugins.extractor.radiko_dependencies import protobug
 
 @protobug.message
 class Image:

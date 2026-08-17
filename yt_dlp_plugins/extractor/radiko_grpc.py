@@ -3,7 +3,7 @@ import dataclasses
 import random
 import struct
 
-import protobug
+from yt_dlp_plugins.extractor.radiko_dependencies import protobug
 
 from yt_dlp.extractor.common import InfoExtractor
 import yt_dlp_plugins.extractor.radiko_time as rtime
