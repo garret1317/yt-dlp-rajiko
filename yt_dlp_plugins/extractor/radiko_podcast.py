@@ -12,7 +12,7 @@ from yt_dlp.utils import (
 import dataclasses
 import random
 
-from yt_dlp_plugins.extractor.radiko_common import _RadikoMobileWebBaseIE
+from yt_dlp_plugins.extractor.radiko_grpc import _RadikoGRPCBaseIE as _RadikoMobileWebBaseIE  # temp
 
 from yt_dlp_plugins.extractor.radiko_dependencies import protobug
 if protobug:
