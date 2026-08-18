@@ -91,13 +91,7 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 
 
 	def auth_userservice(self):
-		# TODO: to cache or not to cache
-		cachedata = self.cache.load("rajiko", "UserService")
-		if cachedata is not None:
-			lsid = cachedata.get("lsid")
-		else:
-			lsid = self.sign_up()
-			self.cache.store("rajiko", "UserService", {"lsid": lsid})
+		lsid = self.sign_up()
 		jwt = self.sign_in(lsid)
 		return jwt
 
