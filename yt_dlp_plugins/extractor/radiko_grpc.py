@@ -43,7 +43,8 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 		# TODO: do this properly https://kreya.app/blog/grpc-web-deep-dive/#grpc-web-trailers-in-disguise
 		return response[5:].rpartition(b"grpc-status:")[0]
 
-	def _download_grpc(self, url_or_request, video_id, response_message, note="Downloading GRPC information", *args, **kwargs):
+	def _download_grpc(self, url_or_request, video_id, request_message, response_message,
+		note="Downloading GRPC information", errnote=None, fatal=True, *args, **kwargs):
 		#TODO: do this properly with __create_download_methods ?
 
 		urlh = self._request_webpage(url_or_request, video_id,
@@ -53,7 +54,7 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 				'X-Grpc-Web': '1',
 				**(kwargs.pop("headers", None) or {})
 			},
-			data=self.__add_grpc_header(protobug.dumps(kwargs.pop('data'))), note=note,
+			data=self.__add_grpc_header(protobug.dumps(request_message)), note=note,
 			*args, **kwargs,
 		)
 		response = urlh.read()
@@ -74,8 +75,8 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 		lsid = ''.join(random.choices('0123456789abcdef', k=32))
 
 		signup = self._download_grpc("https://api.annex.radiko.jp/radiko.UserService/SignUp",
-			"UserService", None, note="Registering ID", headers={'Origin': 'https://radiko.jp'},
-			data=SignUpRequest(dataId=lsid),
+			"UserService", SignUpRequest(dataId=lsid), None,
+			note="Registering ID", headers={'Origin': 'https://radiko.jp'},
 		)
 		# youre meant to only do the sign up ^ once and then keep your lsid for later
 		# so that you can sign in and get the token for the API to work
@@ -84,8 +85,8 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 
 	def sign_in(self, lsid):
 		sign_in = self._download_grpc("https://api.annex.radiko.jp/radiko.UserService/SignIn",
-			"UserService", SignInResponse, note="Getting auth token", headers={'Origin': 'https://radiko.jp'},
-			data=SignInRequest(dataId=lsid, prefecture="JP13"),
+			"UserService", SignInRequest(dataId=lsid, prefecture="JP13"), SignInResponse,
+			note="Getting auth token", headers={'Origin': 'https://radiko.jp'},
 		)
 		return sign_in.jwtToken
 
@@ -123,9 +124,7 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 		return self._download_grpc(
 			"https://api.annex.radiko.jp/radiko.ProgramService/SearchPrograms",
 			video_id,
-			SearchProgramsResponse,
-			headers={'Authorization': f'Bearer {self._jwt}'},
-			data=SearchProgramsRequest(
+			SearchProgramsRequest(
 				isSearchEvent=BoolValue(value=True),
 				startAtLt=Timestamp(seconds=int(now.timestamp())),
 				startAtGte=Timestamp(seconds=int(min_start.timestamp())),
@@ -134,6 +133,8 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 				limit=20,
 				**kwargs
 			),
+			SearchProgramsResponse,
+			headers={'Authorization': f'Bearer {self._jwt}'},
 		)
 
 
@@ -166,8 +167,8 @@ class RadikoRSeasonsIE(_RadikoGRPCBaseIE):
 		rSeason = self._download_grpc(
 			"https://api.annex.radiko.jp/radiko.RSeasonService/GetRSeason",
 			season_id,
+			GetRSeasonRequest(rSeasonId=season_id),
 			GetRSeasonResponse,
-			data=GetRSeasonRequest(rSeasonId=season_id),
 		)
 
 		rSeason = dataclasses.asdict(rSeason)["rSeason"]
@@ -209,8 +210,9 @@ class RadikoPersonIE(_RadikoGRPCBaseIE):
 	def _real_extract(self, url):
 		person_id = self._match_id(url)
 
-		person_metadata = dataclasses.asdict(self._download_grpc("https://actor-and-article.annex.radiko.jp/radiko.ActorService/GetActor",
-			person_id, GetActorResponse, note="Downloading person metadata", data=GetActorRequest(actorKey=person_id),
+		person_metadata = dataclasses.asdict(self._download_grpc(
+			"https://actor-and-article.annex.radiko.jp/radiko.ActorService/GetActor", person_id,
+			GetActorRequest(actorKey=person_id), GetActorResponse, note="Downloading person metadata",
 		))["actor"]
 		programs = dataclasses.asdict(self._get_past_Programs(person_id, actorId=person_id))["programs"]
 
@@ -275,8 +277,12 @@ class RadikoPodcastEpisodeIE(_RadikoPodcastBaseIE):
 
 	def _real_extract(self, url):
 		video_id = self._match_id(url)
-		episode_info = dataclasses.asdict(self._download_grpc("https://api.annex.radiko.jp/radiko.PodcastService/GetPodcastEpisode",
-			video_id, GetPodcastEpisodeResponse, data=GetPodcastEpisodeRequest(id=video_id)))["episode"]
+		episode_info = dataclasses.asdict(
+			self._download_grpc(
+				"https://api.annex.radiko.jp/radiko.PodcastService/GetPodcastEpisode", video_id,
+				GetPodcastEpisodeRequest(id=video_id), GetPodcastEpisodeResponse
+			)
+		)["episode"]
 		return self._extract_episode(episode_info)
 
 
@@ -294,21 +300,24 @@ class RadikoPodcastChannelIE(_RadikoPodcastBaseIE):
 	def _real_extract(self, url):
 		channel_id = self._match_id(url)
 
-		channel_info = dataclasses.asdict(self._download_grpc("https://api.annex.radiko.jp/radiko.PodcastService/GetPodcastChannel",
-			channel_id, GetPodcastChannelResponse, data=GetPodcastChannelRequest(id=channel_id)))["channel"]
+		channel_info = dataclasses.asdict(
+			self._download_grpc(
+				"https://api.annex.radiko.jp/radiko.PodcastService/GetPodcastChannel", channel_id,
+				GetPodcastChannelRequest(id=channel_id), GetPodcastChannelResponse
+			)
+		)["channel"]
 
 		def entries():
 			has_next_page = True
 			cursor = None
 			while has_next_page:
-				episode_list_response = self._download_grpc('https://api.annex.radiko.jp/radiko.PodcastService/ListPodcastEpisodes',
-					channel_id, ListPodcastEpisodesResponse, note="Downloading episode listings",
+				episode_list_response = self._download_grpc(
+					'https://api.annex.radiko.jp/radiko.PodcastService/ListPodcastEpisodes', channel_id,
+					ListPodcastEpisodesRequest(channelId=channel_id, order=1, lastEpisodeId=cursor),
+					ListPodcastEpisodesResponse,
+					note="Downloading episode listings",
 					headers={'Authorization': f'Bearer {self._jwt}'},
-					data=ListPodcastEpisodesRequest(
-						channelId=channel_id,
-						order=1,
-						lastEpisodeId=cursor,
-				))
+				)
 
 				for episode in episode_list_response.episodes:
 					episode = dataclasses.asdict(episode)
