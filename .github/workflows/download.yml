@@ -39,6 +39,9 @@ jobs:
         path: './yt-dlp/'
         repository: yt-dlp/yt-dlp
 
+    - name: "Install deps from pyproject.toml"
+      run: pip install -e ./yt-dlp-plugins/yt-dlp-rajiko/
+
     - name: Install yt-dlp from source (editable mode)
       run: pip install -e ./yt-dlp/
 
