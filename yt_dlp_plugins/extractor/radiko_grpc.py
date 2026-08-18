@@ -44,7 +44,7 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 		return response[5:].rpartition(b"grpc-status:")[0]
 
 	def _download_grpc(self, url_or_request, video_id, request_message, response_message,
-		note="Downloading GRPC information", errnote=None, fatal=True, *args, **kwargs):
+		note="Downloading gRPC information", errnote="Failed to download gRPC information", fatal=True, *args, **kwargs):
 		#TODO: do this properly with __create_download_methods ?
 
 		urlh = self._request_webpage(url_or_request, video_id,
@@ -71,7 +71,7 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 				raise ExtractorError(f"API returned {cause}")
 
 
-	def sign_up(self):
+	def _sign_up(self):
 		lsid = ''.join(random.choices('0123456789abcdef', k=32))
 
 		signup = self._download_grpc("https://api.annex.radiko.jp/radiko.UserService/SignUp",
@@ -83,7 +83,7 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 		return lsid
 
 
-	def sign_in(self, lsid):
+	def _sign_in(self, lsid):
 		sign_in = self._download_grpc("https://api.annex.radiko.jp/radiko.UserService/SignIn",
 			"UserService", SignInRequest(dataId=lsid, prefecture="JP13"), SignInResponse,
 			note="Getting auth token", headers={'Origin': 'https://radiko.jp'},
@@ -91,9 +91,9 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 		return sign_in.jwtToken
 
 
-	def auth_userservice(self):
-		lsid = self.sign_up()
-		jwt = self.sign_in(lsid)
+	def _auth_userservice(self):
+		lsid = self._sign_up()
+		jwt = self._sign_in(lsid)
 		return jwt
 
 
@@ -101,7 +101,7 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 		if not protobug:
 			raise ExtractorError("The \"protobug\" library is required for this extractor.\nIf you installed yt-dlp-rajiko manually (with the .whl), use the .zip bundle instead. If you installed with pip, pip install protobug .", expected=True)
 
-		self._jwt = self.auth_userservice()
+		self._jwt = self._auth_userservice()
 
 	def _programs_entries(self, Programs):
 		for episode in Programs:
