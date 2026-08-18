@@ -292,7 +292,10 @@ class RadikoPodcastChannelIE(_RadikoPodcastBaseIE):
 	_TESTS = [{
 		"url": "https://radiko.jp/podcast/channels/09f27a48-ae04-4ce7-a024-572460e46eb7",
 		"info_dict": {
-			"id": "09f27a48-ae04-4ce7-a024-572460e46eb7"
+			"id": "09f27a48-ae04-4ce7-a024-572460e46eb7",
+			"title": "おしゃべり技術くん",
+			"description": "md5:8abfb1e64ba50ba8e5bb76bad4031de0",
+			"thumbnail": "https://podcast-static.cf.radiko.jp/09f27a48-ae04-4ce7-a024-572460e46eb7-20240214160012.png",
 		},
 		'playlist_mincount': 21,
 	}]
