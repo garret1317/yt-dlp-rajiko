@@ -20,7 +20,7 @@ from yt_dlp.utils import (
 )
 
 if protobug:
-	from yt_dlp_plugins.extractor.protos import(
+	from yt_dlp_plugins.extractor.radiko_protos import(
 		BoolValue, Timestamp,
 		SignInRequest, SignInResponse, SignUpRequest,
 		GetRSeasonRequest, GetRSeasonResponse,
