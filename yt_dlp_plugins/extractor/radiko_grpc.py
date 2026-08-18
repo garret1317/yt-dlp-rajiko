@@ -44,6 +44,8 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 		return response[5:].rpartition(b"grpc-status:")[0]
 
 	def _download_grpc(self, url_or_request, video_id, response_message, note="Downloading GRPC information", *args, **kwargs):
+		#TODO: do this properly with __create_download_methods ?
+
 		urlh = self._request_webpage(url_or_request, video_id,
 			headers={
 				'Content-Type': 'application/grpc-web+proto',
@@ -61,8 +63,12 @@ class _RadikoGRPCBaseIE(InfoExtractor):
 			return protobug.loads(protobuf, response_message)
 		else:
 			#TODO
-			print(response)
-			print(urlh.headers)
+			self.write_debug(response)
+			self.write_debug(urlh.headers)
+			if fatal:
+				cause = urlh.headers["grpc-message"]
+				raise ExtractorError(f"API returned {cause}")
+
 
 	def sign_up(self):
 		lsid = ''.join(random.choices('0123456789abcdef', k=32))
