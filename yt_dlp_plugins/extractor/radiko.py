@@ -15,15 +15,13 @@ from yt_dlp.utils import (
 	format_bytes,
 	int_or_none,
 	join_nonempty,
-	make_archive_id,
 	parse_qs,
 	traverse_obj,
 	urlencode_postdata,
 	url_or_none,
 	update_url_query,
 )
-from yt_dlp_plugins.extractor.radiko_podcast import RadikoPodcastSearchIE
-from yt_dlp_plugins.extractor.radiko_common import _RadikoNextJSBaseIE
+from yt_dlp_plugins.extractor.radiko_grpc import RadikoPodcastChannelIE
 
 import yt_dlp_plugins.extractor.radiko_time as rtime
 
@@ -722,86 +720,47 @@ class RadikoStationButtonIE(InfoExtractor):
 
 		return self.url_result(f"https://radiko.jp/#!/live/{station}", RadikoLiveIE)
 
-
-class _RadikoMobileWebBaseIE(_RadikoNextJSBaseIE):
-	def _programs_entries(self, Programs):
-		for episode in Programs:
-			station = traverse_obj(episode, ("stationId"))
-			start = traverse_obj(episode, ("startAt", "seconds"))
-			timestring = rtime.RadikoTime.fromtimestamp(start, tz=rtime.JST).timestring()
-
-			timefree_id = join_nonempty(station, timestring)
-			timefree_url = f"https://radiko.jp/#!/ts/{station}/{timestring}"
-
-			yield self.url_result(timefree_url, ie=RadikoTimeFreeIE, video_id=timefree_id)
-
-
-class RadikoPersonIE(_RadikoMobileWebBaseIE):
-	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/persons/(?P<id>\d+)"
+class RadikoPodcastSearchIE(InfoExtractor):
+	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/#!/search/podcast/(?:timeshift|live)\?"
 	_TESTS = [{
-		"url": "https://radiko.jp/persons/11421",
-		"playlist_mincount": 1,
+		"url": "https://radiko.jp/#!/search/podcast/live?key=ドラマ",
+		"playlist_mincount": 51,
 		"info_dict": {
-			"id": "11421",
-			'title': '森山良子',
-			'description': 'md5:bbf061fc22c6a740927cfa7186d984d2',
-			'_old_archive_ids': ['radikoperson person-11421'],
+			"id": "ドラマ",
+			"title": "ドラマ",
 		},
 	}]
 
-	def _real_extract(self, url):
-		person_id = self._match_id(url)
+	def _pagefunc(self, url, idx):
+		url = update_url_query(url, {"pageIdx": idx})
+		data = self._download_json(url, None, note=f"Downloading page {idx+1}")
 
-		html = self._download_webpage(url, person_id)
-		person_info = self._get_nextjs(html, "data", person_id)
-		person_id = traverse_obj(person_info, "id") or person_id
+		results = []
+		for channel in data.get("channels"):
+			results.append(
+				self.url_result(
+					channel.get("channelUrl"),
+					id=channel.get("id"),
+					ie=RadikoPodcastChannelIE,
+				)
+			)
+		return results
 
-		return self.playlist_result(
-			self._programs_entries(person_info.get("pastPrograms")),
-			playlist_id=person_id,
-			**traverse_obj(person_info, {
-				"playlist_title": "name",
-				"thumbnail": ("imageUrl", {url_or_none}),
-				"description": "description",
-			}),
-			_old_archive_ids=[make_archive_id(self, join_nonempty("person", person_id))]
-		)
-
-
-class RadikoRSeasonsIE(_RadikoMobileWebBaseIE):
-	_VALID_URL = r"https?://(?:www\.)?radiko\.jp/(?:mobile/)?r_seasons/(?P<id>\d+$)"
-	_TESTS = [{
-		"url": "https://radiko.jp/r_seasons/10012302",
-		"playlist_mincount": 4,
-		"info_dict": {
-			"id": '10012302',
-			"title": '山下達郎の楽天カード サンデー・ソングブック',
-			'thumbnail': 'https://program-static.cf.radiko.jp/935a87fc-4a52-48e5-9468-7b2ef9448d9f.jpeg',
-		}
-	}, {
-		"url": "https://radiko.jp/r_seasons/10002831",
-		"playlist_mincount": 4,
-		"info_dict": {
-			"id": "10002831",
-			"title": "Tokyo Moon",
-			'description': 'md5:3eef525003bbe96ccf33ec647c43d904',
-			'thumbnail': 'https://program-static.cf.radiko.jp/0368ee85-5d5f-41c9-8ee1-6c1035d87b3f.jpeg',
-		}
-	}]
 
 	def _real_extract(self, url):
-		season_id = self._match_id(url)
-		html = self._download_webpage(url, season_id)
+		# hack away the # so urllib.parse will work (same as normal RadikoSearchIE)
+		url = url.replace("/#!/", "/!/", 1)
+		queries = parse_qs(url)
 
-		rSeason = self._get_nextjs(html, "rSeason", season_id)
-		season_id = rSeason.get("id", season_id)
+		keywords = traverse_obj(queries, ("key", 0))
+		search_url = update_url_query("https://api.annex-cf.radiko.jp/v1/podcasts/channels/search_with_keywords_by_offset", {
+			"keywords": keywords,
+			"uid": "".join(random.choices("0123456789abcdef", k=32)),
+			"limit": 50,  # result limit. the actual limit before the api errors is 5000, but that seems a bit rude so i'll leave as 50 like the radio one
+		})
 
 		return self.playlist_result(
-			self._programs_entries(self._get_nextjs(html, "pastPrograms", season_id)),
-			playlist_id=season_id,
-			**traverse_obj(rSeason, {
-				"playlist_title": "rSeasonName",
-				"thumbnail": "backgroundImageUrl",
-				"description": ("summary", filter),
-			}),
+			OnDemandPagedList(lambda idx: self._pagefunc(search_url, idx), 50),
+			title=keywords,
+			id=keywords,  # i have to put some kind of id or the tests fail
 		)
