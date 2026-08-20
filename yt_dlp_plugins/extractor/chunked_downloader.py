@@ -132,7 +132,7 @@ class RadikoChunkedFD(FragmentFD):
 			chunk_index = int(extra_state['chunk_index'])
 			frag_index = ctx['fragment_index'] + 1
 
-			while cursor < duration:
+			while round(cursor) < duration:
 				chunk_length = min(MAX_CHUNK_LENGTH, duration - round(cursor))
 
 				chunk_start = start_at + datetime.timedelta(seconds=round(cursor))
