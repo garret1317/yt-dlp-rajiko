@@ -50,12 +50,12 @@ def _get_chunk_playlist(self, chunk_url, src_id, chunk_num, headers={}, first_ch
 			chunk_url, chunk_id, fatal=False, headers=headers,
 	#		note=f"Preparing {src_id} chunk {chunk_num}"
 			note=False,
-			errnote=f"Failed to get {src_id} chunk {chunk_num} base format",
+			errnote=f"Failed to get {src_id} chunk {chunk_num} base format. Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues",
 		)
 		m3u8_url = traverse_obj(base_formats, (..., "url",), get_all=False)
 
 	self.write_debug(f"Getting {src_id} chunk {chunk_num} playlist")
-	playlist = self._download_webpage(m3u8_url, chunk_id, note=False, errnote=f"Failed to get {src_id} chunk {chunk_num} playlist")
+	playlist = self._download_webpage(m3u8_url, chunk_id, note=False, errnote=f"Failed to get {src_id} chunk {chunk_num} playlist. Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues")
 	#note=f"Getting {src_id} chunk {chunk_num} fragments")
 
 	return _parse_hls(self, playlist, station_id)
