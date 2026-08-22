@@ -77,6 +77,12 @@ class RadikoChunkedFD(FragmentFD):
 		station_id = downloader_options["station_id"]
 		auth_headers = downloader_options["auth_headers"]
 
+		# XXX it isn't possible to use this even though it works,
+		# core yt-dlp is hardcoded so only FFmpegFD can do --download-sections
+		if info_dict.get("section_start"):
+			start_at = downloader_options["start_at"] + datetime.timedelta(seconds=info_dict.get("section_start"))
+			end_at = downloader_options["start_at"] + datetime.timedelta(seconds=info_dict.get("section_end"))
+
 		duration = int(end_at.timestamp() - start_at.timestamp())
 		estimated_fragment_count = math.ceil(duration / 5)
 
