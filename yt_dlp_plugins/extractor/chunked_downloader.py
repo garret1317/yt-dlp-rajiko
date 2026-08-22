@@ -29,13 +29,16 @@ class RadikoChunkedFD(FragmentFD):
 		# so to work around this, we track the real duration from the #EXTINF tags
 
 		fragment_duration = None
-		ads_flagged = False
 		for line in m3u8_doc.splitlines():
 			if line.startswith("#EXTINF:"):
 				fragment_duration = float(line[len('#EXTINF:'):].split(',')[0])  # from common._parse_m3u8_vod_duration
 				continue
 			elif line.startswith("#"):
 				continue
+
+			if station_id and f"/{station_id}/" not in line:
+				self.write_debug("Ad insertion detected, bypassing")
+				return fragments, frag_index
 
 			fragments.append({
 				"url": line,
@@ -45,10 +48,6 @@ class RadikoChunkedFD(FragmentFD):
 				"chunk_index": ctx['extra_state']['chunk_index']
 			})
 			frag_index += 1
-
-			if station_id and f"/{station_id}/" not in line and not ads_flagged:
-				self.report_warning("Possible ad insertion detected. Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues")
-				ads_flagged = True
 
 		return fragments, frag_index
 
