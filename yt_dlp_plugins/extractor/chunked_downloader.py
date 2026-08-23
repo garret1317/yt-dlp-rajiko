@@ -58,13 +58,13 @@ class RadikoChunkedFD(FragmentFD):
 		base_formats = ie._extract_m3u8_formats(
 			chunk_url, chunk_num, fatal=True, headers=headers,
 			note=False,
-			errnote=f"Failed to get chunk {chunk_num} base format",
+			errnote=f"Failed to get chunk {chunk_num} base format. Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues",
 		)
 
 		m3u8_url = traverse_obj(base_formats, (..., "url",), get_all=False)
 
 		self.write_debug(f"Getting chunk {chunk_num} playlist")
-		playlist = ie._download_webpage(m3u8_url, chunk_num, note=False, errnote=f"Failed to get chunk {chunk_num} playlist")
+		playlist = ie._download_webpage(m3u8_url, chunk_num, note=False, errnote=f"Failed to get chunk {chunk_num} playlist. Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues")
 
 		return self._parse_hls(ctx, playlist, frag_index, station_id)
 
