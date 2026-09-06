@@ -487,6 +487,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 				else:
 					cast = [prog.get("performer")]
 
+				event_id = traverse_obj(prog, ("event_id", {lambda x: x.removeprefix("https://minds-r.org/events/")}))
 				return {
 					"id": join_nonempty(station_id, actual_start.timestring()),
 					"timestamp": actual_start.timestamp(),
@@ -500,9 +501,9 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 							"series": "season_name",
 							"tags": "tag",
 						}
-					)}, (actual_start, actual_end), int_or_none(prog.get("ts_in_ng")) != 2
+					)}, (actual_start, actual_end), int_or_none(prog.get("ts_in_ng")) != 2, event_id
 
-	def _extract_chapters(self, station, start, end, video_id=None):
+	def _extract_music(self, station, start, end, video_id=None):
 		api_url = update_url_query(f"https://api.radiko.jp/music/api/v1/noas/{station}", {
 			"start_time_gte": start.isoformat(),
 			"end_time_lt": end.isoformat(),
@@ -521,10 +522,28 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 
 		return chapters
 
+	def _extract_ai_chapters(self, event_id):
+		data_json = self._download_json(f"https://api.annex-cf.radiko.jp/v1/programs/{event_id}/chapters",
+			event_id, note="Downloading chapters", errnote="Downloading chapters", fatal=False
+		)
+
+		chapters = []
+		for chapter in traverse_obj(data_json, "chapters") or []:
+			if chapter.get("isMusic"):
+				continue
+			chapters.append({
+				"title": chapter.get("titleLong") or chapter.get("title"),
+				"start_time": chapter.get("fromSec"),
+				"end_time": chapter.get("toSec"),
+				"description": chapter.get("summaryLong"),  # custom field, not used by yt-dlp
+			})
+
+		return chapters
+
 	def _real_extract(self, url):
 		station, timestring = self._match_valid_url(url).group("station", "id")
 		url_time = rtime.RadikoSiteTime(timestring)
-		meta, times, available = self._get_programme_meta(station, url_time)
+		meta, times, available, event_id = self._get_programme_meta(station, url_time)
 		live_status = "was_live"
 
 		if not available:
@@ -551,7 +570,12 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
 		if live_status == "was_live":
-			chapters = self._extract_chapters(station, start, end, video_id=meta["id"])
+			ai_chapters = self._extract_ai_chapters(event_id)
+			music = self._extract_music(station, start, end, video_id=meta["id"])
+
+			chapters = ai_chapters + music
+			chapters.sort(key=lambda x: x.get("start_time", 0))
+
 			auth_data = self._auth(region, need_tf30=need_tf30)
 			formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end)
 		else:
