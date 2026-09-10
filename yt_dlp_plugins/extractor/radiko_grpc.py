@@ -288,6 +288,7 @@ class RadikoPodcastEpisodeIE(_RadikoPodcastBaseIE):
 			'upload_date': '20250703',
 			'uploader': 'IBCラジオ',
 			'channel': 'IBCラジオ',
+			'chapters': "count:3",
 		},
 	}]
 
