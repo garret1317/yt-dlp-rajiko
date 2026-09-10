@@ -570,10 +570,14 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		region = self._get_station_region(station)
 		station_meta = self._get_station_meta(region, station)
 		if live_status == "was_live":
-			ai_chapters = self._extract_ai_chapters(event_id)
-			music = self._extract_music(station, start, end, video_id=meta["id"])
 
-			chapters = ai_chapters + music
+			chapters = []
+			chapter_sources = self._configuration_arg('chapters', ie_key="rajiko", default=["ai", "music"])
+			if "ai" in chapter_sources:
+				chapters.extend(self._extract_ai_chapters(event_id))
+			if "music" in chapter_sources:
+				chapters.extend(self._extract_music(station, start, end, video_id=meta["id"]))
+
 			chapters.sort(key=lambda x: x.get("start_time", 0))
 
 			auth_data = self._auth(region, need_tf30=need_tf30)

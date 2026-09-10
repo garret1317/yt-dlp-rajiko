@@ -230,6 +230,10 @@ class RadikoPersonIE(_RadikoGRPCBaseIE):
 class _RadikoPodcastBaseIE(_RadikoGRPCBaseIE):
 
 	def _extract_ai_chapters(self, episode_id):
+		chapter_sources = self._configuration_arg('chapters', ie_key="rajiko", default=["ai", "music"])
+		if not "ai" in chapter_sources:
+			return
+
 		data_json = self._download_json(f"https://api.annex-cf.radiko.jp/v1/podcasts/episodes/{episode_id}/chapters",
 			episode_id, note="Downloading chapters", errnote="Downloading chapters", fatal=False
 		)
