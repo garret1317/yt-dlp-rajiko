@@ -229,6 +229,25 @@ class RadikoPersonIE(_RadikoGRPCBaseIE):
 
 class _RadikoPodcastBaseIE(_RadikoGRPCBaseIE):
 
+	def _extract_ai_chapters(self, episode_id):
+		chapter_sources = self._configuration_arg('chapters', ie_key="rajiko", default=["ai", "music"])
+		if not "ai" in chapter_sources:
+			return
+
+		data_json = self._download_json(f"https://api.annex-cf.radiko.jp/v1/podcasts/episodes/{episode_id}/chapters",
+			episode_id, note="Downloading chapters", errnote="Downloading chapters", fatal=False
+		)
+
+		chapters = []
+		for chapter in traverse_obj(data_json, "chapters") or []:
+			chapters.append({
+				"title": chapter.get("titleLong") or chapter.get("title"),
+				"start_time": chapter.get("fromSec"),
+				"end_time": chapter.get("toSec"),
+				"description": chapter.get("summaryLong"),  # custom field, not used by yt-dlp
+			})
+		return chapters
+
 	def _extract_episode(self, episode_info):
 		return {
 			**traverse_obj(episode_info, {
@@ -245,6 +264,7 @@ class _RadikoPodcastBaseIE(_RadikoGRPCBaseIE):
 				"channel": "channelStationName",
 				"uploader": "channelStationName",
 			}),
+			"chapters": self._extract_ai_chapters(episode_info.get("id")),
 			"thumbnail": traverse_obj(episode_info, ("imageUrl", {url_or_none}))
 				or traverse_obj(episode_info, ("channelImageUrl", {url_or_none})),
 
@@ -272,6 +292,7 @@ class RadikoPodcastEpisodeIE(_RadikoPodcastBaseIE):
 			'upload_date': '20250703',
 			'uploader': 'IBCラジオ',
 			'channel': 'IBCラジオ',
+			'chapters': "count:3",
 		},
 	}]
 
@@ -324,8 +345,17 @@ class RadikoPodcastChannelIE(_RadikoPodcastBaseIE):
 
 				for episode in episode_list_response.episodes:
 					episode = dataclasses.asdict(episode)
-					cursor = episode.get("id")
-					yield self._extract_episode(episode)
+					episode_id = episode.get("id")
+					cursor = episode_id
+					yield self.url_result(
+						f"https://radiko.jp/podcast/episodes/{episode_id}",
+						id=episode_id,
+						ie=RadikoPodcastEpisodeIE,
+					)
+					# this was previously "yield self._extract_episode(episode)",
+					# because ListPodcastEpisodes already gives us all the information we need
+					# but with the introduction of chapters, _extract_episode(episode) needs a network request,
+					# so it's too expensive to run for every item in the list now :(
 
 				has_next_page= episode_list_response.hasNextPage
 
