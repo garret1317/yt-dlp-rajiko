@@ -2,6 +2,8 @@
 
 improved [radiko.jp](https://radiko.jp) extractor plugin for yt-dlp (fast and areafree)
 
+### [日本語  🇯🇵](https://427738.xyz/yt-dlp-rajiko/index.ja.html)
+
 <p>yt-dlp-rajiko lets you download Japanese radio shows from <a href="https://radiko.jp">radiko.jp</a> without a VPN, using <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a>.
 It downloads quickly, and works for any participating station*, from anywhere in the world.<br>
 <small>*except NHK, but they have <a href="https://www.nhk.or.jp/radio/">their own site</a> which is supported
@@ -12,8 +14,6 @@ in yt-dlp proper</small></p>
 <small>(It's Free Software, so this is just me asking nicely, not a hard requirement. but you should do it so that radiko can keep existing)<br>
 (also, if you get the timefree30 plan you can use it with yt-dlp :P)
 </small></p>
-
-### [日本語  🇯🇵](https://427738.xyz/yt-dlp-rajiko/index.ja.html)
 
 ## Installation
 
