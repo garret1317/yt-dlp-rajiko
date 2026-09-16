@@ -80,8 +80,9 @@ RadikoTimeFreeIE._TESTS.append({
 		'thumbnail': 'https://program-static.cf.radiko.jp/ehwtw6mcvy.jpg',
 		'chapters': list,
 		'tags': ['松浦俊夫', 'ジャズの魅力を楽しめる'],
-		'cast': ['松浦\u3000俊夫'],
+		'cast': ['松浦俊夫'],
 		'series': 'Tokyo Moon',
+		'series_id': '10002831',
 		'live_status': 'was_live',
 	}
 })
@@ -110,6 +111,7 @@ RadikoTimeFreeIE._TESTS.append({
 		'tags': ['CCC905', '音楽との出会いが楽しめる', '人気アーティストトーク', '音楽プロデューサー出演', 'ドライブ中におすすめ', '寝る前におすすめ', '学生におすすめ'],
 		'cast': list,
 		'series': 'CITY CHILL CLUB',
+		'series_id': '10013635',
 		'live_status': 'was_live',
 	},
 })
@@ -130,6 +132,7 @@ RadikoShareIE._TESTS = [{
 
 			"title": "JET STREAM",
 			"series": "JET STREAM",
+			'series_id': '10001894',
 			"description": r"re:[\S\s]*https://www.tfm.co.jp/f/jetstream/message[\S\s]*",
 			"chapters": list,
 			"thumbnail": "https://program-static.cf.radiko.jp/hu2ad4r58u.jpg",
