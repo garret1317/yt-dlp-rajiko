@@ -87,6 +87,35 @@ RadikoTimeFreeIE._TESTS.append({
 	}
 })
 
+# TBS こねくと part 2, wednesday
+# split event IDs, eg 13908776-2
+airtime, release_time = get_latest_airtimes(now, WED, 15, 0, datetime.timedelta(hours=1))
+RadikoTimeFreeIE._TESTS.append({
+	"url": f"https://radiko.jp/#!/ts/TBS/{airtime.timestring()}",
+	"info_dict": {
+		"ext": "m4a",
+		"id": f"TBS-{airtime.timestring()}",
+
+		**get_test_timefields(airtime, release_time),
+
+		'title': 'こねくと (2)',
+		'description': r're:[\S\s]+メール：connect@tbs.co.jp$',
+		'uploader': 'TBSラジオ',
+		'uploader_id': 'TBS',
+		'uploader_url': 'https://www.tbsradio.jp/',
+		'channel': 'TBSラジオ',
+		'channel_id': 'TBS',
+		'channel_url': 'https://www.tbsradio.jp/',
+		'thumbnail': 'https://program-static.cf.radiko.jp/h1b793bv3q.jpg',
+		'chapters': 'mincount:2',  # indirectly testing AI Chapter extraction which depends on correct event_id
+		'tags': ['こねくと954'],
+		'cast': 'mincount:2',
+		'series': 'こねくと',
+		'series_id': '10022238',
+		'live_status': 'was_live',
+	}
+})
+
 
 # late-night/v. early morning show, to test broadcast day handling
 # this should be monday 27:00 / tuesday 03:00
