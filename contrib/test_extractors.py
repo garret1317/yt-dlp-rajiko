@@ -80,8 +80,38 @@ RadikoTimeFreeIE._TESTS.append({
 		'thumbnail': 'https://program-static.cf.radiko.jp/ehwtw6mcvy.jpg',
 		'chapters': list,
 		'tags': ['松浦俊夫', 'ジャズの魅力を楽しめる'],
-		'cast': ['松浦\u3000俊夫'],
+		'cast': ['松浦俊夫'],
 		'series': 'Tokyo Moon',
+		'series_id': '10002831',
+		'live_status': 'was_live',
+	}
+})
+
+# TBS こねくと part 2, wednesday
+# split event IDs, eg 13908776-2
+airtime, release_time = get_latest_airtimes(now, WED, 15, 0, datetime.timedelta(hours=1))
+RadikoTimeFreeIE._TESTS.append({
+	"url": f"https://radiko.jp/#!/ts/TBS/{airtime.timestring()}",
+	"info_dict": {
+		"ext": "m4a",
+		"id": f"TBS-{airtime.timestring()}",
+
+		**get_test_timefields(airtime, release_time),
+
+		'title': 'こねくと (2)',
+		'description': r're:[\S\s]+メール：connect@tbs.co.jp$',
+		'uploader': 'TBSラジオ',
+		'uploader_id': 'TBS',
+		'uploader_url': 'https://www.tbsradio.jp/',
+		'channel': 'TBSラジオ',
+		'channel_id': 'TBS',
+		'channel_url': 'https://www.tbsradio.jp/',
+		'thumbnail': 'https://program-static.cf.radiko.jp/h1b793bv3q.jpg',
+		'chapters': 'mincount:2',  # indirectly testing AI Chapter extraction which depends on correct event_id
+		'tags': ['こねくと954'],
+		'cast': 'mincount:2',
+		'series': 'こねくと',
+		'series_id': '10022238',
 		'live_status': 'was_live',
 	}
 })
@@ -110,6 +140,7 @@ RadikoTimeFreeIE._TESTS.append({
 		'tags': ['CCC905', '音楽との出会いが楽しめる', '人気アーティストトーク', '音楽プロデューサー出演', 'ドライブ中におすすめ', '寝る前におすすめ', '学生におすすめ'],
 		'cast': list,
 		'series': 'CITY CHILL CLUB',
+		'series_id': '10013635',
 		'live_status': 'was_live',
 	},
 })
@@ -130,6 +161,7 @@ RadikoShareIE._TESTS = [{
 
 			"title": "JET STREAM",
 			"series": "JET STREAM",
+			'series_id': '10001894',
 			"description": r"re:[\S\s]*https://www.tfm.co.jp/f/jetstream/message[\S\s]*",
 			"chapters": list,
 			"thumbnail": "https://program-static.cf.radiko.jp/hu2ad4r58u.jpg",

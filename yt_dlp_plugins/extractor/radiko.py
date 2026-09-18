@@ -1,5 +1,6 @@
 import base64
 import datetime
+import json
 import random
 import urllib.parse
 
@@ -17,6 +18,7 @@ from yt_dlp.utils import (
 	join_nonempty,
 	parse_qs,
 	traverse_obj,
+	unified_timestamp,
 	urlencode_postdata,
 	url_or_none,
 	update_url_query,
@@ -454,38 +456,48 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 		self._has_tf30 = account_info.get('timefreeplus') == '1'
 		return self._has_tf30
 
+	def _batch_get_actors(self, actors):
+		# keeping TimeFreeIE gRPC-free for another day... this is ActorService.BatchGetActors
+		return self._download_json("https://actor-and-article.annex.radiko.jp/v1/actors/batch_get", None, 
+			note="Downloading cast information", data=json.dumps({"actorKeys": actors}).encode())
+
 	def _get_programme_meta(self, station_id, url_time):
 		day = url_time.broadcast_day_string()
-		meta = self._download_json(f"https://api.radiko.jp/program/v4/date/{day}/station/{station_id}.json", station_id,
-			note="Downloading programme data")
-		programmes = traverse_obj(meta, ("stations", lambda _, v: v["station_id"] == station_id,
-			"programs", "program"), get_all=False)
+		meta = self._download_json("https://api.annex-cf.radiko.jp/v1/programs/list", join_nonempty(station_id, url_time.timestring()),
+			query={
+				"broadcastDate": day,
+				"lastStartAt": (url_time + datetime.timedelta(seconds=1)).isoformat(),
+				"limit": 1,
+				"stationId": station_id,
+			}, note="Downloading programme metadata"
+		)
+		prog = traverse_obj(meta, ("programs", ...), get_all=False)
 
-		for prog in programmes:
-			if prog["ft"] <= url_time.timestring() < prog["to"]:
-				actual_start = rtime.RadikoSiteTime(prog["ft"])
-				actual_end = rtime.RadikoSiteTime(prog["to"])
+		# XXX python 3.10 fromisoformat doesn't accept formats with trailing Z eg 2026-09-15T11:00:00Z
+		start_time = traverse_obj(prog, ("startAt", {unified_timestamp}, {lambda x: rtime.RadikoTime.fromtimestamp(x, tz=rtime.JST)}))
+		end_time = traverse_obj(prog, ("endAt", {unified_timestamp}, {lambda x: rtime.RadikoTime.fromtimestamp(x, tz=rtime.JST)}))
 
-				if len(prog.get("person")) > 0:
-					cast = [person.get("name") for person in prog.get("person")]
-				else:
-					cast = [prog.get("performer")]
+		actorIds = prog.get("actorIds", [])
+		if len(actorIds) > 0:
+			cast = traverse_obj(self._batch_get_actors(actorIds), ("actors", ..., "name"))
+		else:
+			cast = [prog.get("performer")]
 
-				event_id = traverse_obj(prog, ("event_id", {lambda x: x.removeprefix("https://minds-r.org/events/")}))
-				return {
-					"id": join_nonempty(station_id, actual_start.timestring()),
-					"timestamp": actual_start.timestamp(),
-					"release_timestamp": actual_end.timestamp(),
-					"cast": cast,
-					"description": clean_html(join_nonempty("summary", "description", from_dict=prog, delim="\n")),
-					**traverse_obj(prog, {
-							"title": "title",
-							"duration": "dur",
-							"thumbnail": "img",
-							"series": "season_name",
-							"tags": "tag",
-						}
-					)}, (actual_start, actual_end), int_or_none(prog.get("ts_in_ng")) != 2, event_id
+		return {
+			"id": join_nonempty(station_id, start_time.timestring()),
+			"timestamp": start_time.timestamp(),
+			"release_timestamp": end_time.timestamp(),
+			"cast": cast,
+			"description": clean_html(join_nonempty("summary", "description", from_dict=prog, delim="\n")),
+			"duration": (end_time - start_time).total_seconds(),
+			**traverse_obj(prog, {
+					"title": "title",
+					"thumbnail": "imageUrl",
+					"series": "rSeasonName",
+					"series_id": "rSeasonId",
+					"tags": "tags",
+				}
+			)}, (start_time, end_time), traverse_obj(prog, ("blackout", "tsInNg", {int_or_none}, {lambda x: x != 2})), prog.get("eventId")
 
 	def _extract_music(self, station, start, end, video_id=None):
 		api_url = update_url_query(f"https://api.radiko.jp/music/api/v1/noas/{station}", {
