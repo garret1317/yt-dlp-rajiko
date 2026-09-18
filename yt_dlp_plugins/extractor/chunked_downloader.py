@@ -169,8 +169,13 @@ class RadikoChunkedFD(FragmentFD):
 					ctx['extra_state']['chunk_index'] = chunk_index
 					return fragment_content
 
-				self.download_and_append_fragments(ctx, chunk_fragments, info_dict, pack_func=commit_fragment)
 
+				if self.params.get('test'):
+					# when testing we want to check we can resolve each chunk, we don't care about downloading every fragment
+					self.download_and_append_fragments(ctx, chunk_fragments[:1], info_dict, pack_func=commit_fragment)
+					ctx['extra_state']['cursor'] = cursor + chunk_length
+				else:
+					self.download_and_append_fragments(ctx, chunk_fragments, info_dict, pack_func=commit_fragment)
 
 				cursor = ctx['extra_state']['cursor']
 
