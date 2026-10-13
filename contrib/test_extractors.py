@@ -12,6 +12,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, r"C:\Users\g\Documents\code\yt-dlp")
 sys.path.insert(0, "/home/g/Downloads/yt-dlp/")  # TODO: un-hardcode. has to be the source/git repo because pip doesnt carry the tests
 
 from yt_dlp_plugins.extractor import radiko_time as rtime
@@ -106,7 +107,7 @@ RadikoTimeFreeIE._TESTS.append({
 		'channel': 'TBSラジオ',
 		'channel_id': 'TBS',
 		'channel_url': 'https://www.tbsradio.jp/',
-		'thumbnail': 'https://program-static.cf.radiko.jp/h1b793bv3q.jpg',
+		'thumbnail': 'https://program-static.cf.radiko.jp/t8vc6xssnh.jpg',
 		'chapters': 'mincount:2',  # indirectly testing AI Chapter extraction which depends on correct event_id
 		'tags': ['こねくと954'],
 		'cast': 'mincount:2',
@@ -135,7 +136,7 @@ RadikoTimeFreeIE._TESTS.append({
 		'channel': 'TBSラジオ',
 		'channel_id': 'TBS',
 		'channel_url': 'https://www.tbsradio.jp/',
-		'thumbnail': 'https://program-static.cf.radiko.jp/dnxytabv08.jpg',
+		'thumbnail': 'https://program-static.cf.radiko.jp/v6cqua0oxb.jpg',
 		'chapters': list,
 		'tags': ['CCC905', '音楽との出会いが楽しめる', '人気アーティストトーク', '音楽プロデューサー出演', 'ドライブ中におすすめ', '寝る前におすすめ', '学生におすすめ'],
 		'cast': list,
