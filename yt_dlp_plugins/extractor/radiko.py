@@ -93,6 +93,7 @@ class _RadikoBaseIE(InfoExtractor):
 	_DELIVERED_ONDEMAND = ('radiko.jp',)
 	_AD_INSERTION = ('si-f-radiko.smartstream.ne.jp', 'tf-f-rpaa-radiko.smartstream.ne.jp',)
 	_FLAKY_TF30 = ('dr-wowza.radiko-cf.com',)
+	_FLAKY = ('dr-wowza.radiko-cf.com',)
 
 	_has_tf30 = None
 
@@ -315,8 +316,8 @@ class _RadikoBaseIE(InfoExtractor):
 			if domain in self._AD_INSERTION:
 				preference -= 3
 				format_note.append("Ad insertion")
-			if domain in self._FLAKY_TF30 and is_tf30:
-				format_note.append("Flaky Timefree30")
+			if (domain in self._FLAKY_TF30 and is_tf30) or domain in self._FLAKY:
+				format_note.append("Flaky")
 				preference -= 4
 
 
