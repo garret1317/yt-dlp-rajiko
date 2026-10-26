@@ -757,6 +757,7 @@ class RadikoStationButtonIE(InfoExtractor):
 
 	_WEBPAGE_TESTS = [{
 		"url": "https://cocolo.jp/",
+		"skip": "github actions IP is blocked",
 		"info_dict": {
 			"ext": "m4a",
 			"live_status": "is_live",
