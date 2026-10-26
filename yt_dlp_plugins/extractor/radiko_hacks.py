@@ -47,7 +47,7 @@ def _get_chunk_playlist(self, chunk_url, src_id, chunk_num, headers={}, first_ch
 	else:
 		self.write_debug(f"Preparing {src_id} chunk {chunk_num}")
 		base_formats = self._extract_m3u8_formats(
-			chunk_url, chunk_id, fatal=False, headers=headers,
+			chunk_url, chunk_id, fatal=True, headers=headers,
 	#		note=f"Preparing {src_id} chunk {chunk_num}"
 			note=False,
 			errnote=f"Failed to get {src_id} chunk {chunk_num} base format. Please report this at https://github.com/garret1317/yt-dlp-rajiko/issues",
