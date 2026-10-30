@@ -90,6 +90,8 @@ class _RadikoBaseIE(InfoExtractor):
 
 	_DELIVERED_ONDEMAND = ('radiko.jp',)
 	_AD_INSERTION = ('si-f-radiko.smartstream.ne.jp', 'tf-f-rpaa-radiko.smartstream.ne.jp',)
+	_FLAKY_TF30 = ('dr-wowza.radiko-cf.com',)
+	_FLAKY = ('dr-wowza.radiko-cf.com',)
 
 	_has_tf30 = None
 
@@ -254,7 +256,7 @@ class _RadikoBaseIE(InfoExtractor):
 		self.to_screen(f"{station_id}: Using cached station metadata")
 		return cachedata.get("meta")
 
-	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None):
+	def _get_station_formats(self, station, timefree, auth_data, start_at=None, end_at=None, is_tf30=False):
 		config_device = traverse_obj(self._configuration_arg('device', casesense=True, ie_key="rajiko"), 0)
 		device = config_device or "pc_html5"
 
@@ -306,6 +308,9 @@ class _RadikoBaseIE(InfoExtractor):
 			if domain in self._AD_INSERTION:
 				preference -= 3
 				format_note.append("Ad insertion")
+			if (domain in self._FLAKY_TF30 and is_tf30) or domain in self._FLAKY:
+				format_note.append("Flaky")
+				preference -= 4
 
 			auth_headers = auth_data["token"]
 
@@ -577,7 +582,7 @@ class RadikoTimeFreeIE(_RadikoBaseIE):
 			chapters.sort(key=lambda x: x.get("start_time", 0))
 
 			auth_data = self._auth(region, need_tf30=need_tf30)
-			formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end)
+			formats = self._get_station_formats(station, True, auth_data, start_at=start, end_at=end, is_tf30=need_tf30)
 		else:
 			chapters = None
 			formats = None
@@ -737,6 +742,7 @@ class RadikoStationButtonIE(InfoExtractor):
 
 	_WEBPAGE_TESTS = [{
 		"url": "https://cocolo.jp/",
+		"skip": "github actions IP is blocked",
 		"info_dict": {
 			"ext": "m4a",
 			"live_status": "is_live",
